@@ -1,0 +1,6 @@
+﻿.vs
+Solution/bin
+Sources/Flint/obj
+Tests/Flint.Tests/obj
+Tests/Samples/obj
+Tests/FlintTests/obj
