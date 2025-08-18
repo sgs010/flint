@@ -1,0 +1,27 @@
+﻿using Mono.Cecil;
+
+namespace Flint.Vm.Cil
+{
+	class This : Ast
+	{
+		public readonly TypeReference Type;
+		public This(TypeReference type)
+		{
+			Type = type;
+		}
+
+		protected override IEnumerable<Ast> GetChildren()
+		{
+			yield break;
+		}
+
+		public override bool Equals(Ast other)
+		{
+			if (other is This @this)
+			{
+				return Type.Equals(@this.Type);
+			}
+			return false;
+		}
+	}
+}

@@ -35,7 +35,7 @@ namespace Flint.Analyzers
 
 		private static void Analyze(MethodDefinition mtd)
 		{
-			var ast = CilMachine.Evaluate(mtd);
+			var ast = EvalMachine.Run(mtd);
 
 			// find roots (methods that unwrap IQueryable and make an query to db)
 		}
