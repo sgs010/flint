@@ -17,6 +17,11 @@ namespace Flint.Vm.Cil
 			yield break;
 		}
 
+		public override int GetHashCode()
+		{
+			return HashCode.Combine(Number, Reference);
+		}
+
 		public override bool Equals(Ast other)
 		{
 			if (other is Arg arg)

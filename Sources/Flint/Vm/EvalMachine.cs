@@ -1,4 +1,6 @@
-﻿using Flint.Common;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
+using Flint.Common;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -28,10 +30,36 @@ namespace Flint.Vm
 		#endregion
 
 		#region Implementation
+		readonly struct MemKey
+		{
+			public readonly Ast Instance;
+			public readonly FieldReference Field;
+			public MemKey(Ast instance, FieldReference fld)
+			{
+				Instance = instance;
+				Field = fld;
+			}
+
+			public override readonly bool Equals(object obj)
+			{
+				if (obj is MemKey mk)
+				{
+					return Instance.Equals(mk.Instance)
+						&& Field.Equals(mk.Field);
+				}
+				return false;
+			}
+
+			public override readonly int GetHashCode()
+			{
+				return HashCode.Combine(Instance, Field);
+			}
+		}
+
 		class RoutineContext
 		{
 			public readonly MethodDefinition Method;
-			public readonly Dictionary<Tuple<Ast, FieldReference>, Ast> Memory;
+			public readonly Dictionary<MemKey, Ast> Memory;
 			public readonly Ast[] Variables;
 			public readonly Stack<Ast> Stack;
 			public readonly HashSet<Ast> Expressions;
@@ -49,21 +77,46 @@ namespace Flint.Vm
 		{
 			foreach (var instruction in ctx.Method.Body.Instructions)
 			{
+				if (ctx.Method.Body.HasExceptionHandlers)
+				{
+					// vm puts exceptions on stack
+					// we must do the same if we enter exception catch block
+					if (ctx.Method.Body.ExceptionHandlers.Any(x => x.HandlerType == ExceptionHandlerType.Catch
+																&& x.HandlerStart.Offset == instruction.Offset))
+						ctx.Stack.Push(Cil.Exception.Instance);
+				}
+
 				switch (instruction.OpCode.Code)
 				{
 					case Code.Nop:
+					case Code.Constrained:
 					case Code.Ret:
+					case Code.Leave:
+					case Code.Leave_S:
+					case Code.Br:
 					case Code.Br_S:
+					case Code.Endfinally:
 						break;
 					case Code.Brfalse:
 					case Code.Brfalse_S:
+					case Code.Brtrue:
+					case Code.Brtrue_S:
 						ctx.Stack.Pop();
 						break;
+					case Code.Bge:
+					case Code.Bge_S:
+						ctx.Stack.Pop();
+						ctx.Stack.Pop();
+						break;
+					case Code.Dup:
+						ctx.Stack.Push(ctx.Stack.Peek());
+						break;
 					case Code.Call:
+					case Code.Callvirt:
 						Call(ctx, (MethodReference)instruction.Operand);
 						break;
-					case Code.Callvirt:
-						Callvirt(ctx, (MethodReference)instruction.Operand);
+					case Code.Initobj:
+						ctx.Stack.Pop();
 						break;
 					case Code.Ldarg:
 						Ldarg(ctx, ((ParameterReference)instruction.Operand).Index);
@@ -83,7 +136,41 @@ namespace Flint.Vm
 					case Code.Ldarg_3:
 						Ldarg(ctx, 3);
 						break;
+					case Code.Ldc_I4_0:
+						LdcI4(ctx, 0);
+						break;
+					case Code.Ldc_I4_1:
+						LdcI4(ctx, 1);
+						break;
+					case Code.Ldc_I4_2:
+						LdcI4(ctx, 2);
+						break;
+					case Code.Ldc_I4_3:
+						LdcI4(ctx, 3);
+						break;
+					case Code.Ldc_I4_4:
+						LdcI4(ctx, 4);
+						break;
+					case Code.Ldc_I4_5:
+						LdcI4(ctx, 5);
+						break;
+					case Code.Ldc_I4_6:
+						LdcI4(ctx, 6);
+						break;
+					case Code.Ldc_I4_7:
+						LdcI4(ctx, 7);
+						break;
+					case Code.Ldc_I4_8:
+						LdcI4(ctx, 8);
+						break;
+					case Code.Ldc_I4_M1:
+						LdcI4(ctx, -1);
+						break;
+					case Code.Ldc_I4_S:
+						LdcI4(ctx, (SByte)instruction.Operand);
+						break;
 					case Code.Ldfld:
+					case Code.Ldflda:
 						Ldfld(ctx, (FieldReference)instruction.Operand);
 						break;
 					case Code.Ldloc_0:
@@ -97,6 +184,18 @@ namespace Flint.Vm
 						break;
 					case Code.Ldloc_3:
 						Ldloc(ctx, 3);
+						break;
+					case Code.Ldloc_S:
+						Ldloc(ctx, ((VariableReference)instruction.Operand).Index);
+						break;
+					case Code.Ldloca_S:
+						Ldloca(ctx, (VariableReference)instruction.Operand);
+						break;
+					case Code.Ldnull:
+						ctx.Stack.Push(Cil.Null.Instance);
+						break;
+					case Code.Ldstr:
+						Ldstr(ctx, (string)instruction.Operand);
 						break;
 					case Code.Newobj:
 						Newobj(ctx, (MethodReference)instruction.Operand);
@@ -116,7 +215,10 @@ namespace Flint.Vm
 					case Code.Stloc_3:
 						Stloc(ctx, 3);
 						break;
-					default: throw new NotImplementedException($"Unknown instruction {instruction.OpCode}");
+					case Code.Stloc_S:
+						Stloc(ctx, ((VariableReference)instruction.Operand).Index);
+						break;
+					default: throw new NotImplementedException($"Unknown instruction {instruction.OpCode.Code}");
 				}
 			}
 		}
@@ -138,27 +240,20 @@ namespace Flint.Vm
 		private static void Call(RoutineContext ctx, MethodReference method)
 		{
 			var args = PopArgs(ctx, method);
-			var call = new Cil.Call(method, args);
+
+			Ast instance = null;
+			if (method.HasThis)
+				instance = ctx.Stack.Pop();
+
+			var call = new Cil.Call(instance, method, args);
 
 			ctx.Expressions.RemoveAll(args);
+			if (instance != null)
+				ctx.Expressions.Remove(instance);
 			ctx.Expressions.Add(call);
 
 			if (method.ReturnType.MetadataType != MetadataType.Void)
 				ctx.Stack.Push(call);
-		}
-
-		private static void Callvirt(RoutineContext ctx, MethodReference method)
-		{
-			var args = PopArgs(ctx, method);
-			var obj = ctx.Stack.Pop();
-			var callvirt = new Cil.Callvirt(obj, method, args);
-
-			ctx.Expressions.RemoveAll(args);
-			ctx.Expressions.Remove(obj);
-			ctx.Expressions.Add(callvirt);
-
-			if (method.ReturnType.MetadataType != MetadataType.Void)
-				ctx.Stack.Push(callvirt);
 		}
 
 		private static void Newobj(RoutineContext ctx, MethodReference method)
@@ -182,11 +277,20 @@ namespace Flint.Vm
 			ctx.Variables[number] = ctx.Stack.Pop();
 		}
 
+		private static void Ldloca(RoutineContext ctx, VariableReference v)
+		{
+			var value = ctx.Variables[v.Index];
+			if (value != null)
+				ctx.Stack.Push(value);
+			else
+				ctx.Stack.Push(new Cil.Var(v.Index, v.VariableType));
+		}
+
 		private static void Ldfld(RoutineContext ctx, FieldReference fld)
 		{
 			var obj = ctx.Stack.Pop();
 
-			if (ctx.Memory.TryGetValue(Tuple.Create(obj, fld), out var value) == false)
+			if (ctx.Memory.TryGetValue(new MemKey(obj, fld), out var value) == false)
 				value = new Cil.Fld(obj, fld);
 
 			ctx.Stack.Push(value);
@@ -196,7 +300,7 @@ namespace Flint.Vm
 		{
 			var value = ctx.Stack.Pop();
 			var obj = ctx.Stack.Pop();
-			ctx.Memory.AddOrReplace(Tuple.Create(obj, fld), value);
+			ctx.Memory.AddOrReplace(new MemKey(obj, fld), value);
 		}
 
 		private static void Ldarg(RoutineContext ctx, int number)
@@ -218,6 +322,16 @@ namespace Flint.Vm
 				var parameter = ctx.Method.Parameters[number];
 				ctx.Stack.Push(new Cil.Arg(number, parameter));
 			}
+		}
+
+		private static void LdcI4(RoutineContext ctx, int value)
+		{
+			ctx.Stack.Push(new Cil.Int32(value));
+		}
+
+		private static void Ldstr(RoutineContext ctx, string value)
+		{
+			ctx.Stack.Push(new Cil.String(value));
 		}
 		#endregion
 	}

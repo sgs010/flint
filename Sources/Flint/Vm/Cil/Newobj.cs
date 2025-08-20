@@ -20,6 +20,11 @@ namespace Flint.Vm.Cil
 				yield return arg;
 		}
 
+		public override int GetHashCode()
+		{
+			return HashCode.Combine(Type, Constructor, Args);
+		}
+
 		public override bool Equals(Ast other)
 		{
 			if (other is Newobj newobj)

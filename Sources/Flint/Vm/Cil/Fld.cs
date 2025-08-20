@@ -17,6 +17,11 @@ namespace Flint.Vm.Cil
 			yield return Object;
 		}
 
+		public override int GetHashCode()
+		{
+			return HashCode.Combine(Object, Field);
+		}
+
 		public override bool Equals(Ast other)
 		{
 			if (other is Fld fld)

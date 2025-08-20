@@ -2,11 +2,13 @@
 
 namespace Flint.Vm.Cil
 {
-	class This : Ast
+	class Var : Ast
 	{
+		public readonly int Index;
 		public readonly TypeReference Type;
-		public This(TypeReference type)
+		public Var(int index, TypeReference type)
 		{
+			Index = index;
 			Type = type;
 		}
 
@@ -17,14 +19,15 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return Type.GetHashCode();
+			return HashCode.Combine(Index, Type);
 		}
 
 		public override bool Equals(Ast other)
 		{
-			if (other is This @this)
+			if (other is Var v)
 			{
-				return Type.Equals(@this.Type);
+				return Index.Equals(v.Index)
+					&& Type.Equals(v.Type);
 			}
 			return false;
 		}
