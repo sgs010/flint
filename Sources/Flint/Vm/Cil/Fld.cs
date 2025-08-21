@@ -12,7 +12,7 @@ namespace Flint.Vm.Cil
 			Field = fld;
 		}
 
-		protected override IEnumerable<Ast> GetChildren()
+		public override IEnumerable<Ast> GetChildren()
 		{
 			yield return Object;
 		}

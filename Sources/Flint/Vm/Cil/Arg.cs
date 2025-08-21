@@ -12,7 +12,7 @@ namespace Flint.Vm.Cil
 			Reference = reference;
 		}
 
-		protected override IEnumerable<Ast> GetChildren()
+		public override IEnumerable<Ast> GetChildren()
 		{
 			yield break;
 		}

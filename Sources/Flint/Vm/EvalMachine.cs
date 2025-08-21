@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Metrics;
-using Flint.Common;
+﻿using Flint.Common;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 

@@ -13,5 +13,32 @@ namespace Samples
 				Console.WriteLine($"{user.Id} {user.FirstName} {user.LastName}");
 			}
 		}
+
+		public static async void Test002()
+		{
+			using var db = new DB();
+
+			var names = await db.Users.ToListAsync();
+			foreach (var user in names)
+			{
+				Console.WriteLine($"{user.Id} {user.FirstName}");
+			}
+
+			var addresses = await db.Users.ToListAsync();
+			foreach (var user in addresses)
+			{
+				Console.WriteLine($"{user.Id} {user.Address}");
+			}
+		}
+
+		public static void Test003()
+		{
+			using var db = new DB();
+			foreach (var user in db.Users)
+			{
+				Console.WriteLine($"{user.Id} {user.FirstName} {user.LastName}");
+			}
+		}
+
 	}
 }

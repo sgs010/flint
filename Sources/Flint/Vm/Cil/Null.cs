@@ -4,14 +4,9 @@
 	{
 		public static readonly Null Instance = new Null();
 
-		protected override IEnumerable<Ast> GetChildren()
+		public override IEnumerable<Ast> GetChildren()
 		{
 			yield break;
-		}
-
-		public override int GetHashCode()
-		{
-			return Instance.GetHashCode();
 		}
 
 		public override bool Equals(Ast other)

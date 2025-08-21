@@ -14,7 +14,7 @@ namespace Flint.Vm.Cil
 			Args = args;
 		}
 
-		protected override IEnumerable<Ast> GetChildren()
+		public override IEnumerable<Ast> GetChildren()
 		{
 			if (Instance != null)
 				yield return Instance;
