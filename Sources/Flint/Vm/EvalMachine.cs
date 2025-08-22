@@ -101,8 +101,24 @@ namespace Flint.Vm
 					case Code.Brtrue_S:
 						ctx.Stack.Pop();
 						break;
+					case Code.Beq:
+					case Code.Beq_S:
 					case Code.Bge:
 					case Code.Bge_S:
+					case Code.Bge_Un:
+					case Code.Bge_Un_S:
+					case Code.Bgt:
+					case Code.Bgt_S:
+					case Code.Bgt_Un:
+					case Code.Bgt_Un_S:
+					case Code.Ble:
+					case Code.Ble_S:
+					case Code.Ble_Un:
+					case Code.Ble_Un_S:
+					case Code.Blt:
+					case Code.Blt_S:
+					case Code.Blt_Un:
+					case Code.Blt_Un_S:
 						ctx.Stack.Pop();
 						ctx.Stack.Pop();
 						break;
@@ -194,6 +210,9 @@ namespace Flint.Vm
 						break;
 					case Code.Ldstr:
 						Ldstr(ctx, (string)instruction.Operand);
+						break;
+					case Code.Ldtoken:
+						Ldtoken(ctx, instruction.Operand);
 						break;
 					case Code.Newobj:
 						Newobj(ctx, (MethodReference)instruction.Operand);
@@ -330,6 +349,18 @@ namespace Flint.Vm
 		private static void Ldstr(RoutineContext ctx, string value)
 		{
 			ctx.Stack.Push(new Cil.String(value));
+		}
+
+		private static void Ldtoken(RoutineContext ctx, object value)
+		{
+			Ast token;
+			if (value is TypeDefinition t)
+				token = new Cil.Type(t);
+			else if (value is MethodDefinition m)
+				token = new Cil.Method(m);
+			else throw new NotImplementedException($"Unknown token {value}");
+
+			ctx.Stack.Push(token);
 		}
 		#endregion
 	}

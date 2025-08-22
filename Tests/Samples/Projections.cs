@@ -4,39 +4,58 @@ namespace Samples
 {
 	static class Projections
 	{
-		public static async void Test001()
+		public static async void ReadWholeObject()
 		{
+			// should not advice a projection because we possibly read all object properties
+
 			using var db = new DB();
 			var users = await db.Users.ToListAsync();
 			foreach (var user in users)
 			{
-				Console.WriteLine($"{user.Id} {user.FirstName} {user.LastName}");
+				Console.WriteLine(user);
 			}
 		}
 
-		public static async void Test002()
+		public static async void ReadAllProperties()
 		{
+			// should not advice a projection because we read all object properties
+
 			using var db = new DB();
-
-			var names = await db.Users.ToListAsync();
-			foreach (var user in names)
+			var users = await db.Users.ToListAsync();
+			foreach (var user in users)
 			{
-				Console.WriteLine($"{user.Id} {user.FirstName}");
-			}
-
-			var addresses = await db.Users.ToListAsync();
-			foreach (var user in addresses)
-			{
-				Console.WriteLine($"{user.Id} {user.Address}");
+				Console.WriteLine($"{user.Id} {user.Name} {user.Email}");
 			}
 		}
 
-		public static void Test003()
+		public static async void ReadSomeProperties()
 		{
+			// should advice a projection because we read just some object properties
+
 			using var db = new DB();
-			foreach (var user in db.Users)
+			var users = await db.Users.ToListAsync();
+			foreach (var user in users)
 			{
-				Console.WriteLine($"{user.Id} {user.FirstName} {user.LastName}");
+				Console.WriteLine($"{user.Id} {user.Name}");
+			}
+		}
+
+		public static async void MultipleQueries()
+		{
+			// should advice a projection per query
+
+			using var db = new DB();
+
+			var usersByName = await db.Users.Where(x => x.Name == "John").ToListAsync();
+			foreach (var user in usersByName)
+			{
+				Console.WriteLine($"{user.Id} {user.Name}");
+			}
+
+			var usersByEmail = await db.Users.Where(x => x.Email.StartsWith("test")).ToListAsync();
+			foreach (var user in usersByEmail)
+			{
+				Console.WriteLine($"{user.Id} {user.Email}");
 			}
 		}
 

@@ -46,8 +46,11 @@ namespace Flint.Analyzers
 
 		private static void Analyze(IAnalyzerContext ctx, MethodDefinition mtd)
 		{
+			// eval method body
 			var expressions = EvalMachine.Run(mtd);
 
+			// find roots (methods where IQueryable monad is unwrapped like ToListAsync)
+			// mark all ast accessible from roots
 			var roots = new HashSet<Cil.Call>();
 			var marks = new List<ExpessionMark>();
 			foreach (var expr in expressions)
@@ -66,6 +69,7 @@ namespace Flint.Analyzers
 				Mark(expr, root, marks);
 			}
 
+			// gather accessed properties
 			var propertyMap = new Dictionary<Ast, HashSet<PropertyReference>>();
 			foreach (var root in roots)
 			{
@@ -92,20 +96,18 @@ namespace Flint.Analyzers
 				}
 			}
 
+			// report issues
 			foreach (var properties in propertyMap.Values)
 			{
+				var instance = properties.First().DeclaringType.Resolve();
+				if (instance.Properties.Count == properties.Count)
+					continue; // do not advise a projection if all properties are accessed
+
 				var sb = new StringBuilder();
-				var needSeparator = false;
 				sb.Append("consider using projection { ");
-				foreach (var prop in properties)
-				{
-					if (needSeparator)
-						sb.Append(", ");
-					sb.Append(prop.Name);
-					needSeparator = true;
-				}
+				properties.PrettyPrint(sb, ", ", x => x.Name);
 				sb.Append(" } in method ");
-				sb.Append(mtd.DeclaringType.Namespace).Append('.').Append(mtd.DeclaringType.Name).Append('.').Append(mtd.Name).Append("()");
+				mtd.PrettyPrint(sb);
 				ctx.Log(sb.ToString());
 			}
 		}

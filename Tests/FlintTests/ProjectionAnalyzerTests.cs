@@ -7,42 +7,51 @@ namespace FlintTests
 	public class ProjectionAnalyzerTests
 	{
 		[TestMethod]
-		public void Test001()
+		public void ReadWholeObject()
 		{
 			var ctx = new AnalyzerContextMock();
 			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "Test001");
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ReadWholeObject");
+
+			ctx.Output.Should().BeEmpty();
+		}
+
+		[TestMethod]
+		public void ReadAllProperties()
+		{
+			var ctx = new AnalyzerContextMock();
+			var asm = ModuleDefinition.ReadModule("Samples.dll");
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ReadAllProperties");
+
+			ctx.Output.Should().BeEmpty();
+		}
+
+		[TestMethod]
+		public void ReadSomeProperties()
+		{
+			var ctx = new AnalyzerContextMock();
+			var asm = ModuleDefinition.ReadModule("Samples.dll");
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ReadSomeProperties");
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Id, FirstName, LastName } in method Samples.Projections.Test001()"
+				"consider using projection { Id, Name } in method Samples.Projections.ReadSomeProperties()"
 			]);
 		}
 
 		[TestMethod]
-		public void Test002()
+		public void MultipleQueries()
 		{
 			var ctx = new AnalyzerContextMock();
 			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "Test002");
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "MultipleQueries");
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Id, FirstName } in method Samples.Projections.Test002()",
-				"consider using projection { Id, Address } in method Samples.Projections.Test002()"
-			]);
-		}
-
-		[TestMethod]
-		public void Test003()
-		{
-			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
-
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "Test003");
-
-			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Id, FirstName, LastName } in method Samples.Projections.Test003()"
+				"consider using projection { Id, Name } in method Samples.Projections.MultipleQueries()",
+				"consider using projection { Id, Email } in method Samples.Projections.MultipleQueries()",
 			]);
 		}
 
