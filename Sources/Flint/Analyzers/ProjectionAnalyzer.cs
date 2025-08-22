@@ -21,12 +21,6 @@ namespace Flint.Analyzers
 		#endregion
 
 		#region Implementation
-		readonly struct ExpessionMark
-		{
-			public Ast Expression { get; init; }
-			public Ast Mark { get; init; }
-		}
-
 		private static IEnumerable<MethodDefinition> GetMethods(ModuleDefinition asm, string className = null, string methodName = null)
 		{
 			foreach (var type in asm.Types)
@@ -50,47 +44,44 @@ namespace Flint.Analyzers
 			var expressions = EvalMachine.Run(mtd);
 
 			// find roots (methods where IQueryable monad is unwrapped like ToListAsync)
-			// mark all ast accessible from roots
+			// for every found root mark every ast accessible from it
 			var roots = new HashSet<Cil.Call>();
-			var marks = new List<ExpessionMark>();
+			var marks = new Dictionary<Ast, List<Ast>>();
 			foreach (var expr in expressions)
 			{
-				var (captures, ok) = expr.Match(
-					new Match.Call(
-						null,
-						"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync",
-						Match.Any.Args),
-					true);
+				var (root, ok) = CaptureAnyRoot(expr,
+				[
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync",
+				]);
 				if (ok == false)
 					continue;
 
-				var root = (Cil.Call)captures.Values.First();
 				roots.Add(root);
-				Mark(expr, root, marks);
+				var rootExpressions = marks.GetValueOrAddNew(root);
+				Mark(expr, root, rootExpressions);
 			}
 
 			// gather accessed properties
 			var propertyMap = new Dictionary<Ast, HashSet<PropertyReference>>();
 			foreach (var root in roots)
 			{
-				// entity is T from ToListAsync<T>
+				if (marks.TryGetValue(root, out var rootExpressions) == false)
+					continue;
+
+				// entity is T from METHOD<T> (i.e. ToListAsync<T>)
 				var entity = (TypeDefinition)((GenericInstanceMethod)root.Method).GenericArguments.First();
 				foreach (var prop in entity.Properties)
 				{
-					foreach (var mark in marks)
+					foreach (var expr in rootExpressions)
 					{
-						var (captures, ok) = mark.Expression.Match(
+						var (captures, ok) = expr.Match(
 							new Match.Call(Any.Instance, prop.GetMethod.FullName, Any.Args),
 							true);
 						if (ok == false)
 							continue;
 
-						if (propertyMap.TryGetValue(root, out var properties) == false)
-						{
-							properties = [];
-							propertyMap.Add(root, properties);
-						}
-
+						var properties = propertyMap.GetValueOrAddNew(root);
 						properties.Add(prop);
 					}
 				}
@@ -112,14 +103,32 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void Mark(Ast expression, Ast root, List<ExpessionMark> marks)
+		private static (Cil.Call root, bool ok) CaptureAnyRoot(Ast expression, IEnumerable<string> methodNames)
 		{
+			foreach (var name in methodNames)
+			{
+				var (captures, ok) = expression.Match(
+					new Match.Call(null, name, Match.Any.Args),
+					true);
+				if (ok == false)
+					continue;
+
+				var root = (Cil.Call)captures.Values.First();
+				return (root, true);
+			}
+			return (null, false);
+		}
+
+		private static void Mark(Ast expression, Ast root, List<Ast> marks)
+		{
+			// traverse expression tree top down and mark every node untill we reach root node
+
 			if (expression == null)
 				return;
 			if (expression == root)
 				return;
 
-			marks.Add(new ExpessionMark { Expression = expression, Mark = root });
+			marks.Add(expression);
 			foreach (var child in expression.GetChildren())
 				Mark(child, root, marks);
 		}

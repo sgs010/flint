@@ -55,5 +55,18 @@ namespace FlintTests
 			]);
 		}
 
+		[TestMethod]
+		public void ComplexProjection()
+		{
+			var ctx = new AnalyzerContextMock();
+			var asm = ModuleDefinition.ReadModule("Samples.dll");
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ComplexProjection");
+
+			ctx.Output.Should().BeEquivalentTo([
+				"consider using projection { Number, Items = { Product.Name } } in method Samples.Projections.ComplextProjection()",
+			]);
+		}
+
 	}
 }

@@ -59,5 +59,22 @@ namespace Samples
 			}
 		}
 
+		public static async void ComplexProjection()
+		{
+			// should advice a complex projection
+
+			using var db = new DB();
+
+			var order = await db.Orders
+				.Include(o => o.Items)
+				.ThenInclude(i => i.Product)
+				.FirstOrDefaultAsync(o => o.Id == 42);
+
+			Console.WriteLine($"{order.Number}");
+			foreach (var item in order.Items)
+			{
+				Console.WriteLine($"{item.Product.Name}");
+			}
+		}
 	}
 }

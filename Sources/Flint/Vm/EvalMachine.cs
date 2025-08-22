@@ -95,6 +95,7 @@ namespace Flint.Vm
 					case Code.Br_S:
 					case Code.Endfinally:
 						break;
+					case Code.Pop:
 					case Code.Brfalse:
 					case Code.Brfalse_S:
 					case Code.Brtrue:
@@ -122,12 +123,18 @@ namespace Flint.Vm
 						ctx.Stack.Pop();
 						ctx.Stack.Pop();
 						break;
+					case Code.Box:
+						Box(ctx);
+						break;
 					case Code.Dup:
 						ctx.Stack.Push(ctx.Stack.Peek());
 						break;
 					case Code.Call:
 					case Code.Callvirt:
 						Call(ctx, (MethodReference)instruction.Operand);
+						break;
+					case Code.Castclass:
+						CastClass(ctx, (TypeReference)instruction.Operand);
 						break;
 					case Code.Initobj:
 						ctx.Stack.Pop();
@@ -214,11 +221,17 @@ namespace Flint.Vm
 					case Code.Ldtoken:
 						Ldtoken(ctx, instruction.Operand);
 						break;
+					case Code.Newarr:
+						Newarr(ctx, (TypeReference)instruction.Operand);
+						break;
 					case Code.Newobj:
 						Newobj(ctx, (MethodReference)instruction.Operand);
 						break;
 					case Code.Stfld:
 						Stfld(ctx, (FieldReference)instruction.Operand);
+						break;
+					case Code.Stelem_Ref:
+						Stelem(ctx);
 						break;
 					case Code.Stloc_0:
 						Stloc(ctx, 0);
@@ -271,6 +284,12 @@ namespace Flint.Vm
 
 			if (method.ReturnType.MetadataType != MetadataType.Void)
 				ctx.Stack.Push(call);
+		}
+
+		private static void Newarr(RoutineContext ctx, TypeReference type)
+		{
+			var size = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Array(type, size));
 		}
 
 		private static void Newobj(RoutineContext ctx, MethodReference method)
@@ -354,13 +373,33 @@ namespace Flint.Vm
 		private static void Ldtoken(RoutineContext ctx, object value)
 		{
 			Ast token;
-			if (value is TypeDefinition t)
-				token = new Cil.Type(t);
-			else if (value is MethodDefinition m)
-				token = new Cil.Method(m);
+			if (value is TypeReference t)
+				token = new Cil.Typeof(t);
+			else if (value is MethodReference m)
+				token = new Cil.Methodof(m);
 			else throw new NotImplementedException($"Unknown token {value}");
 
 			ctx.Stack.Push(token);
+		}
+
+		private static void CastClass(RoutineContext ctx, TypeReference type)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Cast(type, value));
+		}
+
+		private static void Stelem(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			var index = ctx.Stack.Pop();
+			var array = ctx.Stack.Pop();
+			((Cil.Array)array).Elements.AddOrReplace(index, value);
+		}
+
+		private static void Box(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Box(value));
 		}
 		#endregion
 	}

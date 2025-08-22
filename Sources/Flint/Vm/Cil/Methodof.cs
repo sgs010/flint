@@ -2,12 +2,12 @@
 
 namespace Flint.Vm.Cil
 {
-	class Type : Ast
+	class Methodof : Ast
 	{
-		public readonly TypeDefinition Definition;
-		public Type(TypeDefinition def)
+		public readonly MethodReference Method;
+		public Methodof(MethodReference method)
 		{
-			Definition = def;
+			Method = method;
 		}
 
 		public override IEnumerable<Ast> GetChildren()
@@ -17,14 +17,14 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return Definition.GetHashCode();
+			return Method.GetHashCode();
 		}
 
 		public override bool Equals(Ast other)
 		{
-			if (other is Type type)
+			if (other is Methodof m)
 			{
-				return Definition.Equals(type.Definition);
+				return Method.Equals(m.Method);
 			}
 			return false;
 		}
