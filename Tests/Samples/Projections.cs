@@ -76,5 +76,24 @@ namespace Samples
 				Console.WriteLine($"{item.Product.Name}");
 			}
 		}
+
+		public static async void ReadAllChanedProperties()
+		{
+			// should not advice a projection because all properties are read
+
+			using var db = new DB();
+
+			var order = await db.Orders
+				.Include(o => o.Items)
+				.ThenInclude(i => i.Product)
+				.FirstOrDefaultAsync(o => o.Id == 42);
+
+			Console.WriteLine($"{order.Id} {order.Number}");
+			foreach (var item in order.Items)
+			{
+				Console.WriteLine($"{item.Id} {item.Product.Id} {item.Product.Name}");
+			}
+		}
+
 	}
 }

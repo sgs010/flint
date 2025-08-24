@@ -68,5 +68,15 @@ namespace FlintTests
 			]);
 		}
 
+		[TestMethod]
+		public void ReadAllChainedProperties()
+		{
+			var ctx = new AnalyzerContextMock();
+			var asm = ModuleDefinition.ReadModule("Samples.dll");
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ReadAllChainedProperties");
+
+			ctx.Output.Should().BeEmpty();
+		}
 	}
 }
