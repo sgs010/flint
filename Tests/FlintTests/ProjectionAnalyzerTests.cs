@@ -64,7 +64,7 @@ namespace FlintTests
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ComplexProjection");
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Number, Items = { Product.Name } } in method Samples.Projections.ComplextProjection()",
+				"consider using projection { Number, Items = { Product.Name } } in method Samples.Projections.ComplexProjection()",
 			]);
 		}
 
@@ -89,6 +89,136 @@ namespace FlintTests
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { Name, Price } in method Samples.Projections.SimpleCRUD()",
+			]);
+		}
+
+		[TestMethod]
+		public void ToListAsync()
+		{
+			var ctx = new AnalyzerContextMock();
+			var asm = ModuleDefinition.ReadModule("Samples.dll");
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ToListAsync");
+
+			ctx.Output.Should().BeEquivalentTo([
+				"consider using projection { Name } in method Samples.Projections.ToListAsync()"
+			]);
+		}
+
+		[TestMethod]
+		public void ToArrayAsync()
+		{
+			var ctx = new AnalyzerContextMock();
+			var asm = ModuleDefinition.ReadModule("Samples.dll");
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ToArrayAsync");
+
+			ctx.Output.Should().BeEquivalentTo([
+				"consider using projection { Name } in method Samples.Projections.ToArrayAsync()"
+			]);
+		}
+
+		[TestMethod]
+		public void ToHashSetAsync()
+		{
+			var ctx = new AnalyzerContextMock();
+			var asm = ModuleDefinition.ReadModule("Samples.dll");
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ToHashSetAsync");
+
+			ctx.Output.Should().BeEquivalentTo([
+				"consider using projection { Name } in method Samples.Projections.ToHashSetAsync()"
+			]);
+		}
+
+		[TestMethod]
+		public void ToDictionaryAsync()
+		{
+			var ctx = new AnalyzerContextMock();
+			var asm = ModuleDefinition.ReadModule("Samples.dll");
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ToDictionaryAsync");
+
+			ctx.Output.Should().BeEquivalentTo([
+				"consider using projection { Id, Name } in method Samples.Projections.ToDictionaryAsync()"
+			]);
+		}
+
+		[TestMethod]
+		public void FirstAsync()
+		{
+			var ctx = new AnalyzerContextMock();
+			var asm = ModuleDefinition.ReadModule("Samples.dll");
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "FirstAsync");
+
+			ctx.Output.Should().BeEquivalentTo([
+				"consider using projection { Name } in method Samples.Projections.FirstAsync()"
+			]);
+		}
+
+		[TestMethod]
+		public void FirstOrDefaultAsync()
+		{
+			var ctx = new AnalyzerContextMock();
+			var asm = ModuleDefinition.ReadModule("Samples.dll");
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "FirstOrDefaultAsync");
+
+			ctx.Output.Should().BeEquivalentTo([
+				"consider using projection { Name } in method Samples.Projections.FirstOrDefaultAsync()"
+			]);
+		}
+
+		[TestMethod]
+		public void LastAsync()
+		{
+			var ctx = new AnalyzerContextMock();
+			var asm = ModuleDefinition.ReadModule("Samples.dll");
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "LastAsync");
+
+			ctx.Output.Should().BeEquivalentTo([
+				"consider using projection { Name } in method Samples.Projections.LastAsync()"
+			]);
+		}
+
+		[TestMethod]
+		public void LastOrDefaultAsync()
+		{
+			var ctx = new AnalyzerContextMock();
+			var asm = ModuleDefinition.ReadModule("Samples.dll");
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "LastOrDefaultAsync");
+
+			ctx.Output.Should().BeEquivalentTo([
+				"consider using projection { Name } in method Samples.Projections.LastOrDefaultAsync()"
+			]);
+		}
+
+		[TestMethod]
+		public void SingleAsync()
+		{
+			var ctx = new AnalyzerContextMock();
+			var asm = ModuleDefinition.ReadModule("Samples.dll");
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "SingleAsync");
+
+			ctx.Output.Should().BeEquivalentTo([
+				"consider using projection { Name } in method Samples.Projections.SingleAsync()"
+			]);
+		}
+
+		[TestMethod]
+		public void SingleOrDefaultAsync()
+		{
+			var ctx = new AnalyzerContextMock();
+			var asm = ModuleDefinition.ReadModule("Samples.dll");
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "SingleOrDefaultAsync");
+
+			ctx.Output.Should().BeEquivalentTo([
+				"consider using projection { Name } in method Samples.Projections.SingleOrDefaultAsync()"
 			]);
 		}
 	}

@@ -96,6 +96,7 @@ namespace Flint.Vm
 					case Code.Endfinally:
 						break;
 					case Code.Pop:
+					case Code.Switch:
 					case Code.Brfalse:
 					case Code.Brfalse_S:
 					case Code.Brtrue:
@@ -156,6 +157,9 @@ namespace Flint.Vm
 						break;
 					case Code.Ldarg_3:
 						Ldarg(ctx, 3);
+						break;
+					case Code.Ldc_I4:
+						LdcI4(ctx, (int)instruction.Operand);
 						break;
 					case Code.Ldc_I4_0:
 						LdcI4(ctx, 0);

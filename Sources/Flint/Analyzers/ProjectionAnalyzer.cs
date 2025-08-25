@@ -13,9 +13,10 @@ namespace Flint.Analyzers
 		#region Interface
 		public static void Run(IAnalyzerContext ctx, ModuleDefinition asm, string className = null, string methodName = null)
 		{
+			var entityTypes = GetEntityTypes(asm);
 			foreach (var mtd in GetMethods(asm, className, methodName))
 			{
-				Analyze(ctx, mtd);
+				Analyze(ctx, mtd, entityTypes);
 			}
 		}
 		#endregion
@@ -25,6 +26,35 @@ namespace Flint.Analyzers
 		{
 			public TypeDefinition Type { get; init; }
 			public Dictionary<PropertyReference, EntityDefinition> Properties { get; } = [];
+		}
+
+		private static HashSet<TypeReference> GetEntityTypes(ModuleDefinition asm)
+		{
+			// look for classes inherited from Microsoft.EntityFrameworkCore.DbContext
+			// browse it's properties and collect T from Microsoft.EntityFrameworkCore.DbSet<T>
+
+			var entityTypes = new HashSet<TypeReference>();
+			foreach (var type in asm.Types)
+			{
+				if (type.BaseType == null)
+					continue;
+				if (type.BaseType.Namespace != "Microsoft.EntityFrameworkCore")
+					continue;
+				if (type.BaseType.Name != "DbContext")
+					continue;
+
+				foreach (var prop in type.Properties)
+				{
+					if (prop.PropertyType.Namespace != "Microsoft.EntityFrameworkCore")
+						continue;
+					if (prop.PropertyType.Name != "DbSet`1")
+						continue;
+
+					var entity = ((GenericInstanceType)prop.PropertyType).GenericArguments.First();
+					entityTypes.Add(entity);
+				}
+			}
+			return entityTypes;
 		}
 
 		private static IEnumerable<MethodDefinition> GetMethods(ModuleDefinition asm, string className = null, string methodName = null)
@@ -44,7 +74,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void Analyze(IAnalyzerContext ctx, MethodDefinition mtd)
+		private static void Analyze(IAnalyzerContext ctx, MethodDefinition mtd, HashSet<TypeReference> entityTypes)
 		{
 			// eval method body
 			var expressions = EvalMachine.Run(mtd);
@@ -58,7 +88,14 @@ namespace Flint.Analyzers
 				var (root, ok) = CaptureAnyRoot(expr,
 				[
 					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToArrayAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToHashSetAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstAsync",
 					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastOrDefaultAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleOrDefaultAsync",
 				]);
 				if (ok == false)
 					continue;
@@ -75,9 +112,12 @@ namespace Flint.Analyzers
 				if (marks.TryGetValue(root, out var rootExpressions) == false)
 					continue;
 
-				// entityType is T from METHOD<T> (i.e. ToListAsync<T>)
-				var entityType = (TypeDefinition)((GenericInstanceMethod)root.Method).GenericArguments.First();
-				var entity = CreateEntityDefinition(entityType, rootExpressions);
+				// et is T from METHOD<T> (i.e. ToListAsync<T>)
+				var et = (TypeDefinition)((GenericInstanceMethod)root.Method).GenericArguments.First();
+				if (entityTypes.Contains(et) == false)
+					continue;
+
+				var entity = CreateEntityDefinition(et, rootExpressions, entityTypes);
 				if (entity.Properties.Count == 0)
 					continue;
 
@@ -129,7 +169,7 @@ namespace Flint.Analyzers
 				Mark(child, root, marks);
 		}
 
-		private static EntityDefinition CreateEntityDefinition(TypeDefinition type, IReadOnlyCollection<Ast> expressions)
+		private static EntityDefinition CreateEntityDefinition(TypeDefinition type, IReadOnlyCollection<Ast> expressions, HashSet<TypeReference> entityTypes)
 		{
 			var entity = new EntityDefinition { Type = type };
 			foreach (var prop in entity.Type.Properties)
@@ -145,10 +185,10 @@ namespace Flint.Analyzers
 						continue;
 
 					EntityDefinition child = null;
-					if (IsGenericCollection(prop, out var itemType))
-						child = CreateEntityDefinition(itemType.Resolve(), expressions);
-					//else if (prop.PropertyType.IsValueType == false)
-					//	child = CreateEntityDefinition(prop.PropertyType.Resolve(), expressions);
+					if (IsGenericCollection(prop, out var itemType, entityTypes))
+						child = CreateEntityDefinition(itemType.Resolve(), expressions, entityTypes);
+					else if (entityTypes.Contains(prop.PropertyType))
+						child = CreateEntityDefinition(prop.PropertyType.Resolve(), expressions, entityTypes);
 
 					entity.Properties.Add(prop, child);
 				}
@@ -156,11 +196,12 @@ namespace Flint.Analyzers
 			return entity;
 		}
 
-		private static bool IsGenericCollection(PropertyReference prop, out TypeReference itemType)
+		private static bool IsGenericCollection(PropertyReference prop, out TypeReference itemType, HashSet<TypeReference> allowedTypes = null)
 		{
+			// check if property is a System.Collections.Generic.ICollection<T>
+
 			itemType = null;
 
-			// check property is System.Collections.Generic.ICollection<T>
 			if (prop.PropertyType.IsGenericInstance == false)
 				return false;
 			if (prop.PropertyType.Namespace != "System.Collections.Generic")
@@ -168,7 +209,12 @@ namespace Flint.Analyzers
 			if (prop.PropertyType.Name != "ICollection`1")
 				return false;
 
-			itemType = ((GenericInstanceType)prop.PropertyType).GenericArguments.First();
+			// get T from System.Collections.Generic.ICollection<T>
+			var t = ((GenericInstanceType)prop.PropertyType).GenericArguments.First();
+			if (allowedTypes != null && allowedTypes.Contains(t) == false)
+				return false;
+
+			itemType = t;
 			return true;
 		}
 

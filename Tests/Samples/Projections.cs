@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Samples
 {
@@ -7,7 +6,7 @@ namespace Samples
 	{
 		public static async void ReadWholeObject()
 		{
-			// should not advice a projection because we possibly read all object properties
+			// should not advise a projection because we possibly read all object properties
 
 			using var db = new DB();
 			var users = await db.Users.ToListAsync();
@@ -19,7 +18,7 @@ namespace Samples
 
 		public static async void ReadAllProperties()
 		{
-			// should not advice a projection because we read all object properties
+			// should not advise a projection because we read all object properties
 
 			using var db = new DB();
 			var users = await db.Users.ToListAsync();
@@ -31,7 +30,7 @@ namespace Samples
 
 		public static async void ReadSomeProperties()
 		{
-			// should advice a projection because we read just some object properties
+			// should advise a projection { Id, Name }
 
 			using var db = new DB();
 			var users = await db.Users.ToListAsync();
@@ -43,7 +42,7 @@ namespace Samples
 
 		public static async void MultipleQueries()
 		{
-			// should advice a projection per query
+			// should advise a projection per query
 
 			using var db = new DB();
 
@@ -62,7 +61,7 @@ namespace Samples
 
 		public static async void ComplexProjection()
 		{
-			// should advice a complex projection
+			// should advise a complex projection
 
 			using var db = new DB();
 
@@ -80,7 +79,7 @@ namespace Samples
 
 		public static async void ReadAllChanedProperties()
 		{
-			// should not advice a projection because all properties are read
+			// should not advise a projection because all properties are read
 
 			using var db = new DB();
 
@@ -99,6 +98,7 @@ namespace Samples
 		public static async void SimpleCRUD()
 		{
 			// simple crud by copilot
+			// should advise one projection { Name, Price } for READ operation
 
 			using var db = new DB();
 
@@ -132,6 +132,110 @@ namespace Samples
 			{
 				Console.WriteLine(product);
 			}
+		}
+
+		public static async void ToListAsync()
+		{
+			// should advise a projection { Name }
+
+			using var db = new DB();
+			var users = await db.Users.ToListAsync();
+			foreach (var user in users)
+			{
+				Console.WriteLine($"{user.Name}");
+			}
+		}
+
+		public static async void ToArrayAsync()
+		{
+			// should advise a projection { Name }
+
+			using var db = new DB();
+			var users = await db.Users.ToArrayAsync();
+			foreach (var user in users)
+			{
+				Console.WriteLine($"{user.Name}");
+			}
+		}
+
+		public static async void ToHashSetAsync()
+		{
+			// should advise a projection { Name }
+
+			using var db = new DB();
+			var users = await db.Users.ToHashSetAsync();
+			foreach (var user in users)
+			{
+				Console.WriteLine($"{user.Name}");
+			}
+		}
+
+		public static async void ToDictionaryAsync()
+		{
+			// should advise a projection { Id, Name }
+
+			using var db = new DB();
+			var users = await db.Users.ToDictionaryAsync(x => x.Id);
+			foreach (var (_, user) in users)
+			{
+				Console.WriteLine($"{user.Name}");
+			}
+		}
+
+		public static async void FirstAsync()
+		{
+			// should advise a projection { Name }
+
+			using var db = new DB();
+			var user = await db.Users.FirstAsync(x => x.Id == 42);
+			Console.WriteLine($"{user.Name}");
+		}
+
+		public static async void FirstOrDefaultAsync()
+		{
+			// should advise a projection { Name }
+
+			using var db = new DB();
+			var user = await db.Users.FirstOrDefaultAsync(x => x.Id == 42);
+			if (user != null)
+				Console.WriteLine($"{user.Name}");
+		}
+
+		public static async void LastAsync()
+		{
+			// should advise a projection { Name }
+
+			using var db = new DB();
+			var user = await db.Users.LastAsync(x => x.Id == 42);
+			Console.WriteLine($"{user.Name}");
+		}
+
+		public static async void LastOrDefaultAsync()
+		{
+			// should advise a projection { Name }
+
+			using var db = new DB();
+			var user = await db.Users.LastOrDefaultAsync(x => x.Id == 42);
+			Console.WriteLine($"{user.Name}");
+		}
+
+		public static async void SingleAsync()
+		{
+			// should advise a projection { Name }
+
+			using var db = new DB();
+			var user = await db.Users.SingleAsync(x => x.Id == 42);
+			Console.WriteLine($"{user.Name}");
+		}
+
+		public static async void SingleOrDefaultAsync()
+		{
+			// should advise a projection { Name }
+
+			using var db = new DB();
+			var user = await db.Users.SingleOrDefaultAsync(x => x.Id == 42);
+			if (user != null)
+				Console.WriteLine($"{user.Name}");
 		}
 	}
 }
