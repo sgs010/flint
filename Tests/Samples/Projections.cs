@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace Samples
 {
@@ -95,5 +96,42 @@ namespace Samples
 			}
 		}
 
+		public static async void SimpleCRUD()
+		{
+			// simple crud by copilot
+
+			using var db = new DB();
+
+			// CREATE
+			db.Products.Add(new Product { Name = "Laptop", Price = 1200.00m });
+			db.Products.Add(new Product { Name = "Mouse", Price = 25.50m });
+			await db.SaveChangesAsync();
+
+			// READ
+			var products = await db.Products.ToListAsync();
+			Console.WriteLine("Products:");
+			foreach (var product in products)
+			{
+				// should suggest a projection { Name, Price }
+				Console.WriteLine($"- {product.Name}: ${product.Price}");
+			}
+
+			// UPDATE
+			var laptop = await db.Products.FirstAsync(p => p.Name == "Laptop");
+			laptop.Price = 1100.00m;
+			await db.SaveChangesAsync();
+
+			// DELETE
+			var mouse = await db.Products.FirstAsync(p => p.Name == "Mouse");
+			db.Products.Remove(mouse);
+			await db.SaveChangesAsync();
+
+			// FINAL READ
+			Console.WriteLine("\nUpdated Products:");
+			foreach (var product in await db.Products.ToListAsync())
+			{
+				Console.WriteLine(product);
+			}
+		}
 	}
 }

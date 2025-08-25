@@ -78,5 +78,18 @@ namespace FlintTests
 
 			ctx.Output.Should().BeEmpty();
 		}
+
+		[TestMethod]
+		public void SimpleCRUD()
+		{
+			var ctx = new AnalyzerContextMock();
+			var asm = ModuleDefinition.ReadModule("Samples.dll");
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "SimpleCRUD");
+
+			ctx.Output.Should().BeEquivalentTo([
+				"consider using projection { Name, Price } in method Samples.Projections.SimpleCRUD()",
+			]);
+		}
 	}
 }
