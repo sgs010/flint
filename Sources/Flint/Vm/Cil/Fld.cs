@@ -1,32 +1,34 @@
-﻿using Mono.Cecil;
+﻿using Flint.Vm.Match;
+using Mono.Cecil;
 
 namespace Flint.Vm.Cil
 {
 	class Fld : Ast
 	{
-		public readonly Ast Object;
+		public readonly Ast Instance;
 		public readonly FieldReference Field;
-		public Fld(Ast obj, FieldReference fld)
+		public Fld(Ast instance, FieldReference fld)
 		{
-			Object = obj;
+			Instance = instance;
 			Field = fld;
 		}
 
 		public override IEnumerable<Ast> GetChildren()
 		{
-			yield return Object;
+			if (Instance != null)
+				yield return Instance;
 		}
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(Object, Field);
+			return HashCode.Combine(Instance, Field);
 		}
 
 		public override bool Equals(Ast other)
 		{
 			if (other is Fld fld)
 			{
-				return Object.Equals(fld.Object)
+				return (Instance != null ? Instance.Equals(fld.Instance) : fld.Instance is null)
 					&& Field.Equals(fld.Field);
 			}
 			return false;

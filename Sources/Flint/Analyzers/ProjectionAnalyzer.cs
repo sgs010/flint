@@ -87,9 +87,10 @@ namespace Flint.Analyzers
 			{
 				var (root, ok) = CaptureAnyRoot(expr,
 				[
-					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync",
 					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToArrayAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToDictionaryAsync",
 					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToHashSetAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync",
 					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstAsync",
 					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync",
 					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastAsync",

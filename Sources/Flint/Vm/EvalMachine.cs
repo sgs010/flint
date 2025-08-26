@@ -1,4 +1,5 @@
 ﻿using Flint.Common;
+using Flint.Vm.Cil;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -124,8 +125,15 @@ namespace Flint.Vm
 						ctx.Stack.Pop();
 						ctx.Stack.Pop();
 						break;
+					case Code.Add:
+						Add(ctx);
+						break;
 					case Code.Box:
 						Box(ctx);
+						break;
+					case Code.Cgt:
+					case Code.Cgt_Un:
+						Cgt(ctx);
 						break;
 					case Code.Dup:
 						ctx.Stack.Push(ctx.Stack.Peek());
@@ -136,6 +144,9 @@ namespace Flint.Vm
 						break;
 					case Code.Castclass:
 						CastClass(ctx, (TypeReference)instruction.Operand);
+						break;
+					case Code.Conv_I4:
+						ConvInt32(ctx);
 						break;
 					case Code.Initobj:
 						ctx.Stack.Pop();
@@ -196,7 +207,18 @@ namespace Flint.Vm
 						break;
 					case Code.Ldfld:
 					case Code.Ldflda:
-						Ldfld(ctx, (FieldReference)instruction.Operand);
+					case Code.Ldsfld:
+					case Code.Ldsflda:
+						Ldfld(ctx, (FieldDefinition)instruction.Operand);
+						break;
+					case Code.Ldelem_Ref:
+						Ldelem(ctx);
+						break;
+					case Code.Ldftn:
+						Ldftn(ctx, (MethodReference)instruction.Operand);
+						break;
+					case Code.Ldlen:
+						Ldlen(ctx);
 						break;
 					case Code.Ldloc_0:
 						Ldloc(ctx, 0);
@@ -232,7 +254,8 @@ namespace Flint.Vm
 						Newobj(ctx, (MethodReference)instruction.Operand);
 						break;
 					case Code.Stfld:
-						Stfld(ctx, (FieldReference)instruction.Operand);
+					case Code.Stsfld:
+						Stfld(ctx, (FieldDefinition)instruction.Operand);
 						break;
 					case Code.Stelem_Ref:
 						Stelem(ctx);
@@ -288,6 +311,13 @@ namespace Flint.Vm
 
 			if (method.ReturnType.MetadataType != MetadataType.Void)
 				ctx.Stack.Push(call);
+
+			for (var i = 0; i < args.Length; ++i)
+			{
+				var arg = args[i];
+				if (arg is Varptr var)
+					ctx.Variables[var.Index] = new Cil.OutArg(call, i);
+			}
 		}
 
 		private static void Newarr(RoutineContext ctx, TypeReference type)
@@ -323,24 +353,35 @@ namespace Flint.Vm
 			if (value != null)
 				ctx.Stack.Push(value);
 			else
-				ctx.Stack.Push(new Cil.Var(v.Index, v.VariableType));
+				ctx.Stack.Push(new Cil.Varptr(v.Index));
 		}
 
-		private static void Ldfld(RoutineContext ctx, FieldReference fld)
+		private static void Ldftn(RoutineContext ctx, MethodReference mtd)
 		{
-			var obj = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Func(mtd));
+		}
 
-			if (ctx.Memory.TryGetValue(new MemKey(obj, fld), out var value) == false)
-				value = new Cil.Fld(obj, fld);
+		private static void Ldfld(RoutineContext ctx, FieldDefinition fld)
+		{
+			Ast instance = null;
+			if (fld.IsStatic == false)
+				instance = ctx.Stack.Pop();
+
+			if (ctx.Memory.TryGetValue(new MemKey(instance, fld), out var value) == false)
+				value = new Cil.Fld(instance, fld);
 
 			ctx.Stack.Push(value);
 		}
 
-		private static void Stfld(RoutineContext ctx, FieldReference fld)
+		private static void Stfld(RoutineContext ctx, FieldDefinition fld)
 		{
 			var value = ctx.Stack.Pop();
-			var obj = ctx.Stack.Pop();
-			ctx.Memory.AddOrReplace(new MemKey(obj, fld), value);
+
+			Ast instance = null;
+			if (fld.IsStatic == false)
+				instance = ctx.Stack.Pop();
+
+			ctx.Memory.AddOrReplace(new MemKey(instance, fld), value);
 		}
 
 		private static void Ldarg(RoutineContext ctx, int number)
@@ -392,6 +433,20 @@ namespace Flint.Vm
 			ctx.Stack.Push(new Cil.Cast(type, value));
 		}
 
+		private static void Ldelem(RoutineContext ctx)
+		{
+			var index = ctx.Stack.Pop();
+			var array = ctx.Stack.Pop();
+
+			Ast value;
+			if (array is Cil.Array arr)
+				value = arr.Elements[index];
+			else
+				value = new Cil.Elem(array, index);
+
+			ctx.Stack.Push(value);
+		}
+
 		private static void Stelem(RoutineContext ctx)
 		{
 			var value = ctx.Stack.Pop();
@@ -404,6 +459,32 @@ namespace Flint.Vm
 		{
 			var value = ctx.Stack.Pop();
 			ctx.Stack.Push(new Cil.Box(value));
+		}
+
+		private static void Cgt(RoutineContext ctx)
+		{
+			var right = ctx.Stack.Pop();
+			var left = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Cgt(left, right));
+		}
+
+		private static void Add(RoutineContext ctx)
+		{
+			var right = ctx.Stack.Pop();
+			var left = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Add(left, right));
+		}
+
+		private static void Ldlen(RoutineContext ctx)
+		{
+			var array = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Len(array));
+		}
+
+		private static void ConvInt32(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.ConvInt32(value));
 		}
 		#endregion
 	}
