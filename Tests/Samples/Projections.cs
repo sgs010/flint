@@ -237,5 +237,16 @@ namespace Samples
 			if (user != null)
 				Console.WriteLine($"{user.Name}");
 		}
+
+		public static async void AsAsyncEnumerable()
+		{
+			// should advise a projection { Name }
+
+			using var db = new DB();
+			await foreach (var user in db.Users.Where(x => x.Email != null).AsAsyncEnumerable())
+			{
+				Console.WriteLine($"{user.Name}");
+			}
+		}
 	}
 }

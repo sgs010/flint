@@ -14,7 +14,7 @@
 				dic[key] = value;
 		}
 
-		public static V GetValueOrAddNew<K, V>(this Dictionary<K, V> dic, K key) where V : class, new()
+		public static V GetOrAddValue<K, V>(this Dictionary<K, V> dic, K key) where V : class, new()
 		{
 			if (dic.TryGetValue(key, out var value) == false)
 			{

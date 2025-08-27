@@ -221,5 +221,18 @@ namespace FlintTests
 				"consider using projection { Name } in method Samples.Projections.SingleOrDefaultAsync()"
 			]);
 		}
+
+		[TestMethod]
+		public void AsAsyncEnumerable()
+		{
+			var ctx = new AnalyzerContextMock();
+			var asm = ModuleDefinition.ReadModule("Samples.dll");
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "AsAsyncEnumerable");
+
+			ctx.Output.Should().BeEquivalentTo([
+				"consider using projection { Name } in method Samples.Projections.AsAsyncEnumerable()"
+			]);
+		}
 	}
 }

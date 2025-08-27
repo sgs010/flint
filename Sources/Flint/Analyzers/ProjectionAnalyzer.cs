@@ -79,7 +79,7 @@ namespace Flint.Analyzers
 			// eval method body
 			var expressions = EvalMachine.Run(mtd);
 
-			// find roots (methods where IQueryable monad is unwrapped like ToListAsync)
+			// find roots (methods where IQueryable monad is unwrapped; ToListAsync and so on)
 			// for every found root mark every ast accessible from it
 			var roots = new HashSet<Cil.Call>();
 			var marks = new Dictionary<Ast, List<Ast>>();
@@ -87,6 +87,7 @@ namespace Flint.Analyzers
 			{
 				var (root, ok) = CaptureAnyRoot(expr,
 				[
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AsAsyncEnumerable",
 					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToArrayAsync",
 					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToDictionaryAsync",
 					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToHashSetAsync",
@@ -102,7 +103,7 @@ namespace Flint.Analyzers
 					continue;
 
 				roots.Add(root);
-				var rootExpressions = marks.GetValueOrAddNew(root);
+				var rootExpressions = marks.GetOrAddValue(root);
 				Mark(expr, root, rootExpressions);
 
 				// some methods (i.e. ToDictionaryAsync) use lambdas
