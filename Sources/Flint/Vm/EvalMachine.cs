@@ -32,7 +32,7 @@ namespace Flint.Vm
 		#endregion
 
 		#region Implementation
-		readonly struct MemKey
+		internal readonly struct MemKey
 		{
 			public readonly Ast Instance;
 			public readonly FieldReference Field;
@@ -58,13 +58,14 @@ namespace Flint.Vm
 			}
 		}
 
-		class RoutineContext
+		internal class RoutineContext
 		{
 			public readonly MethodDefinition Method;
 			public readonly Dictionary<MemKey, Ast> Memory;
 			public readonly Ast[] Variables;
 			public readonly Stack<Ast> Stack;
 			public readonly HashSet<Ast> Expressions;
+
 			public RoutineContext(MethodDefinition method)
 			{
 				Method = method;
@@ -73,9 +74,19 @@ namespace Flint.Vm
 				Stack = new Stack<Ast>(method.Body.MaxStackSize);
 				Expressions = [];
 			}
+
+			// use this for tests only
+			internal RoutineContext(int varCount, int stackSize)
+			{
+				Method = null;
+				Memory = [];
+				Variables = new Ast[varCount];
+				Stack = new Stack<Ast>(stackSize);
+				Expressions = [];
+			}
 		}
 
-		private static void Eval(RoutineContext ctx, Instruction instruction)
+		internal static void Eval(RoutineContext ctx, Instruction instruction)
 		{
 			if (ctx.Method.Body.HasExceptionHandlers)
 			{
