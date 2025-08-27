@@ -104,6 +104,14 @@ namespace Flint.Analyzers
 				roots.Add(root);
 				var rootExpressions = marks.GetValueOrAddNew(root);
 				Mark(expr, root, rootExpressions);
+
+				// some methods (i.e. ToDictionaryAsync) use lambdas
+				// we must analyze such lambdas too because they can read entity properties
+				var lambdas = CaptureLambdas(root,
+				[
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToDictionaryAsync",
+				]);
+				rootExpressions.AddRange(lambdas);
 			}
 
 			// gather accessed properties
@@ -154,6 +162,34 @@ namespace Flint.Analyzers
 				return (root, true);
 			}
 			return (null, false);
+		}
+
+		private static List<Ast> CaptureLambdas(Cil.Call call, IEnumerable<string> methodNames)
+		{
+			// if method uses lambdas (i.e. ToDictionaryAsync(x => x.Id) and so on)
+			// we eval a body of such lambda and return the result expressions
+			// later we gonna use these expressions to look for entity property access operations
+
+			var lambdas = new List<Ast>();
+			var callName = call.Method.DeclaringType.FullName + "." + call.Method.Name;
+			foreach (var methodName in methodNames)
+			{
+				if (callName != methodName)
+					continue;
+
+				var (captures, ok) = call.Match(
+					new Match.Func(), // Func is ldftn IL instruction, lambdas are translated into this
+					true);
+				if (ok == false)
+					continue;
+
+				foreach (Cil.Func func in captures.Values)
+				{
+					var expressions = EvalMachine.Run(func.Method);
+					lambdas.AddRange(expressions);
+				}
+			}
+			return lambdas;
 		}
 
 		private static void Mark(Ast expression, Ast root, List<Ast> marks)

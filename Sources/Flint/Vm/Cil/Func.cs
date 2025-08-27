@@ -4,8 +4,8 @@ namespace Flint.Vm.Cil
 {
 	class Func : Ast
 	{
-		public readonly MethodReference Method;
-		public Func(MethodReference mtd)
+		public readonly MethodDefinition Method;
+		public Func(MethodDefinition mtd)
 		{
 			Method = mtd;
 		}

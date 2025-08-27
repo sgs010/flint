@@ -23,7 +23,10 @@ namespace Flint.Vm
 			}
 
 			var ctx = new RoutineContext(asyncMethod ?? method);
-			Run(ctx);
+			foreach (var instruction in ctx.Method.Body.Instructions)
+			{
+				Eval(ctx, instruction);
+			}
 			return ctx.Expressions.ToList();
 		}
 		#endregion
@@ -72,211 +75,208 @@ namespace Flint.Vm
 			}
 		}
 
-		private static void Run(RoutineContext ctx)
+		private static void Eval(RoutineContext ctx, Instruction instruction)
 		{
-			foreach (var instruction in ctx.Method.Body.Instructions)
+			if (ctx.Method.Body.HasExceptionHandlers)
 			{
-				if (ctx.Method.Body.HasExceptionHandlers)
-				{
-					// vm puts exceptions on stack
-					// we must do the same if we enter exception catch block
-					if (ctx.Method.Body.ExceptionHandlers.Any(x => x.HandlerType == ExceptionHandlerType.Catch
-																&& x.HandlerStart.Offset == instruction.Offset))
-						ctx.Stack.Push(Cil.Exception.Instance);
-				}
+				// vm puts exceptions on stack
+				// we must do the same if we enter exception catch block
+				if (ctx.Method.Body.ExceptionHandlers.Any(x => x.HandlerType == ExceptionHandlerType.Catch
+															&& x.HandlerStart.Offset == instruction.Offset))
+					ctx.Stack.Push(Cil.Exception.Instance);
+			}
 
-				switch (instruction.OpCode.Code)
-				{
-					case Code.Nop:
-					case Code.Constrained:
-					case Code.Ret:
-					case Code.Leave:
-					case Code.Leave_S:
-					case Code.Br:
-					case Code.Br_S:
-					case Code.Endfinally:
-						break;
-					case Code.Pop:
-					case Code.Switch:
-					case Code.Brfalse:
-					case Code.Brfalse_S:
-					case Code.Brtrue:
-					case Code.Brtrue_S:
-						ctx.Stack.Pop();
-						break;
-					case Code.Beq:
-					case Code.Beq_S:
-					case Code.Bge:
-					case Code.Bge_S:
-					case Code.Bge_Un:
-					case Code.Bge_Un_S:
-					case Code.Bgt:
-					case Code.Bgt_S:
-					case Code.Bgt_Un:
-					case Code.Bgt_Un_S:
-					case Code.Ble:
-					case Code.Ble_S:
-					case Code.Ble_Un:
-					case Code.Ble_Un_S:
-					case Code.Blt:
-					case Code.Blt_S:
-					case Code.Blt_Un:
-					case Code.Blt_Un_S:
-						ctx.Stack.Pop();
-						ctx.Stack.Pop();
-						break;
-					case Code.Add:
-						Add(ctx);
-						break;
-					case Code.Box:
-						Box(ctx);
-						break;
-					case Code.Cgt:
-					case Code.Cgt_Un:
-						Cgt(ctx);
-						break;
-					case Code.Dup:
-						ctx.Stack.Push(ctx.Stack.Peek());
-						break;
-					case Code.Call:
-					case Code.Callvirt:
-						Call(ctx, (MethodReference)instruction.Operand);
-						break;
-					case Code.Castclass:
-						CastClass(ctx, (TypeReference)instruction.Operand);
-						break;
-					case Code.Conv_I4:
-						ConvInt32(ctx);
-						break;
-					case Code.Initobj:
-						ctx.Stack.Pop();
-						break;
-					case Code.Ldarg:
-						Ldarg(ctx, ((ParameterReference)instruction.Operand).Index);
-						break;
-					case Code.Ldarga_S:
-						Ldarg(ctx, ((ParameterReference)instruction.Operand).Index);
-						break;
-					case Code.Ldarg_0:
-						Ldarg(ctx, 0);
-						break;
-					case Code.Ldarg_1:
-						Ldarg(ctx, 1);
-						break;
-					case Code.Ldarg_2:
-						Ldarg(ctx, 2);
-						break;
-					case Code.Ldarg_3:
-						Ldarg(ctx, 3);
-						break;
-					case Code.Ldc_I4:
-						LdcI4(ctx, (int)instruction.Operand);
-						break;
-					case Code.Ldc_I4_0:
-						LdcI4(ctx, 0);
-						break;
-					case Code.Ldc_I4_1:
-						LdcI4(ctx, 1);
-						break;
-					case Code.Ldc_I4_2:
-						LdcI4(ctx, 2);
-						break;
-					case Code.Ldc_I4_3:
-						LdcI4(ctx, 3);
-						break;
-					case Code.Ldc_I4_4:
-						LdcI4(ctx, 4);
-						break;
-					case Code.Ldc_I4_5:
-						LdcI4(ctx, 5);
-						break;
-					case Code.Ldc_I4_6:
-						LdcI4(ctx, 6);
-						break;
-					case Code.Ldc_I4_7:
-						LdcI4(ctx, 7);
-						break;
-					case Code.Ldc_I4_8:
-						LdcI4(ctx, 8);
-						break;
-					case Code.Ldc_I4_M1:
-						LdcI4(ctx, -1);
-						break;
-					case Code.Ldc_I4_S:
-						LdcI4(ctx, (SByte)instruction.Operand);
-						break;
-					case Code.Ldfld:
-					case Code.Ldflda:
-					case Code.Ldsfld:
-					case Code.Ldsflda:
-						Ldfld(ctx, (FieldDefinition)instruction.Operand);
-						break;
-					case Code.Ldelem_Ref:
-						Ldelem(ctx);
-						break;
-					case Code.Ldftn:
-						Ldftn(ctx, (MethodReference)instruction.Operand);
-						break;
-					case Code.Ldlen:
-						Ldlen(ctx);
-						break;
-					case Code.Ldloc_0:
-						Ldloc(ctx, 0);
-						break;
-					case Code.Ldloc_1:
-						Ldloc(ctx, 1);
-						break;
-					case Code.Ldloc_2:
-						Ldloc(ctx, 2);
-						break;
-					case Code.Ldloc_3:
-						Ldloc(ctx, 3);
-						break;
-					case Code.Ldloc_S:
-						Ldloc(ctx, ((VariableReference)instruction.Operand).Index);
-						break;
-					case Code.Ldloca_S:
-						Ldloca(ctx, (VariableReference)instruction.Operand);
-						break;
-					case Code.Ldnull:
-						ctx.Stack.Push(Cil.Null.Instance);
-						break;
-					case Code.Ldstr:
-						Ldstr(ctx, (string)instruction.Operand);
-						break;
-					case Code.Ldtoken:
-						Ldtoken(ctx, instruction.Operand);
-						break;
-					case Code.Newarr:
-						Newarr(ctx, (TypeReference)instruction.Operand);
-						break;
-					case Code.Newobj:
-						Newobj(ctx, (MethodReference)instruction.Operand);
-						break;
-					case Code.Stfld:
-					case Code.Stsfld:
-						Stfld(ctx, (FieldDefinition)instruction.Operand);
-						break;
-					case Code.Stelem_Ref:
-						Stelem(ctx);
-						break;
-					case Code.Stloc_0:
-						Stloc(ctx, 0);
-						break;
-					case Code.Stloc_1:
-						Stloc(ctx, 1);
-						break;
-					case Code.Stloc_2:
-						Stloc(ctx, 2);
-						break;
-					case Code.Stloc_3:
-						Stloc(ctx, 3);
-						break;
-					case Code.Stloc_S:
-						Stloc(ctx, ((VariableReference)instruction.Operand).Index);
-						break;
-					default: throw new NotImplementedException($"Unknown instruction {instruction.OpCode.Code}");
-				}
+			switch (instruction.OpCode.Code)
+			{
+				case Code.Nop:
+				case Code.Constrained:
+				case Code.Ret:
+				case Code.Leave:
+				case Code.Leave_S:
+				case Code.Br:
+				case Code.Br_S:
+				case Code.Endfinally:
+					break;
+				case Code.Pop:
+				case Code.Switch:
+				case Code.Brfalse:
+				case Code.Brfalse_S:
+				case Code.Brtrue:
+				case Code.Brtrue_S:
+					ctx.Stack.Pop();
+					break;
+				case Code.Beq:
+				case Code.Beq_S:
+				case Code.Bge:
+				case Code.Bge_S:
+				case Code.Bge_Un:
+				case Code.Bge_Un_S:
+				case Code.Bgt:
+				case Code.Bgt_S:
+				case Code.Bgt_Un:
+				case Code.Bgt_Un_S:
+				case Code.Ble:
+				case Code.Ble_S:
+				case Code.Ble_Un:
+				case Code.Ble_Un_S:
+				case Code.Blt:
+				case Code.Blt_S:
+				case Code.Blt_Un:
+				case Code.Blt_Un_S:
+					ctx.Stack.Pop();
+					ctx.Stack.Pop();
+					break;
+				case Code.Add:
+					Add(ctx);
+					break;
+				case Code.Box:
+					Box(ctx);
+					break;
+				case Code.Cgt:
+				case Code.Cgt_Un:
+					Cgt(ctx);
+					break;
+				case Code.Dup:
+					ctx.Stack.Push(ctx.Stack.Peek());
+					break;
+				case Code.Call:
+				case Code.Callvirt:
+					Call(ctx, (MethodReference)instruction.Operand);
+					break;
+				case Code.Castclass:
+					CastClass(ctx, (TypeReference)instruction.Operand);
+					break;
+				case Code.Conv_I4:
+					ConvInt32(ctx);
+					break;
+				case Code.Initobj:
+					ctx.Stack.Pop();
+					break;
+				case Code.Ldarg:
+					Ldarg(ctx, ((ParameterReference)instruction.Operand).Index);
+					break;
+				case Code.Ldarga_S:
+					Ldarg(ctx, ((ParameterReference)instruction.Operand).Index);
+					break;
+				case Code.Ldarg_0:
+					Ldarg(ctx, 0);
+					break;
+				case Code.Ldarg_1:
+					Ldarg(ctx, 1);
+					break;
+				case Code.Ldarg_2:
+					Ldarg(ctx, 2);
+					break;
+				case Code.Ldarg_3:
+					Ldarg(ctx, 3);
+					break;
+				case Code.Ldc_I4:
+					LdcI4(ctx, (int)instruction.Operand);
+					break;
+				case Code.Ldc_I4_0:
+					LdcI4(ctx, 0);
+					break;
+				case Code.Ldc_I4_1:
+					LdcI4(ctx, 1);
+					break;
+				case Code.Ldc_I4_2:
+					LdcI4(ctx, 2);
+					break;
+				case Code.Ldc_I4_3:
+					LdcI4(ctx, 3);
+					break;
+				case Code.Ldc_I4_4:
+					LdcI4(ctx, 4);
+					break;
+				case Code.Ldc_I4_5:
+					LdcI4(ctx, 5);
+					break;
+				case Code.Ldc_I4_6:
+					LdcI4(ctx, 6);
+					break;
+				case Code.Ldc_I4_7:
+					LdcI4(ctx, 7);
+					break;
+				case Code.Ldc_I4_8:
+					LdcI4(ctx, 8);
+					break;
+				case Code.Ldc_I4_M1:
+					LdcI4(ctx, -1);
+					break;
+				case Code.Ldc_I4_S:
+					LdcI4(ctx, (SByte)instruction.Operand);
+					break;
+				case Code.Ldfld:
+				case Code.Ldflda:
+				case Code.Ldsfld:
+				case Code.Ldsflda:
+					Ldfld(ctx, (FieldDefinition)instruction.Operand);
+					break;
+				case Code.Ldelem_Ref:
+					Ldelem(ctx);
+					break;
+				case Code.Ldftn:
+					Ldftn(ctx, (MethodDefinition)instruction.Operand);
+					break;
+				case Code.Ldlen:
+					Ldlen(ctx);
+					break;
+				case Code.Ldloc_0:
+					Ldloc(ctx, 0);
+					break;
+				case Code.Ldloc_1:
+					Ldloc(ctx, 1);
+					break;
+				case Code.Ldloc_2:
+					Ldloc(ctx, 2);
+					break;
+				case Code.Ldloc_3:
+					Ldloc(ctx, 3);
+					break;
+				case Code.Ldloc_S:
+					Ldloc(ctx, ((VariableReference)instruction.Operand).Index);
+					break;
+				case Code.Ldloca_S:
+					Ldloca(ctx, (VariableReference)instruction.Operand);
+					break;
+				case Code.Ldnull:
+					ctx.Stack.Push(Cil.Null.Instance);
+					break;
+				case Code.Ldstr:
+					Ldstr(ctx, (string)instruction.Operand);
+					break;
+				case Code.Ldtoken:
+					Ldtoken(ctx, instruction.Operand);
+					break;
+				case Code.Newarr:
+					Newarr(ctx, (TypeReference)instruction.Operand);
+					break;
+				case Code.Newobj:
+					Newobj(ctx, (MethodReference)instruction.Operand);
+					break;
+				case Code.Stfld:
+				case Code.Stsfld:
+					Stfld(ctx, (FieldDefinition)instruction.Operand);
+					break;
+				case Code.Stelem_Ref:
+					Stelem(ctx);
+					break;
+				case Code.Stloc_0:
+					Stloc(ctx, 0);
+					break;
+				case Code.Stloc_1:
+					Stloc(ctx, 1);
+					break;
+				case Code.Stloc_2:
+					Stloc(ctx, 2);
+					break;
+				case Code.Stloc_3:
+					Stloc(ctx, 3);
+					break;
+				case Code.Stloc_S:
+					Stloc(ctx, ((VariableReference)instruction.Operand).Index);
+					break;
+				default: throw new NotImplementedException($"Unknown instruction {instruction.OpCode.Code}");
 			}
 		}
 
@@ -356,7 +356,7 @@ namespace Flint.Vm
 				ctx.Stack.Push(new Cil.Varptr(v.Index));
 		}
 
-		private static void Ldftn(RoutineContext ctx, MethodReference mtd)
+		private static void Ldftn(RoutineContext ctx, MethodDefinition mtd)
 		{
 			ctx.Stack.Push(new Cil.Func(mtd));
 		}
