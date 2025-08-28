@@ -61,60 +61,60 @@ namespace Flint.Vm
 		internal class RoutineContext
 		{
 			public readonly MethodDefinition Method;
-			public readonly Dictionary<MemKey, Ast> Memory;
+			public readonly Dictionary<MemKey, Ast> Memory = [];
 			public readonly Ast[] Variables;
 			public readonly Stack<Ast> Stack;
-			public readonly HashSet<Ast> Expressions;
+			public readonly HashSet<Ast> Expressions = [];
+			public readonly Instruction[] ExceptionHandlers;
 
 			public RoutineContext(MethodDefinition method)
 			{
 				Method = method;
-				Memory = [];
 				Variables = new Ast[method.Body.Variables.Count];
 				Stack = new Stack<Ast>(method.Body.MaxStackSize);
-				Expressions = [];
+				ExceptionHandlers = method.Body.ExceptionHandlers
+					.Where(x => x.HandlerType == ExceptionHandlerType.Catch)
+					.Select(x => x.HandlerStart)
+					.ToArray();
 			}
 
-			// use this for tests only
-			internal RoutineContext(int varCount, int stackSize)
+			// use for tests only
+			internal RoutineContext(MethodDefinition method, int varCount, int stackSize, Instruction[] exceptionHandlers)
 			{
-				Method = null;
-				Memory = [];
+				Method = method;
 				Variables = new Ast[varCount];
 				Stack = new Stack<Ast>(stackSize);
-				Expressions = [];
+				ExceptionHandlers = exceptionHandlers ?? [];
 			}
+
+			internal RoutineContext(int varCount, int stackSize)
+				: this(null, varCount, stackSize, null) { }
+
+			internal RoutineContext(MethodDefinition method, int varCount, int stackSize)
+				: this(method, varCount, stackSize, null) { }
 		}
 
 		internal static void Eval(RoutineContext ctx, Instruction instruction)
 		{
-			if (ctx.Method.Body.HasExceptionHandlers)
+			if (ctx.ExceptionHandlers.Any(x => x.Offset == instruction.Offset))
 			{
 				// vm puts exceptions on stack
 				// we must do the same if we enter exception catch block
-				if (ctx.Method.Body.ExceptionHandlers.Any(x => x.HandlerType == ExceptionHandlerType.Catch
-															&& x.HandlerStart.Offset == instruction.Offset))
-					ctx.Stack.Push(Cil.Exception.Instance);
+				ctx.Stack.Push(Cil.Exception.Instance);
 			}
 
 			switch (instruction.OpCode.Code)
 			{
-				case Code.Nop:
-				case Code.Constrained:
-				case Code.Ret:
-				case Code.Leave:
-				case Code.Leave_S:
-				case Code.Br:
-				case Code.Br_S:
-				case Code.Endfinally:
+				case Code.Add:
+				case Code.Add_Ovf:
+				case Code.Add_Ovf_Un:
+					Add(ctx);
 					break;
-				case Code.Pop:
-				case Code.Switch:
-				case Code.Brfalse:
-				case Code.Brfalse_S:
-				case Code.Brtrue:
-				case Code.Brtrue_S:
-					ctx.Stack.Pop();
+				case Code.And:
+					And(ctx);
+					break;
+				case Code.Arglist:
+					Arglist(ctx);
 					break;
 				case Code.Beq:
 				case Code.Beq_S:
@@ -134,14 +134,35 @@ namespace Flint.Vm
 				case Code.Blt_S:
 				case Code.Blt_Un:
 				case Code.Blt_Un_S:
+				case Code.Bne_Un:
+				case Code.Bne_Un_S:
 					ctx.Stack.Pop();
 					ctx.Stack.Pop();
-					break;
-				case Code.Add:
-					Add(ctx);
 					break;
 				case Code.Box:
 					Box(ctx);
+					break;
+				case Code.Br:
+				case Code.Br_S:
+					break;
+				case Code.Break:
+					break;
+
+
+				case Code.Nop:
+				case Code.Constrained:
+				case Code.Ret:
+				case Code.Leave:
+				case Code.Leave_S:
+				case Code.Endfinally:
+					break;
+				case Code.Pop:
+				case Code.Switch:
+				case Code.Brfalse:
+				case Code.Brfalse_S:
+				case Code.Brtrue:
+				case Code.Brtrue_S:
+					ctx.Stack.Pop();
 					break;
 				case Code.Cgt:
 				case Code.Cgt_Un:
@@ -162,6 +183,9 @@ namespace Flint.Vm
 					break;
 				case Code.Initobj:
 					ctx.Stack.Pop();
+					break;
+				case Code.Isinst:
+					Isinst(ctx, (TypeReference)instruction.Operand);
 					break;
 				case Code.Ldarg:
 					Ldarg(ctx, ((ParameterReference)instruction.Operand).Index);
@@ -287,6 +311,9 @@ namespace Flint.Vm
 				case Code.Stloc_S:
 					Stloc(ctx, ((VariableReference)instruction.Operand).Index);
 					break;
+				case Code.Throw:
+					ctx.Stack.Pop();
+					break;
 				default: throw new NotImplementedException($"Unknown instruction {instruction.OpCode.Code}");
 			}
 		}
@@ -304,6 +331,36 @@ namespace Flint.Vm
 			}
 			return args;
 		}
+
+		private static void Add(RoutineContext ctx)
+		{
+			var right = ctx.Stack.Pop();
+			var left = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Add(left, right));
+		}
+
+		private static void And(RoutineContext ctx)
+		{
+			var right = ctx.Stack.Pop();
+			var left = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.And(left, right));
+		}
+
+		private static void Arglist(RoutineContext ctx)
+		{
+			ctx.Stack.Push(new Cil.Arglist(ctx.Method));
+		}
+
+		private static void Box(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Box(value));
+		}
+
+
+
+
+
 
 		private static void Call(RoutineContext ctx, MethodReference method)
 		{
@@ -466,24 +523,11 @@ namespace Flint.Vm
 			((Cil.Array)array).Elements.AddOrReplace(index, value);
 		}
 
-		private static void Box(RoutineContext ctx)
-		{
-			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Box(value));
-		}
-
 		private static void Cgt(RoutineContext ctx)
 		{
 			var right = ctx.Stack.Pop();
 			var left = ctx.Stack.Pop();
 			ctx.Stack.Push(new Cil.Cgt(left, right));
-		}
-
-		private static void Add(RoutineContext ctx)
-		{
-			var right = ctx.Stack.Pop();
-			var left = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Add(left, right));
 		}
 
 		private static void Ldlen(RoutineContext ctx)
@@ -496,6 +540,12 @@ namespace Flint.Vm
 		{
 			var value = ctx.Stack.Pop();
 			ctx.Stack.Push(new Cil.ConvInt32(value));
+		}
+
+		public static void Isinst(RoutineContext ctx, TypeReference type)
+		{
+			var instance = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.IsInstance(type, instance));
 		}
 		#endregion
 	}
