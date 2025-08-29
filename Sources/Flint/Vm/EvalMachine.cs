@@ -158,7 +158,7 @@ namespace Flint.Vm
 					Call(ctx, (MethodReference)instruction.Operand);
 					break;
 				case Code.Castclass:
-					CastClass(ctx, (TypeReference)instruction.Operand);
+					Castclass(ctx, (TypeReference)instruction.Operand);
 					break;
 				case Code.Ceq:
 					Ceq(ctx);
@@ -172,6 +172,21 @@ namespace Flint.Vm
 				case Code.Clt:
 				case Code.Clt_Un:
 					Clt(ctx);
+					break;
+				case Code.Conv_I:
+					Conv_I(ctx);
+					break;
+				case Code.Conv_I1:
+					Conv_I1(ctx);
+					break;
+				case Code.Conv_I2:
+					Conv_I2(ctx);
+					break;
+				case Code.Conv_I4:
+					Conv_I4(ctx);
+					break;
+				case Code.Conv_I8:
+					Conv_I8(ctx);
 					break;
 
 
@@ -191,9 +206,6 @@ namespace Flint.Vm
 					break;
 				case Code.Dup:
 					ctx.Stack.Push(ctx.Stack.Peek());
-					break;
-				case Code.Conv_I4:
-					ConvInt32(ctx);
 					break;
 				case Code.Initobj:
 					ctx.Stack.Pop();
@@ -397,10 +409,10 @@ namespace Flint.Vm
 			}
 		}
 
-		private static void CastClass(RoutineContext ctx, TypeReference type)
+		private static void Castclass(RoutineContext ctx, TypeReference type)
 		{
 			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Cast(type, value));
+			ctx.Stack.Push(new Cil.Castclass(type, value));
 		}
 
 		private static void Ceq(RoutineContext ctx)
@@ -422,6 +434,36 @@ namespace Flint.Vm
 			var right = ctx.Stack.Pop();
 			var left = ctx.Stack.Pop();
 			ctx.Stack.Push(new Cil.Clt(left, right));
+		}
+
+		private static void Conv_I(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Conv_I(value));
+		}
+
+		private static void Conv_I1(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Conv_I1(value));
+		}
+
+		private static void Conv_I2(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Conv_I2(value));
+		}
+
+		private static void Conv_I4(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Conv_I4(value));
+		}
+
+		private static void Conv_I8(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Conv_I8(value));
 		}
 
 
@@ -561,12 +603,6 @@ namespace Flint.Vm
 		{
 			var array = ctx.Stack.Pop();
 			ctx.Stack.Push(new Cil.Len(array));
-		}
-
-		private static void ConvInt32(RoutineContext ctx)
-		{
-			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.ConvInt32(value));
 		}
 
 		public static void Isinst(RoutineContext ctx, TypeReference type)

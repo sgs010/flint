@@ -2,11 +2,11 @@
 
 namespace Flint.Vm.Cil
 {
-	class Cast : Ast
+	class Castclass : Ast
 	{
 		public readonly TypeReference Type;
 		public readonly Ast Value;
-		public Cast(TypeReference type, Ast value)
+		public Castclass(TypeReference type, Ast value)
 		{
 			Type = type;
 			Value = value;
@@ -24,7 +24,7 @@ namespace Flint.Vm.Cil
 
 		public override bool Equals(Ast other)
 		{
-			if (other is Cast cast)
+			if (other is Castclass cast)
 			{
 				return Type.Equals(cast.Type)
 					&& Value.Equals(cast.Value);

@@ -505,7 +505,7 @@ namespace FlintTests
 			EvalMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().HaveCount(1);
-			ctx.Stack.Peek().Should().BeEquivalentTo(new Cil.Cast(ClassT, new Cil.Int32(42)));
+			ctx.Stack.Peek().Should().BeEquivalentTo(new Cil.Castclass(ClassT, new Cil.Int32(42)));
 		}
 
 		[TestMethod]
@@ -589,6 +589,71 @@ namespace FlintTests
 
 			ctx.Stack.Should().HaveCount(1);
 			ctx.Stack.Peek().Should().BeEquivalentTo(new Cil.Clt(new Cil.Int32(1), new Cil.Int32(2)));
+		}
+
+		[TestMethod]
+		public void Conv_I()
+		{
+			var ctx = new EvalMachine.RoutineContext(0, 1);
+			ctx.Stack.Push(Cil.Null.Instance);
+			var instruction = Instruction.Create(OpCodes.Conv_I);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().BeEquivalentTo(new Cil.Conv_I(Cil.Null.Instance));
+		}
+
+		[TestMethod]
+		public void Conv_I1()
+		{
+			var ctx = new EvalMachine.RoutineContext(0, 1);
+			ctx.Stack.Push(Cil.Null.Instance);
+			var instruction = Instruction.Create(OpCodes.Conv_I1);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().BeEquivalentTo(new Cil.Conv_I1(Cil.Null.Instance));
+		}
+
+		[TestMethod]
+		public void Conv_I2()
+		{
+			var ctx = new EvalMachine.RoutineContext(0, 1);
+			ctx.Stack.Push(Cil.Null.Instance);
+			var instruction = Instruction.Create(OpCodes.Conv_I2);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().BeEquivalentTo(new Cil.Conv_I2(Cil.Null.Instance));
+		}
+
+		[TestMethod]
+		public void Conv_I4()
+		{
+			var ctx = new EvalMachine.RoutineContext(0, 1);
+			ctx.Stack.Push(Cil.Null.Instance);
+			var instruction = Instruction.Create(OpCodes.Conv_I4);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().BeEquivalentTo(new Cil.Conv_I4(Cil.Null.Instance));
+		}
+
+		[TestMethod]
+		public void Conv_I8()
+		{
+			var ctx = new EvalMachine.RoutineContext(0, 1);
+			ctx.Stack.Push(Cil.Null.Instance);
+			var instruction = Instruction.Create(OpCodes.Conv_I8);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().BeEquivalentTo(new Cil.Conv_I8(Cil.Null.Instance));
 		}
 
 
