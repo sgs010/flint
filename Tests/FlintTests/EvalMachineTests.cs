@@ -9,8 +9,14 @@ namespace FlintTests
 	[TestClass]
 	public class EvalMachineTests
 	{
+		class Class
+		{
+			public bool Method(int x, string s) => false;
+		}
+
 		private static readonly TypeDefinition IntT = CecilType<int>();
 		private static readonly TypeDefinition StringT = CecilType<string>();
+		private static readonly TypeDefinition ClassT = CecilType<Class>();
 
 		private static TypeDefinition CecilType<T>()
 		{
@@ -401,10 +407,189 @@ namespace FlintTests
 			IsEmpty(ctx).Should().BeTrue();
 		}
 
+		[TestMethod]
+		public void Brfalse()
+		{
+			var ctx = new EvalMachine.RoutineContext(1, 2);
+			ctx.Stack.Push(new Cil.Int32(0));
+			var instruction = Instruction.Create(OpCodes.Brfalse, Instruction.Create(OpCodes.Nop));
 
+			EvalMachine.Eval(ctx, instruction);
 
+			ctx.Stack.Should().BeEmpty();
+		}
 
+		[TestMethod]
+		public void Brfalse_S()
+		{
+			var ctx = new EvalMachine.RoutineContext(1, 2);
+			ctx.Stack.Push(new Cil.Int32(0));
+			var instruction = Instruction.Create(OpCodes.Brfalse_S, Instruction.Create(OpCodes.Nop));
 
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+		}
+
+		[TestMethod]
+		public void Brtrue()
+		{
+			var ctx = new EvalMachine.RoutineContext(1, 2);
+			ctx.Stack.Push(new Cil.Int32(0));
+			var instruction = Instruction.Create(OpCodes.Brtrue, Instruction.Create(OpCodes.Nop));
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+		}
+
+		[TestMethod]
+		public void Brtrue_S()
+		{
+			var ctx = new EvalMachine.RoutineContext(1, 2);
+			ctx.Stack.Push(new Cil.Int32(0));
+			var instruction = Instruction.Create(OpCodes.Brtrue_S, Instruction.Create(OpCodes.Nop));
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+		}
+
+		[TestMethod]
+		public void Call()
+		{
+			var method = ModuleDefinition.ReadModule("FlintTests.dll")
+				.GetTypes().Where(t => t.FullName == "FlintTests.EvalMachineTests/Class").First()
+				.Methods.Where(m => m.Name == "Method").First();
+
+			var ctx = new EvalMachine.RoutineContext(0, 3);
+			ctx.Stack.Push(new Cil.This(ClassT));
+			ctx.Stack.Push(new Cil.Int32(42));
+			ctx.Stack.Push(new Cil.String("foo"));
+			var instruction = Instruction.Create(OpCodes.Call, method);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().BeEquivalentTo(
+				new Cil.Call(new Cil.This(ClassT), method, [new Cil.Int32(42), new Cil.String("foo")]));
+		}
+
+		[TestMethod]
+		public void Callvirt()
+		{
+			var method = ModuleDefinition.ReadModule("FlintTests.dll")
+				.GetTypes().Where(t => t.FullName == "FlintTests.EvalMachineTests/Class").First()
+				.Methods.Where(m => m.Name == "Method").First();
+
+			var ctx = new EvalMachine.RoutineContext(0, 3);
+			ctx.Stack.Push(new Cil.This(ClassT));
+			ctx.Stack.Push(new Cil.Int32(42));
+			ctx.Stack.Push(new Cil.String("foo"));
+			var instruction = Instruction.Create(OpCodes.Callvirt, method);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().BeEquivalentTo(
+				new Cil.Call(new Cil.This(ClassT), method, [new Cil.Int32(42), new Cil.String("foo")]));
+		}
+
+		[TestMethod]
+		public void Castclass()
+		{
+			var ctx = new EvalMachine.RoutineContext(1, 2);
+			ctx.Stack.Push(new Cil.Int32(42));
+			var instruction = Instruction.Create(OpCodes.Castclass, ClassT);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().BeEquivalentTo(new Cil.Cast(ClassT, new Cil.Int32(42)));
+		}
+
+		[TestMethod]
+		public void Ceq()
+		{
+			var ctx = new EvalMachine.RoutineContext(0, 2);
+			ctx.Stack.Push(new Cil.Int32(1));
+			ctx.Stack.Push(new Cil.Int32(2));
+			var instruction = Instruction.Create(OpCodes.Ceq);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().BeEquivalentTo(new Cil.Ceq(new Cil.Int32(1), new Cil.Int32(2)));
+		}
+
+		[TestMethod]
+		public void Cgt()
+		{
+			var ctx = new EvalMachine.RoutineContext(0, 2);
+			ctx.Stack.Push(new Cil.Int32(1));
+			ctx.Stack.Push(new Cil.Int32(2));
+			var instruction = Instruction.Create(OpCodes.Cgt);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().BeEquivalentTo(new Cil.Cgt(new Cil.Int32(1), new Cil.Int32(2)));
+		}
+
+		[TestMethod]
+		public void Cgt_Un()
+		{
+			var ctx = new EvalMachine.RoutineContext(0, 2);
+			ctx.Stack.Push(new Cil.Int32(1));
+			ctx.Stack.Push(new Cil.Int32(2));
+			var instruction = Instruction.Create(OpCodes.Cgt_Un);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().BeEquivalentTo(new Cil.Cgt(new Cil.Int32(1), new Cil.Int32(2)));
+		}
+
+		[TestMethod]
+		public void Ckfinite()
+		{
+			var ctx = new EvalMachine.RoutineContext(0, 1);
+			ctx.Stack.Push(new Cil.Int32(42));
+			var instruction = Instruction.Create(OpCodes.Ckfinite);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().BeEquivalentTo(new Cil.Int32(42));
+		}
+
+		[TestMethod]
+		public void Clt()
+		{
+			var ctx = new EvalMachine.RoutineContext(0, 2);
+			ctx.Stack.Push(new Cil.Int32(1));
+			ctx.Stack.Push(new Cil.Int32(2));
+			var instruction = Instruction.Create(OpCodes.Clt);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().BeEquivalentTo(new Cil.Clt(new Cil.Int32(1), new Cil.Int32(2)));
+		}
+
+		[TestMethod]
+		public void Clt_Un()
+		{
+			var ctx = new EvalMachine.RoutineContext(0, 2);
+			ctx.Stack.Push(new Cil.Int32(1));
+			ctx.Stack.Push(new Cil.Int32(2));
+			var instruction = Instruction.Create(OpCodes.Clt_Un);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().BeEquivalentTo(new Cil.Clt(new Cil.Int32(1), new Cil.Int32(2)));
+		}
 
 
 

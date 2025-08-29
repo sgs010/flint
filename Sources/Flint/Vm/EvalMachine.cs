@@ -147,6 +147,35 @@ namespace Flint.Vm
 					break;
 				case Code.Break:
 					break;
+				case Code.Brfalse:
+				case Code.Brfalse_S:
+				case Code.Brtrue:
+				case Code.Brtrue_S:
+					ctx.Stack.Pop();
+					break;
+				case Code.Call:
+				case Code.Callvirt:
+					Call(ctx, (MethodReference)instruction.Operand);
+					break;
+				case Code.Castclass:
+					CastClass(ctx, (TypeReference)instruction.Operand);
+					break;
+				case Code.Ceq:
+					Ceq(ctx);
+					break;
+				case Code.Cgt:
+				case Code.Cgt_Un:
+					Cgt(ctx);
+					break;
+				case Code.Ckfinite:
+					break;
+				case Code.Clt:
+				case Code.Clt_Un:
+					Clt(ctx);
+					break;
+
+
+
 
 
 				case Code.Nop:
@@ -158,25 +187,10 @@ namespace Flint.Vm
 					break;
 				case Code.Pop:
 				case Code.Switch:
-				case Code.Brfalse:
-				case Code.Brfalse_S:
-				case Code.Brtrue:
-				case Code.Brtrue_S:
 					ctx.Stack.Pop();
-					break;
-				case Code.Cgt:
-				case Code.Cgt_Un:
-					Cgt(ctx);
 					break;
 				case Code.Dup:
 					ctx.Stack.Push(ctx.Stack.Peek());
-					break;
-				case Code.Call:
-				case Code.Callvirt:
-					Call(ctx, (MethodReference)instruction.Operand);
-					break;
-				case Code.Castclass:
-					CastClass(ctx, (TypeReference)instruction.Operand);
 					break;
 				case Code.Conv_I4:
 					ConvInt32(ctx);
@@ -357,11 +371,6 @@ namespace Flint.Vm
 			ctx.Stack.Push(new Cil.Box(value));
 		}
 
-
-
-
-
-
 		private static void Call(RoutineContext ctx, MethodReference method)
 		{
 			var args = PopArgs(ctx, method);
@@ -387,6 +396,37 @@ namespace Flint.Vm
 					ctx.Variables[var.Index] = new Cil.OutArg(call, i);
 			}
 		}
+
+		private static void CastClass(RoutineContext ctx, TypeReference type)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Cast(type, value));
+		}
+
+		private static void Ceq(RoutineContext ctx)
+		{
+			var right = ctx.Stack.Pop();
+			var left = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Ceq(left, right));
+		}
+
+		private static void Cgt(RoutineContext ctx)
+		{
+			var right = ctx.Stack.Pop();
+			var left = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Cgt(left, right));
+		}
+
+		private static void Clt(RoutineContext ctx)
+		{
+			var right = ctx.Stack.Pop();
+			var left = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Clt(left, right));
+		}
+
+
+
+
 
 		private static void Newarr(RoutineContext ctx, TypeReference type)
 		{
@@ -495,12 +535,6 @@ namespace Flint.Vm
 			ctx.Stack.Push(token);
 		}
 
-		private static void CastClass(RoutineContext ctx, TypeReference type)
-		{
-			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Cast(type, value));
-		}
-
 		private static void Ldelem(RoutineContext ctx)
 		{
 			var index = ctx.Stack.Pop();
@@ -521,13 +555,6 @@ namespace Flint.Vm
 			var index = ctx.Stack.Pop();
 			var array = ctx.Stack.Pop();
 			((Cil.Array)array).Elements.AddOrReplace(index, value);
-		}
-
-		private static void Cgt(RoutineContext ctx)
-		{
-			var right = ctx.Stack.Pop();
-			var left = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Cgt(left, right));
 		}
 
 		private static void Ldlen(RoutineContext ctx)
