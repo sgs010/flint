@@ -174,6 +174,8 @@ namespace Flint.Vm
 				case Code.Clt_Un:
 					Clt(ctx);
 					break;
+				case Code.Constrained:
+					break;
 				case Code.Conv_I:
 				case Code.Conv_Ovf_I:
 				case Code.Conv_Ovf_I_Un:
@@ -231,33 +233,39 @@ namespace Flint.Vm
 				case Code.Div_Un:
 					Div(ctx);
 					break;
+				case Code.Dup:
+					ctx.Stack.Push(ctx.Stack.Peek());
+					break;
+				case Code.Endfilter:
+				case Code.Endfinally:
+					break;
+				case Code.Initblk:
+					Initblk(ctx);
+					break;
+				case Code.Initobj:
+					Initobj(ctx, (TypeReference)instruction.Operand);
+					break;
+				case Code.Isinst:
+					Isinst(ctx, (TypeReference)instruction.Operand);
+					break;
+				case Code.Jmp:
+					break;
+				case Code.Ldarg:
+					Ldarg(ctx, ((ParameterReference)instruction.Operand).Index);
+					break;
 
 
 
 
 
 				case Code.Nop:
-				case Code.Constrained:
 				case Code.Ret:
 				case Code.Leave:
 				case Code.Leave_S:
-				case Code.Endfinally:
 					break;
 				case Code.Pop:
 				case Code.Switch:
 					ctx.Stack.Pop();
-					break;
-				case Code.Dup:
-					ctx.Stack.Push(ctx.Stack.Peek());
-					break;
-				case Code.Initobj:
-					ctx.Stack.Pop();
-					break;
-				case Code.Isinst:
-					Isinst(ctx, (TypeReference)instruction.Operand);
-					break;
-				case Code.Ldarg:
-					Ldarg(ctx, ((ParameterReference)instruction.Operand).Index);
 					break;
 				case Code.Ldarga_S:
 					Ldarg(ctx, ((ParameterReference)instruction.Operand).Index);
@@ -571,6 +579,46 @@ namespace Flint.Vm
 			ctx.Stack.Push(new Cil.Div(left, right));
 		}
 
+		private static void Initblk(RoutineContext ctx)
+		{
+			var count = ctx.Stack.Pop();
+			var value = ctx.Stack.Pop();
+			var address = ctx.Stack.Pop();
+		}
+
+		private static void Initobj(RoutineContext ctx, TypeReference type)
+		{
+			var address = ctx.Stack.Pop();
+		}
+
+		public static void Isinst(RoutineContext ctx, TypeReference type)
+		{
+			var instance = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Isinst(type, instance));
+		}
+
+		private static void Ldarg(RoutineContext ctx, int number)
+		{
+			if (ctx.Method.HasThis)
+			{
+				if (number == 0)
+				{
+					ctx.Stack.Push(new Cil.This(ctx.Method.DeclaringType));
+				}
+				else
+				{
+					var parameter = ctx.Method.Parameters[number - 1];
+					ctx.Stack.Push(new Cil.Arg(number - 1, parameter));
+				}
+			}
+			else
+			{
+				var parameter = ctx.Method.Parameters[number];
+				ctx.Stack.Push(new Cil.Arg(number, parameter));
+			}
+		}
+
+
 
 
 
@@ -638,27 +686,6 @@ namespace Flint.Vm
 			ctx.Memory.AddOrReplace(new MemKey(instance, fld), value);
 		}
 
-		private static void Ldarg(RoutineContext ctx, int number)
-		{
-			if (ctx.Method.HasThis)
-			{
-				if (number == 0)
-				{
-					ctx.Stack.Push(new Cil.This(ctx.Method.DeclaringType));
-				}
-				else
-				{
-					var parameter = ctx.Method.Parameters[number - 1];
-					ctx.Stack.Push(new Cil.Arg(number, parameter));
-				}
-			}
-			else
-			{
-				var parameter = ctx.Method.Parameters[number];
-				ctx.Stack.Push(new Cil.Arg(number, parameter));
-			}
-		}
-
 		private static void LdcI4(RoutineContext ctx, int value)
 		{
 			ctx.Stack.Push(new Cil.Int32(value));
@@ -707,12 +734,6 @@ namespace Flint.Vm
 		{
 			var array = ctx.Stack.Pop();
 			ctx.Stack.Push(new Cil.Len(array));
-		}
-
-		public static void Isinst(RoutineContext ctx, TypeReference type)
-		{
-			var instance = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.IsInstance(type, instance));
 		}
 		#endregion
 	}

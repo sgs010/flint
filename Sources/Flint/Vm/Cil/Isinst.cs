@@ -2,11 +2,11 @@
 
 namespace Flint.Vm.Cil
 {
-	class IsInstance : Ast
+	class Isinst : Ast
 	{
 		public readonly TypeReference Type;
 		public readonly Ast Instance;
-		public IsInstance(TypeReference type, Ast instance)
+		public Isinst(TypeReference type, Ast instance)
 		{
 			Type = type;
 			Instance = instance;
@@ -24,7 +24,7 @@ namespace Flint.Vm.Cil
 
 		public override bool Equals(Ast other)
 		{
-			if (other is IsInstance inst)
+			if (other is Isinst inst)
 			{
 				return Type.Equals(inst.Type)
 					&& Instance.Equals(inst.Instance);

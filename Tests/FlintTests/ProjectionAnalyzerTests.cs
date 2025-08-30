@@ -9,8 +9,8 @@ namespace FlintTests
 		[TestMethod]
 		public void ReadWholeObject()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ReadWholeObject");
 
@@ -20,8 +20,8 @@ namespace FlintTests
 		[TestMethod]
 		public void ReadAllProperties()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ReadAllProperties");
 
@@ -31,8 +31,8 @@ namespace FlintTests
 		[TestMethod]
 		public void ReadSomeProperties()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ReadSomeProperties");
 
@@ -44,8 +44,8 @@ namespace FlintTests
 		[TestMethod]
 		public void MultipleQueries()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "MultipleQueries");
 
@@ -58,8 +58,8 @@ namespace FlintTests
 		[TestMethod]
 		public void ComplexProjection()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ComplexProjection");
 
@@ -71,8 +71,8 @@ namespace FlintTests
 		[TestMethod]
 		public void ReadAllChainedProperties()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ReadAllChainedProperties");
 
@@ -82,8 +82,8 @@ namespace FlintTests
 		[TestMethod]
 		public void SimpleCRUD()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "SimpleCRUD");
 
@@ -95,8 +95,8 @@ namespace FlintTests
 		[TestMethod]
 		public void ToListAsync()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ToListAsync");
 
@@ -108,8 +108,8 @@ namespace FlintTests
 		[TestMethod]
 		public void ToArrayAsync()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ToArrayAsync");
 
@@ -121,8 +121,8 @@ namespace FlintTests
 		[TestMethod]
 		public void ToHashSetAsync()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ToHashSetAsync");
 
@@ -134,8 +134,8 @@ namespace FlintTests
 		[TestMethod]
 		public void ToDictionaryAsync()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "ToDictionaryAsync");
 
@@ -147,8 +147,8 @@ namespace FlintTests
 		[TestMethod]
 		public void FirstAsync()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "FirstAsync");
 
@@ -160,8 +160,8 @@ namespace FlintTests
 		[TestMethod]
 		public void FirstOrDefaultAsync()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "FirstOrDefaultAsync");
 
@@ -173,8 +173,8 @@ namespace FlintTests
 		[TestMethod]
 		public void LastAsync()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "LastAsync");
 
@@ -186,8 +186,8 @@ namespace FlintTests
 		[TestMethod]
 		public void LastOrDefaultAsync()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "LastOrDefaultAsync");
 
@@ -199,8 +199,8 @@ namespace FlintTests
 		[TestMethod]
 		public void SingleAsync()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "SingleAsync");
 
@@ -212,8 +212,8 @@ namespace FlintTests
 		[TestMethod]
 		public void SingleOrDefaultAsync()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "SingleOrDefaultAsync");
 
@@ -225,8 +225,8 @@ namespace FlintTests
 		[TestMethod]
 		public void AsAsyncEnumerable()
 		{
+			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var asm = ModuleDefinition.ReadModule("Samples.dll");
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, "Projections", "AsAsyncEnumerable");
 

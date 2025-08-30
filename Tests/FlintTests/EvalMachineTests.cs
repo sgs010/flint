@@ -9,22 +9,39 @@ namespace FlintTests
 	[TestClass]
 	public class EvalMachineTests
 	{
+		readonly int IntField = default;
+		readonly string StringField = default;
 		class Class
 		{
 			public static bool StaticMethod(int x, string s) => false;
 			public bool InstanceMethod(int x, string s) => false;
 			public void VoidMethod(int x, string s) { }
 			public virtual bool VirtualMethod(int x, string s) => false;
+			public void ManyParametersMethod(int x1, int x2, int x3, int x4, int x5) { }
 		}
 
-		private static readonly TypeDefinition IntT = CecilType<int>();
-		private static readonly TypeDefinition StringT = CecilType<string>();
-		private static readonly TypeDefinition ClassT = CecilType<Class>();
+		private static readonly TypeDefinition IntT;
+		private static readonly TypeDefinition StringT;
+		private static readonly TypeDefinition ClassT;
+		private static readonly MethodDefinition StaticMethodT;
+		private static readonly MethodDefinition InstanceMethodT;
+		private static readonly MethodDefinition VoidMethodT;
+		private static readonly MethodDefinition VirtualMethodT;
+		private static readonly MethodDefinition ManyParametersMethodT;
 
-		private static TypeDefinition CecilType<T>()
+		static EvalMachineTests()
 		{
-			var t = typeof(T);
-			return new TypeDefinition(t.Namespace, t.Name, 0);
+			using var tests = ModuleDefinition.ReadModule("FlintTests.dll");
+			var @this = tests.GetTypes().Where(t => t.FullName == "FlintTests.EvalMachineTests").First();
+
+			IntT = @this.Fields.Where(f => f.Name == nameof(IntField)).Select(f => f.FieldType).First().Resolve();
+			StringT = @this.Fields.Where(f => f.Name == nameof(StringField)).Select(f => f.FieldType).First().Resolve();
+			ClassT = tests.GetTypes().Where(t => t.FullName == "FlintTests.EvalMachineTests/Class").First();
+			StaticMethodT = ClassT.Methods.Where(m => m.Name == nameof(Class.StaticMethod)).First();
+			InstanceMethodT = ClassT.Methods.Where(m => m.Name == nameof(Class.InstanceMethod)).First();
+			VoidMethodT = ClassT.Methods.Where(m => m.Name == nameof(Class.VoidMethod)).First();
+			VirtualMethodT = ClassT.Methods.Where(m => m.Name == nameof(Class.VirtualMethod)).First();
+			ManyParametersMethodT = ClassT.Methods.Where(m => m.Name == nameof(Class.ManyParametersMethod)).First();
 		}
 
 		private static bool IsEmpty(EvalMachine.RoutineContext ctx)
@@ -33,6 +50,15 @@ namespace FlintTests
 				&& ctx.Variables.All(x => x is null)
 				&& ctx.Stack.Count == 0
 				&& ctx.Expressions.Count == 0;
+		}
+
+		private static ParameterDefinition Param(int index)
+		{
+			var p = new ParameterDefinition(IntT);
+			typeof(ParameterDefinition)
+				.GetField("index", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.SetField)
+				.SetValue(p, index);
+			return p;
 		}
 
 		[TestMethod]
@@ -461,54 +487,42 @@ namespace FlintTests
 		[TestMethod]
 		public void Call_StaticMethod()
 		{
-			var method = ModuleDefinition.ReadModule("FlintTests.dll")
-				.GetTypes().Where(t => t.FullName == "FlintTests.EvalMachineTests/Class").First()
-				.Methods.Where(m => m.Name == "StaticMethod").First();
-
 			var ctx = new EvalMachine.RoutineContext(0, 2);
 			ctx.Stack.Push(new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.String("foo"));
-			var instruction = Instruction.Create(OpCodes.Call, method);
+			var instruction = Instruction.Create(OpCodes.Call, StaticMethodT);
 
 			EvalMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().HaveCount(1);
 			ctx.Stack.Peek().Should().Be(
-				new Cil.Call(null, method, [new Cil.Int32(42), new Cil.String("foo")]));
+				new Cil.Call(null, StaticMethodT, [new Cil.Int32(42), new Cil.String("foo")]));
 		}
 
 		[TestMethod]
 		public void Call_InstanceMethod()
 		{
-			var method = ModuleDefinition.ReadModule("FlintTests.dll")
-				.GetTypes().Where(t => t.FullName == "FlintTests.EvalMachineTests/Class").First()
-				.Methods.Where(m => m.Name == "InstanceMethod").First();
-
 			var ctx = new EvalMachine.RoutineContext(0, 3);
 			ctx.Stack.Push(new Cil.This(ClassT));
 			ctx.Stack.Push(new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.String("foo"));
-			var instruction = Instruction.Create(OpCodes.Call, method);
+			var instruction = Instruction.Create(OpCodes.Call, InstanceMethodT);
 
 			EvalMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().HaveCount(1);
 			ctx.Stack.Peek().Should().Be(
-				new Cil.Call(new Cil.This(ClassT), method, [new Cil.Int32(42), new Cil.String("foo")]));
+				new Cil.Call(new Cil.This(ClassT), InstanceMethodT, [new Cil.Int32(42), new Cil.String("foo")]));
 		}
 
 		[TestMethod]
 		public void Call_VoidMethod()
 		{
-			var method = ModuleDefinition.ReadModule("FlintTests.dll")
-				.GetTypes().Where(t => t.FullName == "FlintTests.EvalMachineTests/Class").First()
-				.Methods.Where(m => m.Name == "VoidMethod").First();
-
 			var ctx = new EvalMachine.RoutineContext(0, 3);
 			ctx.Stack.Push(new Cil.This(ClassT));
 			ctx.Stack.Push(new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.String("foo"));
-			var instruction = Instruction.Create(OpCodes.Call, method);
+			var instruction = Instruction.Create(OpCodes.Call, VoidMethodT);
 
 			EvalMachine.Eval(ctx, instruction);
 
@@ -519,21 +533,17 @@ namespace FlintTests
 		[TestMethod]
 		public void Callvirt()
 		{
-			var method = ModuleDefinition.ReadModule("FlintTests.dll")
-				.GetTypes().Where(t => t.FullName == "FlintTests.EvalMachineTests/Class").First()
-				.Methods.Where(m => m.Name == "VirtualMethod").First();
-
 			var ctx = new EvalMachine.RoutineContext(0, 3);
 			ctx.Stack.Push(new Cil.This(ClassT));
 			ctx.Stack.Push(new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.String("foo"));
-			var instruction = Instruction.Create(OpCodes.Callvirt, method);
+			var instruction = Instruction.Create(OpCodes.Callvirt, VirtualMethodT);
 
 			EvalMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().HaveCount(1);
 			ctx.Stack.Peek().Should().Be(
-				new Cil.Call(new Cil.This(ClassT), method, [new Cil.Int32(42), new Cil.String("foo")]));
+				new Cil.Call(new Cil.This(ClassT), VirtualMethodT, [new Cil.Int32(42), new Cil.String("foo")]));
 		}
 
 		[TestMethod]
@@ -630,6 +640,17 @@ namespace FlintTests
 
 			ctx.Stack.Should().HaveCount(1);
 			ctx.Stack.Peek().Should().Be(new Cil.Clt(new Cil.Int32(1), new Cil.Int32(2)));
+		}
+
+		[TestMethod]
+		public void Constrained()
+		{
+			var ctx = new EvalMachine.RoutineContext(1, 2);
+			var instruction = Instruction.Create(OpCodes.Constrained, ClassT);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			IsEmpty(ctx).Should().BeTrue();
 		}
 
 		[TestMethod]
@@ -988,25 +1009,137 @@ namespace FlintTests
 				new Cil.Div(new Cil.Int32(10), new Cil.Int32(2)));
 		}
 
+		[TestMethod]
+		public void Dup()
+		{
+			var ctx = new EvalMachine.RoutineContext(0, 2);
+			ctx.Stack.Push(new Cil.Int32(42));
+			var instruction = Instruction.Create(OpCodes.Dup);
 
+			EvalMachine.Eval(ctx, instruction);
 
+			ctx.Stack.Should().HaveCount(2);
+			ctx.Stack.Pop().Should().Be(new Cil.Int32(42));
+			ctx.Stack.Pop().Should().Be(new Cil.Int32(42));
+		}
 
+		[TestMethod]
+		public void Endfilter()
+		{
+			var ctx = new EvalMachine.RoutineContext(1, 2);
+			var instruction = Instruction.Create(OpCodes.Endfilter);
 
+			EvalMachine.Eval(ctx, instruction);
 
+			IsEmpty(ctx).Should().BeTrue();
+		}
 
+		[TestMethod]
+		public void Endfinally()
+		{
+			var ctx = new EvalMachine.RoutineContext(1, 2);
+			var instruction = Instruction.Create(OpCodes.Endfinally);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			IsEmpty(ctx).Should().BeTrue();
+		}
+
+		[TestMethod]
+		public void Initblk()
+		{
+			var ctx = new EvalMachine.RoutineContext(1, 2);
+			ctx.Stack.Push(new Cil.Int32(1000)); // starting address
+			ctx.Stack.Push(new Cil.Int32(42)); // initialization value
+			ctx.Stack.Push(new Cil.Int32(10)); // number of bytes to initialize
+			var instruction = Instruction.Create(OpCodes.Initblk);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+		}
+
+		[TestMethod]
+		public void Initobj()
+		{
+			var ctx = new EvalMachine.RoutineContext(1, 2);
+			ctx.Stack.Push(new Cil.Int32(1000)); // address
+			var instruction = Instruction.Create(OpCodes.Initobj, ClassT);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+		}
 
 		[TestMethod]
 		public void Isinst()
 		{
-			var ctx = new EvalMachine.RoutineContext(0, 1);
-			ctx.Stack.Push(Cil.Null.Instance);
+			var ctx = new EvalMachine.RoutineContext(1, 2);
+			ctx.Stack.Push(new Cil.String("foo"));
 			var instruction = Instruction.Create(OpCodes.Isinst, StringT);
 
 			EvalMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().HaveCount(1);
-			ctx.Stack.Peek().Should().Be(new Cil.IsInstance(StringT, Cil.Null.Instance));
+			ctx.Stack.Peek().Should().Be(
+				new Cil.Isinst(StringT, new Cil.String("foo")));
 		}
+
+		[TestMethod]
+		public void Jmp()
+		{
+			var method = ModuleDefinition.ReadModule("FlintTests.dll")
+				.GetTypes().Where(t => t.FullName == "FlintTests.EvalMachineTests/Class").First()
+				.Methods.Where(m => m.Name == "VoidMethod").First();
+
+			var ctx = new EvalMachine.RoutineContext(0, 1);
+			var instruction = Instruction.Create(OpCodes.Jmp, method);
+
+			EvalMachine.Eval(ctx, instruction);
+
+			IsEmpty(ctx).Should().BeTrue();
+		}
+
+		[TestMethod]
+		public void Ldarg_InstanceMethod()
+		{
+			var ctx = new EvalMachine.RoutineContext(InstanceMethodT, 0, 1);
+			var instruction = Instruction.Create(OpCodes.Ldarg, Param(1));
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Arg(0, InstanceMethodT.Parameters[0]));
+		}
+
+		[TestMethod]
+		public void Ldarg_StaticMethod()
+		{
+			var ctx = new EvalMachine.RoutineContext(StaticMethodT, 0, 1);
+			var instruction = Instruction.Create(OpCodes.Ldarg, Param(1));
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Arg(1, StaticMethodT.Parameters[1]));
+		}
+
+		[TestMethod]
+		public void Ldarg_This()
+		{
+			var ctx = new EvalMachine.RoutineContext(InstanceMethodT, 0, 1);
+			var instruction = Instruction.Create(OpCodes.Ldarg, Param(0));
+
+			EvalMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.This(ClassT));
+		}
+
+
+
+
+
 
 		[TestMethod]
 		public void Nop()
