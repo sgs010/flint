@@ -1,9 +1,9 @@
 ﻿namespace Flint.Vm.Cil
 {
-	class Conv_I2 : Ast
+	class Conv_U : Ast
 	{
 		public readonly Ast Value;
-		public Conv_I2(Ast value)
+		public Conv_U(Ast value)
 		{
 			Value = value;
 		}
@@ -20,7 +20,7 @@
 
 		public override bool Equals(Ast other)
 		{
-			if (other is Conv_I2 conv)
+			if (other is Conv_U conv)
 			{
 				return Value.Equals(conv.Value);
 			}

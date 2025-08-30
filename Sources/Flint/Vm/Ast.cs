@@ -6,6 +6,16 @@
 		public abstract bool Equals(Ast other);
 		public virtual void Capture(Ast other, IDictionary<string, Ast> captures) { }
 
+		public override int GetHashCode()
+		{
+			return base.GetHashCode();
+		}
+
+		public override bool Equals(object obj)
+		{
+			return obj is Ast ast ? Equals(ast) : false;
+		}
+
 		public (Dictionary<string, Ast> captures, bool ok) Match(Ast pattern, bool recursive = false)
 		{
 			var captures = new Dictionary<string, Ast>();

@@ -20,9 +20,9 @@
 
 		public override bool Equals(Ast other)
 		{
-			if (other is Conv_I1 i)
+			if (other is Conv_I1 conv)
 			{
-				return Value.Equals(i.Value);
+				return Value.Equals(conv.Value);
 			}
 			return false;
 		}

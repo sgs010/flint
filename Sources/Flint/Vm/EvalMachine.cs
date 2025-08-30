@@ -1,4 +1,5 @@
-﻿using Flint.Common;
+﻿using System;
+using Flint.Common;
 using Flint.Vm.Cil;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -174,19 +175,61 @@ namespace Flint.Vm
 					Clt(ctx);
 					break;
 				case Code.Conv_I:
+				case Code.Conv_Ovf_I:
+				case Code.Conv_Ovf_I_Un:
 					Conv_I(ctx);
 					break;
 				case Code.Conv_I1:
+				case Code.Conv_Ovf_I1:
+				case Code.Conv_Ovf_I1_Un:
 					Conv_I1(ctx);
 					break;
 				case Code.Conv_I2:
+				case Code.Conv_Ovf_I2:
+				case Code.Conv_Ovf_I2_Un:
 					Conv_I2(ctx);
 					break;
 				case Code.Conv_I4:
+				case Code.Conv_Ovf_I4:
+				case Code.Conv_Ovf_I4_Un:
 					Conv_I4(ctx);
 					break;
 				case Code.Conv_I8:
+				case Code.Conv_Ovf_I8:
+				case Code.Conv_Ovf_I8_Un:
 					Conv_I8(ctx);
+					break;
+				case Code.Conv_R_Un:
+				case Code.Conv_R4:
+					Conv_R4(ctx);
+					break;
+				case Code.Conv_R8:
+					Conv_R8(ctx);
+					break;
+				case Code.Conv_U:
+					Conv_U(ctx);
+					break;
+				case Code.Conv_U1:
+					Conv_U1(ctx);
+					break;
+				case Code.Conv_U2:
+					Conv_U2(ctx);
+					break;
+				case Code.Conv_U4:
+					Conv_U4(ctx);
+					break;
+				case Code.Conv_U8:
+					Conv_U8(ctx);
+					break;
+				case Code.Cpblk:
+					Cpblk(ctx);
+					break;
+				case Code.Cpobj:
+					Cpobj(ctx);
+					break;
+				case Code.Div:
+				case Code.Div_Un:
+					Div(ctx);
 					break;
 
 
@@ -466,6 +509,67 @@ namespace Flint.Vm
 			ctx.Stack.Push(new Cil.Conv_I8(value));
 		}
 
+		private static void Conv_R4(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Conv_R4(value));
+		}
+
+		private static void Conv_R8(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Conv_R8(value));
+		}
+
+		private static void Conv_U(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Conv_U(value));
+		}
+
+		private static void Conv_U1(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Conv_U1(value));
+		}
+
+		private static void Conv_U2(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Conv_U2(value));
+		}
+
+		private static void Conv_U4(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Conv_U4(value));
+		}
+
+		private static void Conv_U8(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Conv_U8(value));
+		}
+
+		private static void Cpblk(RoutineContext ctx)
+		{
+			var count = ctx.Stack.Pop();
+			var src = ctx.Stack.Pop();
+			var dest = ctx.Stack.Pop();
+		}
+
+		private static void Cpobj(RoutineContext ctx)
+		{
+			var src = ctx.Stack.Pop();
+			var dest = ctx.Stack.Pop();
+		}
+
+		private static void Div(RoutineContext ctx)
+		{
+			var right = ctx.Stack.Pop();
+			var left = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Div(left, right));
+		}
 
 
 
