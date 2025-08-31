@@ -6,7 +6,7 @@ using Mono.Cecil.Cil;
 
 namespace Flint.Vm
 {
-	static class EvalMachine
+	static class CilMachine
 	{
 		#region Interface
 		public static List<Ast> Run(MethodDefinition method)
@@ -251,23 +251,7 @@ namespace Flint.Vm
 				case Code.Jmp:
 					break;
 				case Code.Ldarg:
-					Ldarg(ctx, ((ParameterReference)instruction.Operand).Index);
-					break;
-
-
-
-
-
-				case Code.Nop:
-				case Code.Ret:
-				case Code.Leave:
-				case Code.Leave_S:
-					break;
-				case Code.Pop:
-				case Code.Switch:
-					ctx.Stack.Pop();
-					break;
-				case Code.Ldarga_S:
+				case Code.Ldarg_S:
 					Ldarg(ctx, ((ParameterReference)instruction.Operand).Index);
 					break;
 				case Code.Ldarg_0:
@@ -282,41 +266,79 @@ namespace Flint.Vm
 				case Code.Ldarg_3:
 					Ldarg(ctx, 3);
 					break;
+				case Code.Ldarga:
+				case Code.Ldarga_S:
+					Ldarga(ctx, ((ParameterReference)instruction.Operand).Index);
+					break;
 				case Code.Ldc_I4:
-					LdcI4(ctx, (int)instruction.Operand);
+					Ldc_I4(ctx, (int)instruction.Operand);
 					break;
 				case Code.Ldc_I4_0:
-					LdcI4(ctx, 0);
+					Ldc_I4(ctx, 0);
 					break;
 				case Code.Ldc_I4_1:
-					LdcI4(ctx, 1);
+					Ldc_I4(ctx, 1);
 					break;
 				case Code.Ldc_I4_2:
-					LdcI4(ctx, 2);
+					Ldc_I4(ctx, 2);
 					break;
 				case Code.Ldc_I4_3:
-					LdcI4(ctx, 3);
+					Ldc_I4(ctx, 3);
 					break;
 				case Code.Ldc_I4_4:
-					LdcI4(ctx, 4);
+					Ldc_I4(ctx, 4);
 					break;
 				case Code.Ldc_I4_5:
-					LdcI4(ctx, 5);
+					Ldc_I4(ctx, 5);
 					break;
 				case Code.Ldc_I4_6:
-					LdcI4(ctx, 6);
+					Ldc_I4(ctx, 6);
 					break;
 				case Code.Ldc_I4_7:
-					LdcI4(ctx, 7);
+					Ldc_I4(ctx, 7);
 					break;
 				case Code.Ldc_I4_8:
-					LdcI4(ctx, 8);
+					Ldc_I4(ctx, 8);
 					break;
 				case Code.Ldc_I4_M1:
-					LdcI4(ctx, -1);
+					Ldc_I4(ctx, -1);
 					break;
 				case Code.Ldc_I4_S:
-					LdcI4(ctx, (SByte)instruction.Operand);
+					Ldc_I4(ctx, (SByte)instruction.Operand);
+					break;
+				case Code.Ldc_I8:
+					Ldc_I8(ctx, (long)instruction.Operand);
+					break;
+				case Code.Ldc_R4:
+					Ldc_R4(ctx, (float)instruction.Operand);
+					break;
+				case Code.Ldc_R8:
+					Ldc_R8(ctx, (double)instruction.Operand);
+					break;
+				case Code.Ldelem_Any:
+				case Code.Ldelem_I:
+				case Code.Ldelem_I1:
+				case Code.Ldelem_I2:
+				case Code.Ldelem_I4:
+				case Code.Ldelem_I8:
+				case Code.Ldelem_R4:
+				case Code.Ldelem_R8:
+					Ldelem(ctx);
+					break;
+
+
+
+
+
+
+				case Code.Nop:
+				case Code.Ret:
+				case Code.Leave:
+				case Code.Leave_S:
+					break;
+				case Code.Pop:
+				case Code.Switch:
+					ctx.Stack.Pop();
 					break;
 				case Code.Ldfld:
 				case Code.Ldflda:
@@ -618,6 +640,46 @@ namespace Flint.Vm
 			}
 		}
 
+		private static void Ldarga(RoutineContext ctx, int number)
+		{
+			ctx.Stack.Push(new Cil.ArgPtr(number));
+		}
+
+		private static void Ldc_I4(RoutineContext ctx, int value)
+		{
+			ctx.Stack.Push(new Cil.Int32(value));
+		}
+
+		private static void Ldc_I8(RoutineContext ctx, long value)
+		{
+			ctx.Stack.Push(new Cil.Int64(value));
+		}
+
+		private static void Ldc_R4(RoutineContext ctx, float value)
+		{
+			ctx.Stack.Push(new Cil.Float32(value));
+		}
+
+		private static void Ldc_R8(RoutineContext ctx, double value)
+		{
+			ctx.Stack.Push(new Cil.Float64(value));
+		}
+
+		private static void Ldelem(RoutineContext ctx)
+		{
+			var index = ctx.Stack.Pop();
+			var array = ctx.Stack.Pop();
+
+			Ast value;
+			if (array is Cil.Array arr)
+				value = arr.Elements[index];
+			else
+				value = new Cil.Elem(array, index);
+
+			ctx.Stack.Push(value);
+		}
+
+
 
 
 
@@ -686,11 +748,6 @@ namespace Flint.Vm
 			ctx.Memory.AddOrReplace(new MemKey(instance, fld), value);
 		}
 
-		private static void LdcI4(RoutineContext ctx, int value)
-		{
-			ctx.Stack.Push(new Cil.Int32(value));
-		}
-
 		private static void Ldstr(RoutineContext ctx, string value)
 		{
 			ctx.Stack.Push(new Cil.String(value));
@@ -706,20 +763,6 @@ namespace Flint.Vm
 			else throw new NotImplementedException($"Unknown token {value}");
 
 			ctx.Stack.Push(token);
-		}
-
-		private static void Ldelem(RoutineContext ctx)
-		{
-			var index = ctx.Stack.Pop();
-			var array = ctx.Stack.Pop();
-
-			Ast value;
-			if (array is Cil.Array arr)
-				value = arr.Elements[index];
-			else
-				value = new Cil.Elem(array, index);
-
-			ctx.Stack.Push(value);
 		}
 
 		private static void Stelem(RoutineContext ctx)

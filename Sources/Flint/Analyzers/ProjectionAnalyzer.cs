@@ -77,7 +77,7 @@ namespace Flint.Analyzers
 		private static void Analyze(IAnalyzerContext ctx, MethodDefinition mtd, HashSet<TypeReference> entityTypes)
 		{
 			// eval method body
-			var expressions = EvalMachine.Run(mtd);
+			var expressions = CilMachine.Run(mtd);
 
 			// find roots (methods where IQueryable monad is unwrapped; ToListAsync and so on)
 			// for every found root mark every ast accessible from it
@@ -186,7 +186,7 @@ namespace Flint.Analyzers
 
 				foreach (Cil.Func func in captures.Values)
 				{
-					var expressions = EvalMachine.Run(func.Method);
+					var expressions = CilMachine.Run(func.Method);
 					lambdas.AddRange(expressions);
 				}
 			}
