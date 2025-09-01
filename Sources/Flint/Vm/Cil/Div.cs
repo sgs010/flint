@@ -1,6 +1,4 @@
-﻿using System.Reflection.Emit;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class Div : Ast
 	{
@@ -20,7 +18,7 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(Left, Right);
+			return HashCode.Combine(typeof(Div), Left, Right);
 		}
 
 		public override bool Equals(Ast other)

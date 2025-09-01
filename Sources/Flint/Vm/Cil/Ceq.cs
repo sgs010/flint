@@ -18,7 +18,7 @@
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(Left, Right);
+			return HashCode.Combine(typeof(Ceq), Left, Right);
 		}
 
 		public override bool Equals(Ast other)

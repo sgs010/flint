@@ -1,9 +1,9 @@
 ﻿namespace Flint.Vm.Cil
 {
-	class ArgPtr : Ast
+	class Argptr : Ast
 	{
 		public readonly int Number;
-		public ArgPtr(int number)
+		public Argptr(int number)
 		{
 			Number = number;
 		}
@@ -15,12 +15,12 @@
 
 		public override int GetHashCode()
 		{
-			return Number;
+			return HashCode.Combine(typeof(Argptr), Number);
 		}
 
 		public override bool Equals(Ast other)
 		{
-			if (other is ArgPtr ptr)
+			if (other is Argptr ptr)
 			{
 				return Number.Equals(ptr.Number);
 			}

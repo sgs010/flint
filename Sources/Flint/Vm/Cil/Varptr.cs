@@ -15,7 +15,7 @@
 
 		public override int GetHashCode()
 		{
-			return Index;
+			return HashCode.Combine(typeof(Varptr), Index);
 		}
 
 		public override bool Equals(Ast other)

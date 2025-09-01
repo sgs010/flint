@@ -15,7 +15,7 @@
 
 		public override int GetHashCode()
 		{
-			return Array.GetHashCode();
+			return HashCode.Combine(typeof(Len), Array);
 		}
 
 		public override bool Equals(Ast other)

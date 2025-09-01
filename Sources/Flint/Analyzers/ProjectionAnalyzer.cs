@@ -184,7 +184,7 @@ namespace Flint.Analyzers
 				if (ok == false)
 					continue;
 
-				foreach (Cil.Func func in captures.Values)
+				foreach (Cil.Ftn func in captures.Values)
 				{
 					var expressions = CilMachine.Run(func.Method);
 					lambdas.AddRange(expressions);

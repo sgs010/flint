@@ -15,7 +15,7 @@
 
 		public override int GetHashCode()
 		{
-			return Value.GetHashCode();
+			return HashCode.Combine(typeof(Conv_I8), Value);
 		}
 
 		public override bool Equals(Ast other)

@@ -27,6 +27,7 @@ namespace Flint.Vm.Cil
 		public override int GetHashCode()
 		{
 			var hash = new HashCode();
+			hash.Add(typeof(Array));
 			hash.Add(Type);
 			hash.Add(Size);
 			foreach (var x in Elements)

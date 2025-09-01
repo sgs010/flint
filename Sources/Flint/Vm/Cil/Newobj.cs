@@ -22,7 +22,7 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(Type, Constructor, Args);
+			return HashCode.Combine(typeof(Newobj), Type, Constructor, Args);
 		}
 
 		public override bool Equals(Ast other)

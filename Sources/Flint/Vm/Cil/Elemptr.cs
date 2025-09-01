@@ -1,10 +1,10 @@
 ﻿namespace Flint.Vm.Cil
 {
-	class Elem : Ast
+	class Elemptr : Ast
 	{
 		public readonly Ast Array;
 		public readonly Ast Index;
-		public Elem(Ast array, Ast index)
+		public Elemptr(Ast array, Ast index)
 		{
 			Array = array;
 			Index = index;
@@ -18,15 +18,15 @@
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Elem), Array, Index);
+			return HashCode.Combine(typeof(Elemptr), Array, Index);
 		}
 
 		public override bool Equals(Ast other)
 		{
-			if (other is Elem elem)
+			if (other is Elemptr ptr)
 			{
-				return Array.Equals(elem.Array)
-					&& Index.Equals(elem.Index);
+				return Array.Equals(ptr.Array)
+					&& Index.Equals(ptr.Index);
 			}
 			return false;
 		}

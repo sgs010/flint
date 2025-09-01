@@ -17,7 +17,7 @@
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(Call, Index);
+			return HashCode.Combine(typeof(OutArg), Call, Index);
 		}
 
 		public override bool Equals(Ast other)

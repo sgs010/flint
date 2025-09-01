@@ -17,7 +17,7 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return Type.GetHashCode();
+			return HashCode.Combine(typeof(This), Type);
 		}
 
 		public override bool Equals(Ast other)

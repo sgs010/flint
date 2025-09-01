@@ -1,5 +1,4 @@
-﻿using System;
-using Flint.Common;
+﻿using Flint.Common;
 using Flint.Vm.Cil;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -33,21 +32,21 @@ namespace Flint.Vm
 		#endregion
 
 		#region Implementation
-		internal readonly struct MemKey
+		internal readonly struct ObjectField
 		{
-			public readonly Ast Instance;
+			public readonly Ast Object;
 			public readonly FieldReference Field;
-			public MemKey(Ast instance, FieldReference fld)
+			public ObjectField(Ast instance, FieldReference fld)
 			{
-				Instance = instance;
+				Object = instance;
 				Field = fld;
 			}
 
 			public override readonly bool Equals(object obj)
 			{
-				if (obj is MemKey mk)
+				if (obj is ObjectField mk)
 				{
-					return Instance.Equals(mk.Instance)
+					return Object.Equals(mk.Object)
 						&& Field.Equals(mk.Field);
 				}
 				return false;
@@ -55,16 +54,17 @@ namespace Flint.Vm
 
 			public override readonly int GetHashCode()
 			{
-				return HashCode.Combine(Instance, Field);
+				return HashCode.Combine(Object, Field);
 			}
 		}
 
 		internal class RoutineContext
 		{
 			public readonly MethodDefinition Method;
-			public readonly Dictionary<MemKey, Ast> Memory = [];
+			public readonly Dictionary<ObjectField, Ast> Objects = [];
 			public readonly Ast[] Variables;
 			public readonly Stack<Ast> Stack;
+			public readonly Dictionary<Ast, Ast> Heap = [];
 			public readonly HashSet<Ast> Expressions = [];
 			public readonly Instruction[] ExceptionHandlers;
 
@@ -323,9 +323,40 @@ namespace Flint.Vm
 				case Code.Ldelem_I8:
 				case Code.Ldelem_R4:
 				case Code.Ldelem_R8:
+				case Code.Ldelem_Ref:
+				case Code.Ldelem_U1:
+				case Code.Ldelem_U2:
+				case Code.Ldelem_U4:
 					Ldelem(ctx);
 					break;
-
+				case Code.Ldelema:
+					Ldelema(ctx);
+					break;
+				case Code.Ldfld:
+				case Code.Ldflda:
+				case Code.Ldsfld:
+				case Code.Ldsflda:
+					Ldfld(ctx, (FieldDefinition)instruction.Operand);
+					break;
+				case Code.Ldftn:
+					Ldftn(ctx, (MethodDefinition)instruction.Operand);
+					break;
+				case Code.Ldind_I:
+				case Code.Ldind_I1:
+				case Code.Ldind_I2:
+				case Code.Ldind_I4:
+				case Code.Ldind_I8:
+				case Code.Ldind_R4:
+				case Code.Ldind_R8:
+				case Code.Ldind_Ref:
+				case Code.Ldind_U1:
+				case Code.Ldind_U2:
+				case Code.Ldind_U4:
+					Ldind(ctx);
+					break;
+				case Code.Ldlen:
+					Ldlen(ctx);
+					break;
 
 
 
@@ -339,21 +370,6 @@ namespace Flint.Vm
 				case Code.Pop:
 				case Code.Switch:
 					ctx.Stack.Pop();
-					break;
-				case Code.Ldfld:
-				case Code.Ldflda:
-				case Code.Ldsfld:
-				case Code.Ldsflda:
-					Ldfld(ctx, (FieldDefinition)instruction.Operand);
-					break;
-				case Code.Ldelem_Ref:
-					Ldelem(ctx);
-					break;
-				case Code.Ldftn:
-					Ldftn(ctx, (MethodDefinition)instruction.Operand);
-					break;
-				case Code.Ldlen:
-					Ldlen(ctx);
 					break;
 				case Code.Ldloc_0:
 					Ldloc(ctx, 0);
@@ -642,7 +658,7 @@ namespace Flint.Vm
 
 		private static void Ldarga(RoutineContext ctx, int number)
 		{
-			ctx.Stack.Push(new Cil.ArgPtr(number));
+			ctx.Stack.Push(new Cil.Argptr(number));
 		}
 
 		private static void Ldc_I4(RoutineContext ctx, int value)
@@ -677,6 +693,44 @@ namespace Flint.Vm
 				value = new Cil.Elem(array, index);
 
 			ctx.Stack.Push(value);
+		}
+
+		private static void Ldelema(RoutineContext ctx)
+		{
+			var index = ctx.Stack.Pop();
+			var array = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Elemptr(array, index));
+		}
+
+		private static void Ldfld(RoutineContext ctx, FieldDefinition fld)
+		{
+			Ast instance = null;
+			if (fld.IsStatic == false)
+				instance = ctx.Stack.Pop();
+
+			if (ctx.Objects.TryGetValue(new ObjectField(instance, fld), out var value) == false)
+				value = new Cil.Fld(instance, fld);
+
+			ctx.Stack.Push(value);
+		}
+
+		private static void Ldftn(RoutineContext ctx, MethodDefinition mtd)
+		{
+			ctx.Stack.Push(new Cil.Ftn(mtd));
+		}
+
+		private static void Ldind(RoutineContext ctx)
+		{
+			var address = ctx.Stack.Pop();
+			if (ctx.Heap.TryGetValue(address, out var value) == false)
+				value = new Cil.Heapptr(address);
+			ctx.Stack.Push(value);
+		}
+
+		private static void Ldlen(RoutineContext ctx)
+		{
+			var array = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Len(array));
 		}
 
 
@@ -720,23 +774,6 @@ namespace Flint.Vm
 				ctx.Stack.Push(new Cil.Varptr(v.Index));
 		}
 
-		private static void Ldftn(RoutineContext ctx, MethodDefinition mtd)
-		{
-			ctx.Stack.Push(new Cil.Func(mtd));
-		}
-
-		private static void Ldfld(RoutineContext ctx, FieldDefinition fld)
-		{
-			Ast instance = null;
-			if (fld.IsStatic == false)
-				instance = ctx.Stack.Pop();
-
-			if (ctx.Memory.TryGetValue(new MemKey(instance, fld), out var value) == false)
-				value = new Cil.Fld(instance, fld);
-
-			ctx.Stack.Push(value);
-		}
-
 		private static void Stfld(RoutineContext ctx, FieldDefinition fld)
 		{
 			var value = ctx.Stack.Pop();
@@ -745,7 +782,7 @@ namespace Flint.Vm
 			if (fld.IsStatic == false)
 				instance = ctx.Stack.Pop();
 
-			ctx.Memory.AddOrReplace(new MemKey(instance, fld), value);
+			ctx.Objects.AddOrReplace(new ObjectField(instance, fld), value);
 		}
 
 		private static void Ldstr(RoutineContext ctx, string value)
@@ -771,12 +808,6 @@ namespace Flint.Vm
 			var index = ctx.Stack.Pop();
 			var array = ctx.Stack.Pop();
 			((Cil.Array)array).Elements.AddOrReplace(index, value);
-		}
-
-		private static void Ldlen(RoutineContext ctx)
-		{
-			var array = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Len(array));
 		}
 		#endregion
 	}

@@ -11,7 +11,7 @@
 
 		public override bool Equals(Ast other)
 		{
-			if (other is Cil.Func)
+			if (other is Cil.Ftn)
 			{
 				return true;
 			}
@@ -20,7 +20,7 @@
 
 		public override void Capture(Ast other, IDictionary<string, Ast> captures)
 		{
-			if (other is Cil.Func func)
+			if (other is Cil.Ftn func)
 				captures.Add(func.Method.Name, other);
 		}
 	}

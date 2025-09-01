@@ -2,10 +2,10 @@
 
 namespace Flint.Vm.Cil
 {
-	class Func : Ast
+	class Ftn : Ast
 	{
 		public readonly MethodDefinition Method;
-		public Func(MethodDefinition mtd)
+		public Ftn(MethodDefinition mtd)
 		{
 			Method = mtd;
 		}
@@ -17,14 +17,14 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return Method.GetHashCode();
+			return HashCode.Combine(typeof(Ftn), Method);
 		}
 
 		public override bool Equals(Ast other)
 		{
-			if (other is Func func)
+			if (other is Ftn ftn)
 			{
-				return Method.Equals(func.Method);
+				return Method.Equals(ftn.Method);
 			}
 			return false;
 		}
