@@ -4,27 +4,31 @@ namespace Flint.Vm.Cil
 {
 	class Ftn : Ast
 	{
+		public readonly Ast Instance;
 		public readonly MethodDefinition Method;
-		public Ftn(MethodDefinition mtd)
+		public Ftn(Ast instance, MethodDefinition mtd)
 		{
+			Instance = instance;
 			Method = mtd;
 		}
 
 		public override IEnumerable<Ast> GetChildren()
 		{
-			yield break;
+			if (Instance != null)
+				yield return Instance;
 		}
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Ftn), Method);
+			return HashCode.Combine(typeof(Ftn), Instance, Method);
 		}
 
 		public override bool Equals(Ast other)
 		{
 			if (other is Ftn ftn)
 			{
-				return Method.Equals(ftn.Method);
+				return (Instance != null ? Instance.Equals(ftn.Instance) : ftn.Instance is null)
+					&& Method.Equals(ftn.Method);
 			}
 			return false;
 		}

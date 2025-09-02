@@ -357,19 +357,9 @@ namespace Flint.Vm
 				case Code.Ldlen:
 					Ldlen(ctx);
 					break;
-
-
-
-
-
-				case Code.Nop:
-				case Code.Ret:
-				case Code.Leave:
-				case Code.Leave_S:
-					break;
-				case Code.Pop:
-				case Code.Switch:
-					ctx.Stack.Pop();
+				case Code.Ldloc:
+				case Code.Ldloc_S:
+					Ldloc(ctx, ((VariableReference)instruction.Operand).Index);
 					break;
 				case Code.Ldloc_0:
 					Ldloc(ctx, 0);
@@ -383,14 +373,15 @@ namespace Flint.Vm
 				case Code.Ldloc_3:
 					Ldloc(ctx, 3);
 					break;
-				case Code.Ldloc_S:
-					Ldloc(ctx, ((VariableReference)instruction.Operand).Index);
-					break;
+				case Code.Ldloca:
 				case Code.Ldloca_S:
 					Ldloca(ctx, (VariableReference)instruction.Operand);
 					break;
 				case Code.Ldnull:
 					ctx.Stack.Push(Cil.Null.Instance);
+					break;
+				case Code.Ldobj:
+					Ldind(ctx);
 					break;
 				case Code.Ldstr:
 					Ldstr(ctx, (string)instruction.Operand);
@@ -398,11 +389,43 @@ namespace Flint.Vm
 				case Code.Ldtoken:
 					Ldtoken(ctx, instruction.Operand);
 					break;
+				case Code.Ldvirtftn:
+					Ldvirtftn(ctx, (MethodDefinition)instruction.Operand);
+					break;
+				case Code.Leave:
+				case Code.Leave_S:
+					break;
+				case Code.Localloc:
+					Localloc(ctx);
+					break;
+				case Code.Mkrefany:
+					Mkref(ctx, (TypeReference)instruction.Operand);
+					break;
+				case Code.Mul:
+				case Code.Mul_Ovf:
+				case Code.Mul_Ovf_Un:
+					Mul(ctx);
+					break;
+				case Code.Neg:
+					Neg(ctx);
+					break;
 				case Code.Newarr:
 					Newarr(ctx, (TypeReference)instruction.Operand);
 					break;
 				case Code.Newobj:
 					Newobj(ctx, (MethodReference)instruction.Operand);
+					break;
+				case Code.Nop:
+					break;
+
+
+
+
+				case Code.Ret:
+					break;
+				case Code.Pop:
+				case Code.Switch:
+					ctx.Stack.Pop();
 					break;
 				case Code.Stfld:
 				case Code.Stsfld:
@@ -716,7 +739,7 @@ namespace Flint.Vm
 
 		private static void Ldftn(RoutineContext ctx, MethodDefinition mtd)
 		{
-			ctx.Stack.Push(new Cil.Ftn(mtd));
+			ctx.Stack.Push(new Cil.Ftn(null, mtd));
 		}
 
 		private static void Ldind(RoutineContext ctx)
@@ -733,10 +756,67 @@ namespace Flint.Vm
 			ctx.Stack.Push(new Cil.Len(array));
 		}
 
+		private static void Ldloc(RoutineContext ctx, int number)
+		{
+			ctx.Stack.Push(ctx.Variables[number]);
+		}
 
+		private static void Ldloca(RoutineContext ctx, VariableReference v)
+		{
+			var value = ctx.Variables[v.Index];
+			if (value != null)
+				ctx.Stack.Push(value);
+			else
+				ctx.Stack.Push(new Cil.Varptr(v.Index));
+		}
 
+		private static void Ldstr(RoutineContext ctx, string value)
+		{
+			ctx.Stack.Push(new Cil.String(value));
+		}
 
+		private static void Ldtoken(RoutineContext ctx, object value)
+		{
+			Ast token;
+			if (value is TypeReference t)
+				token = new Cil.Typeof(t);
+			else if (value is MethodReference m)
+				token = new Cil.Methodof(m);
+			else throw new NotImplementedException($"Unknown token {value}");
 
+			ctx.Stack.Push(token);
+		}
+
+		private static void Ldvirtftn(RoutineContext ctx, MethodDefinition mtd)
+		{
+			var instance = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Ftn(instance, mtd));
+		}
+
+		private static void Localloc(RoutineContext ctx)
+		{
+			var count = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Bytes(count));
+		}
+
+		private static void Mkref(RoutineContext ctx, TypeReference type)
+		{
+			var address = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Mkref(address, type));
+		}
+
+		private static void Mul(RoutineContext ctx)
+		{
+			var right = ctx.Stack.Pop();
+			var left = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Mul(left, right));
+		}
+
+		private static void Neg(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Neg(value));
+		}
 
 		private static void Newarr(RoutineContext ctx, TypeReference type)
 		{
@@ -755,23 +835,13 @@ namespace Flint.Vm
 			ctx.Stack.Push(newobj);
 		}
 
-		private static void Ldloc(RoutineContext ctx, int number)
-		{
-			ctx.Stack.Push(ctx.Variables[number]);
-		}
+
+
+
 
 		private static void Stloc(RoutineContext ctx, int number)
 		{
 			ctx.Variables[number] = ctx.Stack.Pop();
-		}
-
-		private static void Ldloca(RoutineContext ctx, VariableReference v)
-		{
-			var value = ctx.Variables[v.Index];
-			if (value != null)
-				ctx.Stack.Push(value);
-			else
-				ctx.Stack.Push(new Cil.Varptr(v.Index));
 		}
 
 		private static void Stfld(RoutineContext ctx, FieldDefinition fld)
@@ -783,23 +853,6 @@ namespace Flint.Vm
 				instance = ctx.Stack.Pop();
 
 			ctx.Objects.AddOrReplace(new ObjectField(instance, fld), value);
-		}
-
-		private static void Ldstr(RoutineContext ctx, string value)
-		{
-			ctx.Stack.Push(new Cil.String(value));
-		}
-
-		private static void Ldtoken(RoutineContext ctx, object value)
-		{
-			Ast token;
-			if (value is TypeReference t)
-				token = new Cil.Typeof(t);
-			else if (value is MethodReference m)
-				token = new Cil.Methodof(m);
-			else throw new NotImplementedException($"Unknown token {value}");
-
-			ctx.Stack.Push(token);
 		}
 
 		private static void Stelem(RoutineContext ctx)
