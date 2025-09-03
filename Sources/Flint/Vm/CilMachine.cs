@@ -32,6 +32,32 @@ namespace Flint.Vm
 		#endregion
 
 		#region Implementation
+		internal readonly struct ArrayIndex
+		{
+			public readonly Ast Array;
+			public readonly Ast Index;
+			public ArrayIndex(Ast array, Ast index)
+			{
+				Array = array;
+				Index = index;
+			}
+
+			public override readonly bool Equals(object obj)
+			{
+				if (obj is ArrayIndex ai)
+				{
+					return Array.Equals(ai.Array)
+						&& Index.Equals(ai.Index);
+				}
+				return false;
+			}
+
+			public override readonly int GetHashCode()
+			{
+				return HashCode.Combine(Array, Index);
+			}
+		}
+
 		internal readonly struct ObjectField
 		{
 			public readonly Ast Object;
@@ -44,10 +70,10 @@ namespace Flint.Vm
 
 			public override readonly bool Equals(object obj)
 			{
-				if (obj is ObjectField mk)
+				if (obj is ObjectField of)
 				{
-					return Object.Equals(mk.Object)
-						&& Field.Equals(mk.Field);
+					return Object.Equals(of.Object)
+						&& Field.Equals(of.Field);
 				}
 				return false;
 			}
@@ -61,10 +87,11 @@ namespace Flint.Vm
 		internal class RoutineContext
 		{
 			public readonly MethodDefinition Method;
-			public readonly Dictionary<ObjectField, Ast> Objects = [];
 			public readonly Ast[] Variables;
 			public readonly Stack<Ast> Stack;
 			public readonly Dictionary<Ast, Ast> Heap = [];
+			public readonly Dictionary<ArrayIndex, Ast> Arrays = [];
+			public readonly Dictionary<ObjectField, Ast> Objects = [];
 			public readonly HashSet<Ast> Expressions = [];
 			public readonly Instruction[] ExceptionHandlers;
 
@@ -417,22 +444,65 @@ namespace Flint.Vm
 					break;
 				case Code.Nop:
 					break;
-
-
-
-
-				case Code.Ret:
+				case Code.Not:
+					Not(ctx);
+					break;
+				case Code.Or:
+					Or(ctx);
 					break;
 				case Code.Pop:
-				case Code.Switch:
 					ctx.Stack.Pop();
+					break;
+				case Code.Refanytype:
+					Refanytype(ctx);
+					break;
+				case Code.Refanyval:
+					Refanyval(ctx, (TypeReference)instruction.Operand);
+					break;
+				case Code.Rem:
+				case Code.Rem_Un:
+					Rem(ctx);
+					break;
+				case Code.Ret:
+				case Code.Rethrow:
+					break;
+				case Code.Shl:
+					Shl(ctx);
+					break;
+				case Code.Shr:
+				case Code.Shr_Un:
+					Shr(ctx);
+					break;
+				case Code.Sizeof:
+					Sizeof(ctx, (TypeReference)instruction.Operand);
+					break;
+				case Code.Starg:
+				case Code.Starg_S:
+					ctx.Stack.Pop();
+					break;
+				case Code.Stelem_Any:
+				case Code.Stelem_I:
+				case Code.Stelem_I1:
+				case Code.Stelem_I2:
+				case Code.Stelem_I4:
+				case Code.Stelem_I8:
+				case Code.Stelem_R4:
+				case Code.Stelem_R8:
+				case Code.Stelem_Ref:
+					Stelem(ctx);
 					break;
 				case Code.Stfld:
 				case Code.Stsfld:
 					Stfld(ctx, (FieldDefinition)instruction.Operand);
 					break;
-				case Code.Stelem_Ref:
-					Stelem(ctx);
+
+
+
+
+
+
+				case Code.Switch:
+					ctx.Stack.Pop();
 					break;
 				case Code.Stloc_0:
 					Stloc(ctx, 0);
@@ -709,10 +779,7 @@ namespace Flint.Vm
 			var index = ctx.Stack.Pop();
 			var array = ctx.Stack.Pop();
 
-			Ast value;
-			if (array is Cil.Array arr)
-				value = arr.Elements[index];
-			else
+			if (ctx.Arrays.TryGetValue(new ArrayIndex(array, index), out var value) == false)
 				value = new Cil.Elem(array, index);
 
 			ctx.Stack.Push(value);
@@ -835,6 +902,67 @@ namespace Flint.Vm
 			ctx.Stack.Push(newobj);
 		}
 
+		private static void Not(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Not(value));
+		}
+
+		private static void Or(RoutineContext ctx)
+		{
+			var right = ctx.Stack.Pop();
+			var left = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Or(left, right));
+		}
+
+		private static void Refanytype(RoutineContext ctx)
+		{
+			var reference = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Refanytype(reference));
+		}
+
+		private static void Refanyval(RoutineContext ctx, TypeReference type)
+		{
+			var address = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Refanyval(type, address));
+		}
+
+		private static void Rem(RoutineContext ctx)
+		{
+			var right = ctx.Stack.Pop();
+			var left = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Rem(left, right));
+		}
+
+		private static void Shl(RoutineContext ctx)
+		{
+			var count = ctx.Stack.Pop();
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Shl(value, count));
+		}
+
+		private static void Shr(RoutineContext ctx)
+		{
+			var count = ctx.Stack.Pop();
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Shr(value, count));
+		}
+
+		private static void Sizeof(RoutineContext ctx, TypeReference type)
+		{
+			ctx.Stack.Push(new Cil.Sizeof(type));
+		}
+
+		private static void Stelem(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			var index = ctx.Stack.Pop();
+			var array = ctx.Stack.Pop();
+			ctx.Arrays.AddOrReplace(new ArrayIndex(array, index), value);
+		}
+
+
+
 
 
 
@@ -853,14 +981,6 @@ namespace Flint.Vm
 				instance = ctx.Stack.Pop();
 
 			ctx.Objects.AddOrReplace(new ObjectField(instance, fld), value);
-		}
-
-		private static void Stelem(RoutineContext ctx)
-		{
-			var value = ctx.Stack.Pop();
-			var index = ctx.Stack.Pop();
-			var array = ctx.Stack.Pop();
-			((Cil.Array)array).Elements.AddOrReplace(index, value);
 		}
 		#endregion
 	}

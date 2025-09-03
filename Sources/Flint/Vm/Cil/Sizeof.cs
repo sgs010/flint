@@ -2,32 +2,29 @@
 
 namespace Flint.Vm.Cil
 {
-	class Array : Ast
+	class Sizeof : Ast
 	{
 		public readonly TypeReference Type;
-		public readonly Ast Size;
-		public Array(TypeReference type, Ast size)
+		public Sizeof(TypeReference type)
 		{
 			Type = type;
-			Size = size;
 		}
 
 		public override IEnumerable<Ast> GetChildren()
 		{
-			yield return Size;
+			yield break;
 		}
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Array), Type, Size);
+			return HashCode.Combine(typeof(Sizeof), Type);
 		}
 
 		public override bool Equals(Ast other)
 		{
-			if (other is Array array)
+			if (other is Sizeof sz)
 			{
-				return Type.Equals(array.Type)
-					&& Size.Equals(array.Size);
+				return Type.Equals(sz.Type);
 			}
 			return false;
 		}

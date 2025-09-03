@@ -1065,6 +1065,21 @@ namespace FlintTests
 		}
 
 		[TestMethod]
+		public void Exception()
+		{
+			var handler = Instruction.Create(OpCodes.Nop);
+			handler.Offset = 42;
+			var ctx = new CilMachine.RoutineContext(StaticMethodT, 0, 1, [handler]);
+			var instruction = Instruction.Create(OpCodes.Nop);
+			instruction.Offset = 42;
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(Cil.Exception.Instance);
+		}
+
+		[TestMethod]
 		public void Initblk()
 		{
 			var ctx = new CilMachine.RoutineContext(1, 2);
@@ -1416,12 +1431,11 @@ namespace FlintTests
 		}
 
 		[TestMethod]
-		public void Ldelem_Array()
+		public void Ldelem_HasValue()
 		{
 			var ctx = new CilMachine.RoutineContext(0, 2);
-			var array = new Cil.Array(IntT, new Cil.Int32(5));
-			array.Elements.Add(new Cil.Int32(1), new Cil.Int32(42));
-			ctx.Stack.Push(array);
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
+			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_Any, IntT);
 
@@ -1432,7 +1446,7 @@ namespace FlintTests
 		}
 
 		[TestMethod]
-		public void Ldelem_NotArray()
+		public void Ldelem_NoValue()
 		{
 			var ctx = new CilMachine.RoutineContext(0, 2);
 			ctx.Stack.Push(new Cil.Call(null, ArrayMethodT, []));
@@ -1452,137 +1466,128 @@ namespace FlintTests
 		public void Ldelem_I()
 		{
 			var ctx = new CilMachine.RoutineContext(0, 2);
-			var array = new Cil.Array(ClassT, new Cil.Int32(5));
-			array.Elements.Add(new Cil.Int32(1), new Cil.This(ClassT));
-			ctx.Stack.Push(array);
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
+			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_I);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().HaveCount(1);
-			ctx.Stack.Peek().Should().Be(new Cil.This(ClassT));
+			ctx.Stack.Peek().Should().Be(new Cil.Int32(42));
 		}
 
 		[TestMethod]
 		public void Ldelem_I1()
 		{
 			var ctx = new CilMachine.RoutineContext(0, 2);
-			var array = new Cil.Array(ClassT, new Cil.Int32(5));
-			array.Elements.Add(new Cil.Int32(1), new Cil.This(ClassT));
-			ctx.Stack.Push(array);
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
+			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_I1);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().HaveCount(1);
-			ctx.Stack.Peek().Should().Be(new Cil.This(ClassT));
+			ctx.Stack.Peek().Should().Be(new Cil.Int32(42));
 		}
 
 		[TestMethod]
 		public void Ldelem_I2()
 		{
 			var ctx = new CilMachine.RoutineContext(0, 2);
-			var array = new Cil.Array(ClassT, new Cil.Int32(5));
-			array.Elements.Add(new Cil.Int32(1), new Cil.This(ClassT));
-			ctx.Stack.Push(array);
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
+			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_I2);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().HaveCount(1);
-			ctx.Stack.Peek().Should().Be(new Cil.This(ClassT));
+			ctx.Stack.Peek().Should().Be(new Cil.Int32(42));
 		}
 
 		[TestMethod]
 		public void Ldelem_I4()
 		{
 			var ctx = new CilMachine.RoutineContext(0, 2);
-			var array = new Cil.Array(ClassT, new Cil.Int32(5));
-			array.Elements.Add(new Cil.Int32(1), new Cil.This(ClassT));
-			ctx.Stack.Push(array);
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
+			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_I4);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().HaveCount(1);
-			ctx.Stack.Peek().Should().Be(new Cil.This(ClassT));
+			ctx.Stack.Peek().Should().Be(new Cil.Int32(42));
 		}
 
 		[TestMethod]
 		public void Ldelem_I8()
 		{
 			var ctx = new CilMachine.RoutineContext(0, 2);
-			var array = new Cil.Array(ClassT, new Cil.Int32(5));
-			array.Elements.Add(new Cil.Int32(1), new Cil.This(ClassT));
-			ctx.Stack.Push(array);
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
+			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_I8);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().HaveCount(1);
-			ctx.Stack.Peek().Should().Be(new Cil.This(ClassT));
+			ctx.Stack.Peek().Should().Be(new Cil.Int32(42));
 		}
 
 		[TestMethod]
 		public void Ldelem_R4()
 		{
 			var ctx = new CilMachine.RoutineContext(0, 2);
-			var array = new Cil.Array(ClassT, new Cil.Int32(5));
-			array.Elements.Add(new Cil.Int32(1), new Cil.This(ClassT));
-			ctx.Stack.Push(array);
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
+			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_R4);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().HaveCount(1);
-			ctx.Stack.Peek().Should().Be(new Cil.This(ClassT));
+			ctx.Stack.Peek().Should().Be(new Cil.Int32(42));
 		}
 
 		[TestMethod]
 		public void Ldelem_R8()
 		{
 			var ctx = new CilMachine.RoutineContext(0, 2);
-			var array = new Cil.Array(ClassT, new Cil.Int32(5));
-			array.Elements.Add(new Cil.Int32(1), new Cil.This(ClassT));
-			ctx.Stack.Push(array);
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
+			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_R8);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().HaveCount(1);
-			ctx.Stack.Peek().Should().Be(new Cil.This(ClassT));
+			ctx.Stack.Peek().Should().Be(new Cil.Int32(42));
 		}
 
 		[TestMethod]
 		public void Ldelem_Ref()
 		{
 			var ctx = new CilMachine.RoutineContext(0, 2);
-			var array = new Cil.Array(ClassT, new Cil.Int32(5));
-			array.Elements.Add(new Cil.Int32(1), new Cil.This(ClassT));
-			ctx.Stack.Push(array);
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
+			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_Ref);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().HaveCount(1);
-			ctx.Stack.Peek().Should().Be(new Cil.This(ClassT));
+			ctx.Stack.Peek().Should().Be(new Cil.Int32(42));
 		}
 
 		[TestMethod]
 		public void Ldelem_U1()
 		{
 			var ctx = new CilMachine.RoutineContext(0, 2);
-			var array = new Cil.Array(IntT, new Cil.Int32(5));
-			array.Elements.Add(new Cil.Int32(1), new Cil.Int32(42));
-			ctx.Stack.Push(array);
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
+			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_U1);
 
@@ -1596,9 +1601,8 @@ namespace FlintTests
 		public void Ldelem_U2()
 		{
 			var ctx = new CilMachine.RoutineContext(0, 2);
-			var array = new Cil.Array(IntT, new Cil.Int32(5));
-			array.Elements.Add(new Cil.Int32(1), new Cil.Int32(42));
-			ctx.Stack.Push(array);
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
+			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_U2);
 
@@ -1612,9 +1616,8 @@ namespace FlintTests
 		public void Ldelem_U4()
 		{
 			var ctx = new CilMachine.RoutineContext(0, 2);
-			var array = new Cil.Array(IntT, new Cil.Int32(5));
-			array.Elements.Add(new Cil.Int32(1), new Cil.Int32(42));
-			ctx.Stack.Push(array);
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
+			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_U4);
 
@@ -2219,6 +2222,356 @@ namespace FlintTests
 			IsEmpty(ctx).Should().BeTrue();
 		}
 
+		[TestMethod]
+		public void Not()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 1);
+			ctx.Stack.Push(new Cil.Int32(42));
+			var instruction = Instruction.Create(OpCodes.Not);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Not(new Cil.Int32(42)));
+		}
+
+		[TestMethod]
+		public void Or()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 2);
+			ctx.Stack.Push(new Cil.Int32(1));
+			ctx.Stack.Push(new Cil.Int32(2));
+			var instruction = Instruction.Create(OpCodes.Or);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Or(new Cil.Int32(1), new Cil.Int32(2)));
+		}
+
+		[TestMethod]
+		public void Pop()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 1);
+			ctx.Stack.Push(new Cil.Int32(1));
+			var instruction = Instruction.Create(OpCodes.Pop);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+		}
+
+		[TestMethod]
+		public void Refanytype()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 1);
+			ctx.Stack.Push(new Cil.Int32(1000));
+			var instruction = Instruction.Create(OpCodes.Refanytype);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Refanytype(new Cil.Int32(1000)));
+		}
+
+		[TestMethod]
+		public void Refanyval()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 1);
+			ctx.Stack.Push(new Cil.Int32(1000));
+			var instruction = Instruction.Create(OpCodes.Refanyval, ClassT);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Refanyval(ClassT, new Cil.Int32(1000)));
+		}
+
+		[TestMethod]
+		public void Rem()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 2);
+			ctx.Stack.Push(new Cil.Int32(10));
+			ctx.Stack.Push(new Cil.Int32(2));
+			var instruction = Instruction.Create(OpCodes.Rem);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Rem(new Cil.Int32(10), new Cil.Int32(2)));
+		}
+
+		[TestMethod]
+		public void Rem_Un()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 2);
+			ctx.Stack.Push(new Cil.Int32(10));
+			ctx.Stack.Push(new Cil.Int32(2));
+			var instruction = Instruction.Create(OpCodes.Rem_Un);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Rem(new Cil.Int32(10), new Cil.Int32(2)));
+		}
+
+		[TestMethod]
+		public void Ret()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 1);
+			var instruction = Instruction.Create(OpCodes.Ret);
+
+			CilMachine.Eval(ctx, instruction);
+
+			IsEmpty(ctx).Should().BeTrue();
+		}
+
+		[TestMethod]
+		public void Rethrow()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 1);
+			var instruction = Instruction.Create(OpCodes.Rethrow);
+
+			CilMachine.Eval(ctx, instruction);
+
+			IsEmpty(ctx).Should().BeTrue();
+		}
+
+		[TestMethod]
+		public void Shl()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 2);
+			ctx.Stack.Push(new Cil.Int32(10));
+			ctx.Stack.Push(new Cil.Int32(2));
+			var instruction = Instruction.Create(OpCodes.Shl);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Shl(new Cil.Int32(10), new Cil.Int32(2)));
+		}
+
+		[TestMethod]
+		public void Shr()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 2);
+			ctx.Stack.Push(new Cil.Int32(10));
+			ctx.Stack.Push(new Cil.Int32(2));
+			var instruction = Instruction.Create(OpCodes.Shr);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Shr(new Cil.Int32(10), new Cil.Int32(2)));
+		}
+
+		[TestMethod]
+		public void Shr_Un()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 2);
+			ctx.Stack.Push(new Cil.Int32(10));
+			ctx.Stack.Push(new Cil.Int32(2));
+			var instruction = Instruction.Create(OpCodes.Shr_Un);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Shr(new Cil.Int32(10), new Cil.Int32(2)));
+		}
+
+		[TestMethod]
+		public void Sizeof()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 1);
+			var instruction = Instruction.Create(OpCodes.Sizeof, ClassT);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Sizeof(ClassT));
+		}
+
+		[TestMethod]
+		public void Starg()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 1);
+			ctx.Stack.Push(new Cil.Int32(1));
+			var instruction = Instruction.Create(OpCodes.Starg, Param(0));
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+		}
+
+		[TestMethod]
+		public void Starg_S()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 1);
+			ctx.Stack.Push(new Cil.Int32(1));
+			var instruction = Instruction.Create(OpCodes.Starg_S, Param(0));
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+		}
+
+		[TestMethod]
+		public void Stelem()
+		{
+			var array = new Cil.Array(IntT, new Cil.Int32(5));
+			var ctx = new CilMachine.RoutineContext(0, 3);
+			ctx.Stack.Push(array); // array
+			ctx.Stack.Push(new Cil.Int32(1)); // index
+			ctx.Stack.Push(new Cil.Int32(42)); // value
+			var instruction = Instruction.Create(OpCodes.Stelem_Any, IntT);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1))].Should().Be(new Cil.Int32(42));
+		}
+
+		[TestMethod]
+		public void Stelem_I()
+		{
+			var array = new Cil.Array(IntT, new Cil.Int32(5));
+			var ctx = new CilMachine.RoutineContext(0, 3);
+			ctx.Stack.Push(array); // array
+			ctx.Stack.Push(new Cil.Int32(1)); // index
+			ctx.Stack.Push(new Cil.Int32(42)); // value
+			var instruction = Instruction.Create(OpCodes.Stelem_I);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1))].Should().Be(new Cil.Int32(42));
+		}
+
+		[TestMethod]
+		public void Stelem_I1()
+		{
+			var array = new Cil.Array(IntT, new Cil.Int32(5));
+			var ctx = new CilMachine.RoutineContext(0, 3);
+			ctx.Stack.Push(array); // array
+			ctx.Stack.Push(new Cil.Int32(1)); // index
+			ctx.Stack.Push(new Cil.Int32(42)); // value
+			var instruction = Instruction.Create(OpCodes.Stelem_I1);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1))].Should().Be(new Cil.Int32(42));
+		}
+
+		[TestMethod]
+		public void Stelem_I2()
+		{
+			var array = new Cil.Array(IntT, new Cil.Int32(5));
+			var ctx = new CilMachine.RoutineContext(0, 3);
+			ctx.Stack.Push(array); // array
+			ctx.Stack.Push(new Cil.Int32(1)); // index
+			ctx.Stack.Push(new Cil.Int32(42)); // value
+			var instruction = Instruction.Create(OpCodes.Stelem_I2);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1))].Should().Be(new Cil.Int32(42));
+		}
+
+		[TestMethod]
+		public void Stelem_I4()
+		{
+			var array = new Cil.Array(IntT, new Cil.Int32(5));
+			var ctx = new CilMachine.RoutineContext(0, 3);
+			ctx.Stack.Push(array); // array
+			ctx.Stack.Push(new Cil.Int32(1)); // index
+			ctx.Stack.Push(new Cil.Int32(42)); // value
+			var instruction = Instruction.Create(OpCodes.Stelem_I4);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1))].Should().Be(new Cil.Int32(42));
+		}
+
+		[TestMethod]
+		public void Stelem_I8()
+		{
+			var array = new Cil.Array(IntT, new Cil.Int32(5));
+			var ctx = new CilMachine.RoutineContext(0, 3);
+			ctx.Stack.Push(array); // array
+			ctx.Stack.Push(new Cil.Int32(1)); // index
+			ctx.Stack.Push(new Cil.Int32(42)); // value
+			var instruction = Instruction.Create(OpCodes.Stelem_I8);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1))].Should().Be(new Cil.Int32(42));
+		}
+
+		[TestMethod]
+		public void Stelem_R4()
+		{
+			var array = new Cil.Array(IntT, new Cil.Int32(5));
+			var ctx = new CilMachine.RoutineContext(0, 3);
+			ctx.Stack.Push(array); // array
+			ctx.Stack.Push(new Cil.Int32(1)); // index
+			ctx.Stack.Push(new Cil.Int32(42)); // value
+			var instruction = Instruction.Create(OpCodes.Stelem_R4);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1))].Should().Be(new Cil.Int32(42));
+		}
+
+		[TestMethod]
+		public void Stelem_R8()
+		{
+			var array = new Cil.Array(IntT, new Cil.Int32(5));
+			var ctx = new CilMachine.RoutineContext(0, 3);
+			ctx.Stack.Push(array); // array
+			ctx.Stack.Push(new Cil.Int32(1)); // index
+			ctx.Stack.Push(new Cil.Int32(42)); // value
+			var instruction = Instruction.Create(OpCodes.Stelem_R8);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1))].Should().Be(new Cil.Int32(42));
+		}
+
+		[TestMethod]
+		public void Stelem_Ref()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 3);
+			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5))); // array
+			ctx.Stack.Push(new Cil.Int32(1)); // index
+			ctx.Stack.Push(new Cil.Int32(42)); // value
+			var instruction = Instruction.Create(OpCodes.Stelem_Ref);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+			ctx.Arrays.Should().HaveCount(1);
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1))].Should().Be(new Cil.Int32(42));
+		}
+
+		[TestMethod]
+		public void Stfld()
+		{
+			var ctx = new CilMachine.RoutineContext(0, 2);
+			ctx.Stack.Push(new Cil.This(ClassT)); // instance
+			ctx.Stack.Push(new Cil.Int32(42)); // value
+			var instruction = Instruction.Create(OpCodes.Stfld, IntFieldT);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+			ctx.Objects[new CilMachine.ObjectField(new Cil.This(ClassT), IntFieldT)].Should().Be(new Cil.Int32(42));
+		}
 
 
 

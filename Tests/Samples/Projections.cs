@@ -248,5 +248,19 @@ namespace Samples
 				Console.WriteLine($"{user.Name}");
 			}
 		}
+
+		public static async void ReadForUpdate()
+		{
+			// should not advise any projections because entity is updated after read
+
+			using var db = new DB();
+			var order = await db.Orders.FirstAsync(o => o.Id == 42);
+			if (order.Number == 0)
+			{
+				order.Number = 12345;
+				order.Items.Add(new OrderItem { Product = await db.Products.FirstAsync(p => p.Name == "test") });
+				await db.SaveChangesAsync();
+			}
+		}
 	}
 }
