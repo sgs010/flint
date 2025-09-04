@@ -1,4 +1,5 @@
-﻿using Flint.Common;
+﻿using System.Security.Cryptography.X509Certificates;
+using Flint.Common;
 using Flint.Vm.Cil;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -72,7 +73,7 @@ namespace Flint.Vm
 			{
 				if (obj is ObjectField of)
 				{
-					return Object.Equals(of.Object)
+					return (Object != null ? Object.Equals(of.Object) : of.Object is null)
 						&& Field.Equals(of.Field);
 				}
 				return false;
@@ -495,14 +496,19 @@ namespace Flint.Vm
 				case Code.Stsfld:
 					Stfld(ctx, (FieldDefinition)instruction.Operand);
 					break;
-
-
-
-
-
-
-				case Code.Switch:
-					ctx.Stack.Pop();
+				case Code.Stind_I:
+				case Code.Stind_I1:
+				case Code.Stind_I2:
+				case Code.Stind_I4:
+				case Code.Stind_I8:
+				case Code.Stind_R4:
+				case Code.Stind_R8:
+				case Code.Stind_Ref:
+					Stind(ctx);
+					break;
+				case Code.Stloc:
+				case Code.Stloc_S:
+					Stloc(ctx, ((VariableReference)instruction.Operand).Index);
 					break;
 				case Code.Stloc_0:
 					Stloc(ctx, 0);
@@ -516,11 +522,26 @@ namespace Flint.Vm
 				case Code.Stloc_3:
 					Stloc(ctx, 3);
 					break;
-				case Code.Stloc_S:
-					Stloc(ctx, ((VariableReference)instruction.Operand).Index);
+				case Code.Stobj:
+					Stobj(ctx);
+					break;
+				case Code.Sub:
+				case Code.Sub_Ovf:
+				case Code.Sub_Ovf_Un:
+					Sub(ctx);
+					break;
+				case Code.Switch:
+					ctx.Stack.Pop();
 					break;
 				case Code.Throw:
 					ctx.Stack.Pop();
+					break;
+				case Code.Unbox:
+				case Code.Unbox_Any:
+					Unbox(ctx, (TypeReference)instruction.Operand);
+					break;
+				case Code.Xor:
+					Xor(ctx);
 					break;
 				default: throw new NotImplementedException($"Unknown instruction {instruction.OpCode.Code}");
 			}
@@ -961,15 +982,23 @@ namespace Flint.Vm
 			ctx.Arrays.AddOrReplace(new ArrayIndex(array, index), value);
 		}
 
-
-
-
-
-
+		private static void Stind(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			var address = ctx.Stack.Pop();
+			ctx.Heap.AddOrReplace(address, value);
+		}
 
 		private static void Stloc(RoutineContext ctx, int number)
 		{
 			ctx.Variables[number] = ctx.Stack.Pop();
+		}
+
+		private static void Stobj(RoutineContext ctx)
+		{
+			var value = ctx.Stack.Pop();
+			var address = ctx.Stack.Pop();
+			ctx.Heap.AddOrReplace(address, value);
 		}
 
 		private static void Stfld(RoutineContext ctx, FieldDefinition fld)
@@ -981,6 +1010,26 @@ namespace Flint.Vm
 				instance = ctx.Stack.Pop();
 
 			ctx.Objects.AddOrReplace(new ObjectField(instance, fld), value);
+		}
+
+		private static void Sub(RoutineContext ctx)
+		{
+			var right = ctx.Stack.Pop();
+			var left = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Sub(left, right));
+		}
+
+		private static void Unbox(RoutineContext ctx, TypeReference type)
+		{
+			var value = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Unbox(type, value));
+		}
+
+		private static void Xor(RoutineContext ctx)
+		{
+			var right = ctx.Stack.Pop();
+			var left = ctx.Stack.Pop();
+			ctx.Stack.Push(new Cil.Xor(left, right));
 		}
 		#endregion
 	}
