@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography.X509Certificates;
-using Flint.Common;
+﻿using Flint.Common;
 using Flint.Vm.Cil;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -88,7 +87,8 @@ namespace Flint.Vm
 		internal class RoutineContext
 		{
 			public readonly MethodDefinition Method;
-			public readonly Ast[] Variables;
+			public readonly Ast[] Args;
+			public readonly Ast[] Vars;
 			public readonly Stack<Ast> Stack;
 			public readonly Dictionary<Ast, Ast> Heap = [];
 			public readonly Dictionary<ArrayIndex, Ast> Arrays = [];
@@ -99,7 +99,8 @@ namespace Flint.Vm
 			public RoutineContext(MethodDefinition method)
 			{
 				Method = method;
-				Variables = new Ast[method.Body.Variables.Count];
+				Args = new Ast[method.Parameters.Count];
+				Vars = new Ast[method.Body.Variables.Count];
 				Stack = new Stack<Ast>(method.Body.MaxStackSize);
 				ExceptionHandlers = method.Body.ExceptionHandlers
 					.Where(x => x.HandlerType == ExceptionHandlerType.Catch)
@@ -108,19 +109,14 @@ namespace Flint.Vm
 			}
 
 			// use for tests only
-			internal RoutineContext(MethodDefinition method, int varCount, int stackSize, Instruction[] exceptionHandlers)
+			internal RoutineContext(MethodDefinition method = null, int varCount = 0, int stackSize = 0, Instruction[] exceptionHandlers = null)
 			{
 				Method = method;
-				Variables = new Ast[varCount];
+				Args = new Ast[method?.Parameters.Count ?? 0];
+				Vars = new Ast[varCount];
 				Stack = new Stack<Ast>(stackSize);
 				ExceptionHandlers = exceptionHandlers ?? [];
 			}
-
-			internal RoutineContext(int varCount, int stackSize)
-				: this(null, varCount, stackSize, null) { }
-
-			internal RoutineContext(MethodDefinition method, int varCount, int stackSize)
-				: this(method, varCount, stackSize, null) { }
 		}
 
 		internal static void Eval(RoutineContext ctx, Instruction instruction)
@@ -332,7 +328,7 @@ namespace Flint.Vm
 					Ldc_I4(ctx, -1);
 					break;
 				case Code.Ldc_I4_S:
-					Ldc_I4(ctx, (SByte)instruction.Operand);
+					Ldc_I4(ctx, (sbyte)instruction.Operand);
 					break;
 				case Code.Ldc_I8:
 					Ldc_I8(ctx, (long)instruction.Operand);
@@ -454,6 +450,8 @@ namespace Flint.Vm
 				case Code.Pop:
 					ctx.Stack.Pop();
 					break;
+				case Code.Readonly:
+					break;
 				case Code.Refanytype:
 					Refanytype(ctx);
 					break;
@@ -479,7 +477,7 @@ namespace Flint.Vm
 					break;
 				case Code.Starg:
 				case Code.Starg_S:
-					ctx.Stack.Pop();
+					Starg(ctx, ((ParameterReference)instruction.Operand).Index);
 					break;
 				case Code.Stelem_Any:
 				case Code.Stelem_I:
@@ -533,12 +531,19 @@ namespace Flint.Vm
 				case Code.Switch:
 					ctx.Stack.Pop();
 					break;
+				case Code.Tail:
+					break;
 				case Code.Throw:
 					ctx.Stack.Pop();
+					break;
+				case Code.Unaligned:
+					Unaligned(ctx, (byte)instruction.Operand);
 					break;
 				case Code.Unbox:
 				case Code.Unbox_Any:
 					Unbox(ctx, (TypeReference)instruction.Operand);
+					break;
+				case Code.Volatile:
 					break;
 				case Code.Xor:
 					Xor(ctx);
@@ -608,7 +613,7 @@ namespace Flint.Vm
 			{
 				var arg = args[i];
 				if (arg is Varptr var)
-					ctx.Variables[var.Index] = new Cil.OutArg(call, i);
+					ctx.Vars[var.Index] = new Cil.OutArg(call, i);
 			}
 		}
 
@@ -751,23 +756,20 @@ namespace Flint.Vm
 
 		private static void Ldarg(RoutineContext ctx, int number)
 		{
-			if (ctx.Method.HasThis)
+			if (ctx.Method.HasThis && number == 0)
 			{
-				if (number == 0)
-				{
-					ctx.Stack.Push(new Cil.This(ctx.Method.DeclaringType));
-				}
-				else
-				{
-					var parameter = ctx.Method.Parameters[number - 1];
-					ctx.Stack.Push(new Cil.Arg(number - 1, parameter));
-				}
+				ctx.Stack.Push(new Cil.This(ctx.Method.DeclaringType));
+				return;
 			}
-			else
+
+			var argNum = ctx.Method.HasThis ? number - 1 : number;
+			var value = ctx.Args[argNum];
+			if (value == null)
 			{
-				var parameter = ctx.Method.Parameters[number];
-				ctx.Stack.Push(new Cil.Arg(number, parameter));
+				var parameter = ctx.Method.Parameters[argNum];
+				value = new Cil.Arg(argNum, parameter);
 			}
+			ctx.Stack.Push(value);
 		}
 
 		private static void Ldarga(RoutineContext ctx, int number)
@@ -846,12 +848,12 @@ namespace Flint.Vm
 
 		private static void Ldloc(RoutineContext ctx, int number)
 		{
-			ctx.Stack.Push(ctx.Variables[number]);
+			ctx.Stack.Push(ctx.Vars[number]);
 		}
 
 		private static void Ldloca(RoutineContext ctx, VariableReference v)
 		{
-			var value = ctx.Variables[v.Index];
+			var value = ctx.Vars[v.Index];
 			if (value != null)
 				ctx.Stack.Push(value);
 			else
@@ -974,6 +976,16 @@ namespace Flint.Vm
 			ctx.Stack.Push(new Cil.Sizeof(type));
 		}
 
+		private static void Starg(RoutineContext ctx, int number)
+		{
+			if (ctx.Method.HasThis && number == 0)
+				throw new InvalidOperationException();
+
+			var argNum = ctx.Method.HasThis ? number - 1 : number;
+			var value = ctx.Stack.Pop();
+			ctx.Args[argNum] = value;
+		}
+
 		private static void Stelem(RoutineContext ctx)
 		{
 			var value = ctx.Stack.Pop();
@@ -991,7 +1003,7 @@ namespace Flint.Vm
 
 		private static void Stloc(RoutineContext ctx, int number)
 		{
-			ctx.Variables[number] = ctx.Stack.Pop();
+			ctx.Vars[number] = ctx.Stack.Pop();
 		}
 
 		private static void Stobj(RoutineContext ctx)
@@ -1017,6 +1029,11 @@ namespace Flint.Vm
 			var right = ctx.Stack.Pop();
 			var left = ctx.Stack.Pop();
 			ctx.Stack.Push(new Cil.Sub(left, right));
+		}
+
+		private static void Unaligned(RoutineContext ctx, byte address)
+		{
+			ctx.Stack.Push(new Cil.Unaligned(address));
 		}
 
 		private static void Unbox(RoutineContext ctx, TypeReference type)

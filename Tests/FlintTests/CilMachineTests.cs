@@ -57,12 +57,12 @@ namespace FlintTests
 		private static bool IsEmpty(CilMachine.RoutineContext ctx)
 		{
 			return ctx.Objects.Count == 0
-				&& ctx.Variables.All(x => x is null)
+				&& ctx.Vars.All(x => x is null)
 				&& ctx.Stack.Count == 0
 				&& ctx.Expressions.Count == 0;
 		}
 
-		private static ParameterDefinition Param(int index)
+		private static ParameterDefinition Arg(int index)
 		{
 			var p = new ParameterDefinition(IntT);
 			typeof(ParameterDefinition)
@@ -83,7 +83,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Add()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Add);
@@ -97,7 +97,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Add_Ovf()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Add_Ovf);
@@ -111,7 +111,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Add_Ovf_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Add_Ovf_Un);
@@ -125,7 +125,7 @@ namespace FlintTests
 		[TestMethod]
 		public void And()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.And);
@@ -140,7 +140,7 @@ namespace FlintTests
 		public void Arglist()
 		{
 			var method = new MethodDefinition("test", 0, IntT);
-			var ctx = new CilMachine.RoutineContext(method, 1, 2);
+			var ctx = new CilMachine.RoutineContext(method, stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Arglist);
 
 			CilMachine.Eval(ctx, instruction);
@@ -152,7 +152,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Beq()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Beq, Instruction.Create(OpCodes.Nop));
@@ -165,7 +165,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Beq_S()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Beq_S, Instruction.Create(OpCodes.Nop));
@@ -178,7 +178,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Bge()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Bge, Instruction.Create(OpCodes.Nop));
@@ -191,7 +191,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Bge_S()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Bge_S, Instruction.Create(OpCodes.Nop));
@@ -204,7 +204,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Bge_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Bge_Un, Instruction.Create(OpCodes.Nop));
@@ -217,7 +217,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Bge_Un_S()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Bge_Un_S, Instruction.Create(OpCodes.Nop));
@@ -230,7 +230,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Bgt()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Bgt, Instruction.Create(OpCodes.Nop));
@@ -243,7 +243,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Bgt_S()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Bgt_S, Instruction.Create(OpCodes.Nop));
@@ -256,7 +256,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Bgt_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Bgt_Un, Instruction.Create(OpCodes.Nop));
@@ -269,7 +269,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Bgt_Un_s()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Bgt_Un_S, Instruction.Create(OpCodes.Nop));
@@ -282,7 +282,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ble()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Ble, Instruction.Create(OpCodes.Nop));
@@ -295,7 +295,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ble_S()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Ble_S, Instruction.Create(OpCodes.Nop));
@@ -308,7 +308,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ble_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Ble_Un, Instruction.Create(OpCodes.Nop));
@@ -321,7 +321,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ble_Un_S()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Ble_Un_S, Instruction.Create(OpCodes.Nop));
@@ -334,7 +334,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Blt()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Blt, Instruction.Create(OpCodes.Nop));
@@ -347,7 +347,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Blt_S()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Blt_S, Instruction.Create(OpCodes.Nop));
@@ -360,7 +360,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Blt_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Blt_Un, Instruction.Create(OpCodes.Nop));
@@ -373,7 +373,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Blt_Un_S()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Blt_Un_S, Instruction.Create(OpCodes.Nop));
@@ -386,7 +386,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Bne_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Bne_Un, Instruction.Create(OpCodes.Nop));
@@ -399,7 +399,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Bne_Un_S()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Bne_Un_S, Instruction.Create(OpCodes.Nop));
@@ -412,7 +412,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Box()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(42));
 			var instruction = Instruction.Create(OpCodes.Box, IntT);
 
@@ -425,7 +425,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Br()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext();
 			var instruction = Instruction.Create(OpCodes.Br, Instruction.Create(OpCodes.Nop));
 
 			CilMachine.Eval(ctx, instruction);
@@ -436,7 +436,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Br_S()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext();
 			var instruction = Instruction.Create(OpCodes.Br_S, Instruction.Create(OpCodes.Nop));
 
 			CilMachine.Eval(ctx, instruction);
@@ -447,7 +447,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Break()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext();
 			var instruction = Instruction.Create(OpCodes.Break);
 
 			CilMachine.Eval(ctx, instruction);
@@ -458,7 +458,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Brfalse()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(0));
 			var instruction = Instruction.Create(OpCodes.Brfalse, Instruction.Create(OpCodes.Nop));
 
@@ -470,7 +470,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Brfalse_S()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(0));
 			var instruction = Instruction.Create(OpCodes.Brfalse_S, Instruction.Create(OpCodes.Nop));
 
@@ -482,7 +482,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Brtrue()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(0));
 			var instruction = Instruction.Create(OpCodes.Brtrue, Instruction.Create(OpCodes.Nop));
 
@@ -494,7 +494,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Brtrue_S()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(0));
 			var instruction = Instruction.Create(OpCodes.Brtrue_S, Instruction.Create(OpCodes.Nop));
 
@@ -506,7 +506,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Call_StaticMethod()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.String("foo"));
 			var instruction = Instruction.Create(OpCodes.Call, StaticMethodT);
@@ -521,7 +521,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Call_InstanceMethod()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 3);
+			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(new Cil.This(ClassT));
 			ctx.Stack.Push(new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.String("foo"));
@@ -537,7 +537,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Call_VoidMethod()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 3);
+			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(new Cil.This(ClassT));
 			ctx.Stack.Push(new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.String("foo"));
@@ -552,7 +552,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Callvirt()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 3);
+			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(new Cil.This(ClassT));
 			ctx.Stack.Push(new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.String("foo"));
@@ -568,7 +568,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Castclass()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(42));
 			var instruction = Instruction.Create(OpCodes.Castclass, ClassT);
 
@@ -581,7 +581,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ceq()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Ceq);
@@ -595,7 +595,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Cgt()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Cgt);
@@ -609,7 +609,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Cgt_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Cgt_Un);
@@ -623,7 +623,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ckfinite()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(42));
 			var instruction = Instruction.Create(OpCodes.Ckfinite);
 
@@ -636,7 +636,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Clt()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Clt);
@@ -650,7 +650,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Clt_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Clt_Un);
@@ -664,7 +664,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Constrained()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext();
 			var instruction = Instruction.Create(OpCodes.Constrained, ClassT);
 
 			CilMachine.Eval(ctx, instruction);
@@ -675,7 +675,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_I()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_I);
 
@@ -688,7 +688,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_I1()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_I1);
 
@@ -701,7 +701,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_I2()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_I2);
 
@@ -714,7 +714,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_I4()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_I4);
 
@@ -727,7 +727,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_I8()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_I8);
 
@@ -740,7 +740,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_Ovf_I()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_Ovf_I);
 
@@ -753,7 +753,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_Ovf_I_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_Ovf_I_Un);
 
@@ -766,7 +766,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_Ovf_I1()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_Ovf_I1);
 
@@ -779,7 +779,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_Ovf_I1_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_Ovf_I1_Un);
 
@@ -792,7 +792,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_Ovf_I2()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_Ovf_I2);
 
@@ -805,7 +805,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_Ovf_I2_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_Ovf_I2_Un);
 
@@ -818,7 +818,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_Ovf_I4()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_Ovf_I4);
 
@@ -831,7 +831,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_Ovf_I4_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_Ovf_I4_Un);
 
@@ -844,7 +844,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_Ovf_I8()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_Ovf_I8);
 
@@ -857,7 +857,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_Ovf_I8_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_Ovf_I8_Un);
 
@@ -870,7 +870,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_R_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_R_Un);
 
@@ -883,7 +883,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_R4()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_R4);
 
@@ -896,7 +896,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_R8()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_R8);
 
@@ -909,7 +909,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_U()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_U);
 
@@ -922,7 +922,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_U1()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_U1);
 
@@ -935,7 +935,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_U2()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_U2);
 
@@ -948,7 +948,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_U4()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_U4);
 
@@ -961,7 +961,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Conv_U8()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Null.Instance);
 			var instruction = Instruction.Create(OpCodes.Conv_U8);
 
@@ -974,7 +974,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Cpblk()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 3);
+			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(new Cil.Int32(2000)); // destination address
 			ctx.Stack.Push(new Cil.Int32(1000)); // source address
 			ctx.Stack.Push(new Cil.Int32(10)); // number of bytes to copy
@@ -988,7 +988,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Cpobj()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(2000)); // destination object address
 			ctx.Stack.Push(new Cil.Int32(1000)); // source object address
 			var instruction = Instruction.Create(OpCodes.Cpobj, ClassT);
@@ -1001,7 +1001,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Div()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(10));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Div);
@@ -1016,7 +1016,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Div_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(10));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Div_Un);
@@ -1031,7 +1031,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Dup()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(42));
 			var instruction = Instruction.Create(OpCodes.Dup);
 
@@ -1045,7 +1045,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Endfilter()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext();
 			var instruction = Instruction.Create(OpCodes.Endfilter);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1056,7 +1056,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Endfinally()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext();
 			var instruction = Instruction.Create(OpCodes.Endfinally);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1069,7 +1069,7 @@ namespace FlintTests
 		{
 			var handler = Instruction.Create(OpCodes.Nop);
 			handler.Offset = 42;
-			var ctx = new CilMachine.RoutineContext(StaticMethodT, 0, 1, [handler]);
+			var ctx = new CilMachine.RoutineContext(StaticMethodT, stackSize: 1, exceptionHandlers: [handler]);
 			var instruction = Instruction.Create(OpCodes.Nop);
 			instruction.Offset = 42;
 
@@ -1082,7 +1082,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Initblk()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(new Cil.Int32(1000)); // starting address
 			ctx.Stack.Push(new Cil.Int32(42)); // initialization value
 			ctx.Stack.Push(new Cil.Int32(10)); // number of bytes to initialize
@@ -1096,7 +1096,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Initobj()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(1000)); // address
 			var instruction = Instruction.Create(OpCodes.Initobj, ClassT);
 
@@ -1108,7 +1108,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Isinst()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.String("foo"));
 			var instruction = Instruction.Create(OpCodes.Isinst, StringT);
 
@@ -1122,7 +1122,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Jmp()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext();
 			var instruction = Instruction.Create(OpCodes.Jmp, VoidMethodT);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1131,10 +1131,23 @@ namespace FlintTests
 		}
 
 		[TestMethod]
+		public void Ldarg_HasValue()
+		{
+			var ctx = new CilMachine.RoutineContext(StaticMethodT, stackSize: 1);
+			ctx.Args[1] = new Cil.Int32(42);
+			var instruction = Instruction.Create(OpCodes.Ldarg, Arg(1));
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Int32(42));
+		}
+
+		[TestMethod]
 		public void Ldarg_InstanceMethod()
 		{
-			var ctx = new CilMachine.RoutineContext(InstanceMethodT, 0, 1);
-			var instruction = Instruction.Create(OpCodes.Ldarg, Param(1));
+			var ctx = new CilMachine.RoutineContext(InstanceMethodT, stackSize: 1);
+			var instruction = Instruction.Create(OpCodes.Ldarg, Arg(1));
 
 			CilMachine.Eval(ctx, instruction);
 
@@ -1145,8 +1158,8 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldarg_StaticMethod()
 		{
-			var ctx = new CilMachine.RoutineContext(StaticMethodT, 0, 1);
-			var instruction = Instruction.Create(OpCodes.Ldarg, Param(1));
+			var ctx = new CilMachine.RoutineContext(StaticMethodT, stackSize: 1);
+			var instruction = Instruction.Create(OpCodes.Ldarg, Arg(1));
 
 			CilMachine.Eval(ctx, instruction);
 
@@ -1157,8 +1170,8 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldarg_This()
 		{
-			var ctx = new CilMachine.RoutineContext(InstanceMethodT, 0, 1);
-			var instruction = Instruction.Create(OpCodes.Ldarg, Param(0));
+			var ctx = new CilMachine.RoutineContext(InstanceMethodT, stackSize: 1);
+			var instruction = Instruction.Create(OpCodes.Ldarg, Arg(0));
 
 			CilMachine.Eval(ctx, instruction);
 
@@ -1169,7 +1182,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldarg_0()
 		{
-			var ctx = new CilMachine.RoutineContext(ManyParametersMethodT, 0, 1);
+			var ctx = new CilMachine.RoutineContext(ManyParametersMethodT, stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldarg_0);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1181,7 +1194,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldarg_1()
 		{
-			var ctx = new CilMachine.RoutineContext(ManyParametersMethodT, 0, 1);
+			var ctx = new CilMachine.RoutineContext(ManyParametersMethodT, stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldarg_1);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1193,7 +1206,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldarg_2()
 		{
-			var ctx = new CilMachine.RoutineContext(ManyParametersMethodT, 0, 1);
+			var ctx = new CilMachine.RoutineContext(ManyParametersMethodT, stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldarg_2);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1205,7 +1218,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldarg_3()
 		{
-			var ctx = new CilMachine.RoutineContext(ManyParametersMethodT, 0, 1);
+			var ctx = new CilMachine.RoutineContext(ManyParametersMethodT, stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldarg_3);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1217,8 +1230,8 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldarg_S()
 		{
-			var ctx = new CilMachine.RoutineContext(ManyParametersMethodT, 0, 1);
-			var instruction = Instruction.Create(OpCodes.Ldarg_S, Param(4));
+			var ctx = new CilMachine.RoutineContext(ManyParametersMethodT, stackSize: 1);
+			var instruction = Instruction.Create(OpCodes.Ldarg_S, Arg(4));
 
 			CilMachine.Eval(ctx, instruction);
 
@@ -1229,8 +1242,8 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldarga()
 		{
-			var ctx = new CilMachine.RoutineContext(ManyParametersMethodT, 0, 1);
-			var instruction = Instruction.Create(OpCodes.Ldarga, Param(1));
+			var ctx = new CilMachine.RoutineContext(ManyParametersMethodT, stackSize: 1);
+			var instruction = Instruction.Create(OpCodes.Ldarga, Arg(1));
 
 			CilMachine.Eval(ctx, instruction);
 
@@ -1241,8 +1254,8 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldarga_S()
 		{
-			var ctx = new CilMachine.RoutineContext(ManyParametersMethodT, 0, 1);
-			var instruction = Instruction.Create(OpCodes.Ldarga_S, Param(1));
+			var ctx = new CilMachine.RoutineContext(ManyParametersMethodT, stackSize: 1);
+			var instruction = Instruction.Create(OpCodes.Ldarga_S, Arg(1));
 
 			CilMachine.Eval(ctx, instruction);
 
@@ -1253,7 +1266,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldc_I4()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldc_I4, 42);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1265,7 +1278,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldc_I4_0()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldc_I4_0);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1277,7 +1290,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldc_I4_1()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldc_I4_1);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1289,7 +1302,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldc_I4_2()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldc_I4_2);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1301,7 +1314,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldc_I4_3()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldc_I4_3);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1313,7 +1326,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldc_I4_4()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldc_I4_4);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1325,7 +1338,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldc_I4_5()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldc_I4_5);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1337,7 +1350,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldc_I4_6()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldc_I4_6);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1349,7 +1362,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldc_I4_7()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldc_I4_7);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1361,7 +1374,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldc_I4_8()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldc_I4_8);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1373,7 +1386,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldc_I4_M1()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldc_I4_M1);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1385,8 +1398,8 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldc_I4_S()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
-			var instruction = Instruction.Create(OpCodes.Ldc_I4_S, (SByte)42);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
+			var instruction = Instruction.Create(OpCodes.Ldc_I4_S, (sbyte)42);
 
 			CilMachine.Eval(ctx, instruction);
 
@@ -1397,7 +1410,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldc_I8()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldc_I8, (long)42);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1409,7 +1422,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldc_R4()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldc_R4, 3.14f);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1421,7 +1434,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldc_R8()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldc_R8, (double)3.14f);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1433,7 +1446,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldelem_HasValue()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
@@ -1448,7 +1461,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldelem_NoValue()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Call(null, ArrayMethodT, []));
 			ctx.Stack.Push(new Cil.Int32(1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_Any, IntT);
@@ -1465,7 +1478,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldelem_I()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
@@ -1480,7 +1493,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldelem_I1()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
@@ -1495,7 +1508,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldelem_I2()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
@@ -1510,7 +1523,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldelem_I4()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
@@ -1525,7 +1538,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldelem_I8()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
@@ -1540,7 +1553,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldelem_R4()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
@@ -1555,7 +1568,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldelem_R8()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
@@ -1570,7 +1583,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldelem_Ref()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
@@ -1585,7 +1598,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldelem_U1()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
@@ -1600,7 +1613,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldelem_U2()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
@@ -1615,7 +1628,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldelem_U4()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(IntT, new Cil.Int32(5)), new Cil.Int32(1)), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			ctx.Stack.Push(new Cil.Int32(1));
@@ -1630,7 +1643,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldelema()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			var array = new Cil.Array(IntT, new Cil.Int32(5));
 			ctx.Stack.Push(array);
 			ctx.Stack.Push(new Cil.Int32(1));
@@ -1648,7 +1661,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldfld()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.This(ClassT));
 			var instruction = Instruction.Create(OpCodes.Ldfld, IntFieldT);
 
@@ -1661,7 +1674,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldflda()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.This(ClassT));
 			var instruction = Instruction.Create(OpCodes.Ldflda, IntFieldT);
 
@@ -1674,7 +1687,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldftn()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldftn, InstanceMethodT);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1686,7 +1699,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldind_I_HasValue()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Heap.Add(new Cil.Int32(1000), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Int32(1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_I);
@@ -1700,7 +1713,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldind_I_NoValue()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_I);
 
@@ -1713,7 +1726,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldind_I1()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Heap.Add(new Cil.Int32(1000), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Int32(1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_I1);
@@ -1727,7 +1740,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldind_I2()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Heap.Add(new Cil.Int32(1000), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Int32(1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_I2);
@@ -1741,7 +1754,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldind_I4()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Heap.Add(new Cil.Int32(1000), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Int32(1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_I4);
@@ -1755,7 +1768,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldind_I8()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Heap.Add(new Cil.Int32(1000), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Int32(1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_I8);
@@ -1769,7 +1782,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldind_R4()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Heap.Add(new Cil.Int32(1000), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Int32(1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_R4);
@@ -1783,7 +1796,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldind_R8()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Heap.Add(new Cil.Int32(1000), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Int32(1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_R8);
@@ -1797,7 +1810,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldind_Ref()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Heap.Add(new Cil.Int32(1000), new Cil.This(ClassT));
 			ctx.Stack.Push(new Cil.Int32(1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_Ref);
@@ -1811,7 +1824,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldind_U1()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Heap.Add(new Cil.Int32(1000), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Int32(1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_U1);
@@ -1825,7 +1838,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldind_U2()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Heap.Add(new Cil.Int32(1000), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Int32(1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_U2);
@@ -1839,7 +1852,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldind_U4()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Heap.Add(new Cil.Int32(1000), new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.Int32(1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_U4);
@@ -1853,7 +1866,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldlen()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5)));
 			var instruction = Instruction.Create(OpCodes.Ldlen);
 
@@ -1866,8 +1879,8 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldloc()
 		{
-			var ctx = new CilMachine.RoutineContext(2, 1);
-			ctx.Variables[1] = new Cil.Int32(42);
+			var ctx = new CilMachine.RoutineContext(varCount: 2, stackSize: 1);
+			ctx.Vars[1] = new Cil.Int32(42);
 			var instruction = Instruction.Create(OpCodes.Ldloc, Var(1));
 
 			CilMachine.Eval(ctx, instruction);
@@ -1879,8 +1892,8 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldloc_S()
 		{
-			var ctx = new CilMachine.RoutineContext(2, 1);
-			ctx.Variables[1] = new Cil.Int32(42);
+			var ctx = new CilMachine.RoutineContext(varCount: 2, stackSize: 1);
+			ctx.Vars[1] = new Cil.Int32(42);
 			var instruction = Instruction.Create(OpCodes.Ldloc_S, Var(1));
 
 			CilMachine.Eval(ctx, instruction);
@@ -1892,8 +1905,8 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldloc_0()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 1);
-			ctx.Variables[0] = new Cil.Int32(42);
+			var ctx = new CilMachine.RoutineContext(varCount: 1, stackSize: 1);
+			ctx.Vars[0] = new Cil.Int32(42);
 			var instruction = Instruction.Create(OpCodes.Ldloc_0);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1905,8 +1918,8 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldloc_1()
 		{
-			var ctx = new CilMachine.RoutineContext(2, 1);
-			ctx.Variables[1] = new Cil.Int32(42);
+			var ctx = new CilMachine.RoutineContext(varCount: 2, stackSize: 1);
+			ctx.Vars[1] = new Cil.Int32(42);
 			var instruction = Instruction.Create(OpCodes.Ldloc_1);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1918,8 +1931,8 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldloc_2()
 		{
-			var ctx = new CilMachine.RoutineContext(3, 1);
-			ctx.Variables[2] = new Cil.Int32(42);
+			var ctx = new CilMachine.RoutineContext(varCount: 3, stackSize: 1);
+			ctx.Vars[2] = new Cil.Int32(42);
 			var instruction = Instruction.Create(OpCodes.Ldloc_2);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1931,8 +1944,8 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldloc_3()
 		{
-			var ctx = new CilMachine.RoutineContext(4, 1);
-			ctx.Variables[3] = new Cil.Int32(42);
+			var ctx = new CilMachine.RoutineContext(varCount: 4, stackSize: 1);
+			ctx.Vars[3] = new Cil.Int32(42);
 			var instruction = Instruction.Create(OpCodes.Ldloc_3);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1944,8 +1957,8 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldloca_HasValue()
 		{
-			var ctx = new CilMachine.RoutineContext(2, 1);
-			ctx.Variables[1] = new Cil.Int32(42);
+			var ctx = new CilMachine.RoutineContext(varCount: 2, stackSize: 1);
+			ctx.Vars[1] = new Cil.Int32(42);
 			var instruction = Instruction.Create(OpCodes.Ldloca, Var(1));
 
 			CilMachine.Eval(ctx, instruction);
@@ -1957,7 +1970,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldloca_NoValue()
 		{
-			var ctx = new CilMachine.RoutineContext(2, 1);
+			var ctx = new CilMachine.RoutineContext(varCount: 2, stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldloca, Var(1));
 
 			CilMachine.Eval(ctx, instruction);
@@ -1969,7 +1982,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldloca_S()
 		{
-			var ctx = new CilMachine.RoutineContext(2, 1);
+			var ctx = new CilMachine.RoutineContext(varCount: 2, stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldloca_S, Var(1));
 
 			CilMachine.Eval(ctx, instruction);
@@ -1981,7 +1994,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldnull()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldnull);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1993,7 +2006,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldobj()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Heap.Add(new Cil.Int32(1000), new Cil.This(ClassT));
 			ctx.Stack.Push(new Cil.Int32(1000));
 			var instruction = Instruction.Create(OpCodes.Ldobj, ClassT);
@@ -2007,7 +2020,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldsfld()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldsfld, StringFieldT);
 
 			CilMachine.Eval(ctx, instruction);
@@ -2019,7 +2032,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldsflda()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldsflda, StringFieldT);
 
 			CilMachine.Eval(ctx, instruction);
@@ -2031,7 +2044,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldstr()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldstr, "foo");
 
 			CilMachine.Eval(ctx, instruction);
@@ -2043,7 +2056,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldtoken_Typeof()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldtoken, IntT);
 
 			CilMachine.Eval(ctx, instruction);
@@ -2055,7 +2068,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldtoken_Methodof()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Ldtoken, InstanceMethodT);
 
 			CilMachine.Eval(ctx, instruction);
@@ -2067,7 +2080,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ldvirtftn()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.This(ClassT));
 			var instruction = Instruction.Create(OpCodes.Ldvirtftn, VirtualMethodT);
 
@@ -2080,7 +2093,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Leave()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 1);
+			var ctx = new CilMachine.RoutineContext();
 			var instruction = Instruction.Create(OpCodes.Leave, Instruction.Create(OpCodes.Nop));
 
 			CilMachine.Eval(ctx, instruction);
@@ -2091,7 +2104,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Leave_S()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 1);
+			var ctx = new CilMachine.RoutineContext();
 			var instruction = Instruction.Create(OpCodes.Leave_S, Instruction.Create(OpCodes.Nop));
 
 			CilMachine.Eval(ctx, instruction);
@@ -2102,7 +2115,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Localloc()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(10));
 			var instruction = Instruction.Create(OpCodes.Localloc);
 
@@ -2115,7 +2128,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Mkrefany()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(1000));
 			var instruction = Instruction.Create(OpCodes.Mkrefany, ClassT);
 
@@ -2128,7 +2141,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Mul()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Mul);
@@ -2142,7 +2155,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Mul_Ovf()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Mul_Ovf);
@@ -2156,7 +2169,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Mul_Ovf_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Mul_Ovf_Un);
@@ -2170,7 +2183,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Neg()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			var instruction = Instruction.Create(OpCodes.Neg);
 
@@ -2183,7 +2196,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Newarr()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(5));
 			var instruction = Instruction.Create(OpCodes.Newarr, IntT);
 
@@ -2196,7 +2209,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Newobj()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(42));
 			ctx.Stack.Push(new Cil.String("foo"));
 			var instruction = Instruction.Create(OpCodes.Newobj, ConstructorT);
@@ -2214,7 +2227,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Nop()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext();
 			var instruction = Instruction.Create(OpCodes.Nop);
 
 			CilMachine.Eval(ctx, instruction);
@@ -2225,7 +2238,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Not()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(42));
 			var instruction = Instruction.Create(OpCodes.Not);
 
@@ -2238,7 +2251,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Or()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Or);
@@ -2252,7 +2265,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Pop()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(1));
 			var instruction = Instruction.Create(OpCodes.Pop);
 
@@ -2262,9 +2275,20 @@ namespace FlintTests
 		}
 
 		[TestMethod]
+		public void Readonly()
+		{
+			var ctx = new CilMachine.RoutineContext();
+			var instruction = Instruction.Create(OpCodes.Readonly);
+
+			CilMachine.Eval(ctx, instruction);
+
+			IsEmpty(ctx).Should().BeTrue();
+		}
+
+		[TestMethod]
 		public void Refanytype()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(1000));
 			var instruction = Instruction.Create(OpCodes.Refanytype);
 
@@ -2277,7 +2301,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Refanyval()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(1000));
 			var instruction = Instruction.Create(OpCodes.Refanyval, ClassT);
 
@@ -2290,7 +2314,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Rem()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(10));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Rem);
@@ -2304,7 +2328,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Rem_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(10));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Rem_Un);
@@ -2318,7 +2342,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Ret()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext();
 			var instruction = Instruction.Create(OpCodes.Ret);
 
 			CilMachine.Eval(ctx, instruction);
@@ -2329,7 +2353,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Rethrow()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext();
 			var instruction = Instruction.Create(OpCodes.Rethrow);
 
 			CilMachine.Eval(ctx, instruction);
@@ -2340,7 +2364,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Shl()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(10));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Shl);
@@ -2354,7 +2378,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Shr()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(10));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Shr);
@@ -2368,7 +2392,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Shr_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(10));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Shr_Un);
@@ -2382,7 +2406,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Sizeof()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			var instruction = Instruction.Create(OpCodes.Sizeof, ClassT);
 
 			CilMachine.Eval(ctx, instruction);
@@ -2392,34 +2416,49 @@ namespace FlintTests
 		}
 
 		[TestMethod]
-		public void Starg()
+		public void Starg_InstanceMethod()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
-			ctx.Stack.Push(new Cil.Int32(1));
-			var instruction = Instruction.Create(OpCodes.Starg, Param(0));
+			var ctx = new CilMachine.RoutineContext(InstanceMethodT, stackSize: 1);
+			ctx.Stack.Push(new Cil.Int32(42));
+			var instruction = Instruction.Create(OpCodes.Starg, Arg(1));
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().BeEmpty();
+			ctx.Args[0].Should().Be(new Cil.Int32(42));
+		}
+
+		[TestMethod]
+		public void Starg_StaticMethod()
+		{
+			var ctx = new CilMachine.RoutineContext(StaticMethodT, stackSize: 1);
+			ctx.Stack.Push(new Cil.Int32(42));
+			var instruction = Instruction.Create(OpCodes.Starg, Arg(0));
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().BeEmpty();
+			ctx.Args[0].Should().Be(new Cil.Int32(42));
 		}
 
 		[TestMethod]
 		public void Starg_S()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
-			ctx.Stack.Push(new Cil.Int32(1));
-			var instruction = Instruction.Create(OpCodes.Starg_S, Param(0));
+			var ctx = new CilMachine.RoutineContext(StaticMethodT, stackSize: 1);
+			ctx.Stack.Push(new Cil.Int32(42));
+			var instruction = Instruction.Create(OpCodes.Starg_S, Arg(0));
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().BeEmpty();
+			ctx.Args[0].Should().Be(new Cil.Int32(42));
 		}
 
 		[TestMethod]
 		public void Stelem()
 		{
 			var array = new Cil.Array(IntT, new Cil.Int32(5));
-			var ctx = new CilMachine.RoutineContext(0, 3);
+			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(array); // array
 			ctx.Stack.Push(new Cil.Int32(1)); // index
 			ctx.Stack.Push(new Cil.Int32(42)); // value
@@ -2435,7 +2474,7 @@ namespace FlintTests
 		public void Stelem_I()
 		{
 			var array = new Cil.Array(IntT, new Cil.Int32(5));
-			var ctx = new CilMachine.RoutineContext(0, 3);
+			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(array); // array
 			ctx.Stack.Push(new Cil.Int32(1)); // index
 			ctx.Stack.Push(new Cil.Int32(42)); // value
@@ -2451,7 +2490,7 @@ namespace FlintTests
 		public void Stelem_I1()
 		{
 			var array = new Cil.Array(IntT, new Cil.Int32(5));
-			var ctx = new CilMachine.RoutineContext(0, 3);
+			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(array); // array
 			ctx.Stack.Push(new Cil.Int32(1)); // index
 			ctx.Stack.Push(new Cil.Int32(42)); // value
@@ -2467,7 +2506,7 @@ namespace FlintTests
 		public void Stelem_I2()
 		{
 			var array = new Cil.Array(IntT, new Cil.Int32(5));
-			var ctx = new CilMachine.RoutineContext(0, 3);
+			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(array); // array
 			ctx.Stack.Push(new Cil.Int32(1)); // index
 			ctx.Stack.Push(new Cil.Int32(42)); // value
@@ -2483,7 +2522,7 @@ namespace FlintTests
 		public void Stelem_I4()
 		{
 			var array = new Cil.Array(IntT, new Cil.Int32(5));
-			var ctx = new CilMachine.RoutineContext(0, 3);
+			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(array); // array
 			ctx.Stack.Push(new Cil.Int32(1)); // index
 			ctx.Stack.Push(new Cil.Int32(42)); // value
@@ -2499,7 +2538,7 @@ namespace FlintTests
 		public void Stelem_I8()
 		{
 			var array = new Cil.Array(IntT, new Cil.Int32(5));
-			var ctx = new CilMachine.RoutineContext(0, 3);
+			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(array); // array
 			ctx.Stack.Push(new Cil.Int32(1)); // index
 			ctx.Stack.Push(new Cil.Int32(42)); // value
@@ -2515,7 +2554,7 @@ namespace FlintTests
 		public void Stelem_R4()
 		{
 			var array = new Cil.Array(IntT, new Cil.Int32(5));
-			var ctx = new CilMachine.RoutineContext(0, 3);
+			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(array); // array
 			ctx.Stack.Push(new Cil.Int32(1)); // index
 			ctx.Stack.Push(new Cil.Int32(42)); // value
@@ -2531,7 +2570,7 @@ namespace FlintTests
 		public void Stelem_R8()
 		{
 			var array = new Cil.Array(IntT, new Cil.Int32(5));
-			var ctx = new CilMachine.RoutineContext(0, 3);
+			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(array); // array
 			ctx.Stack.Push(new Cil.Int32(1)); // index
 			ctx.Stack.Push(new Cil.Int32(42)); // value
@@ -2546,7 +2585,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Stelem_Ref()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 3);
+			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(new Cil.Array(IntT, new Cil.Int32(5))); // array
 			ctx.Stack.Push(new Cil.Int32(1)); // index
 			ctx.Stack.Push(new Cil.Int32(42)); // value
@@ -2562,7 +2601,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Stfld()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.This(ClassT)); // instance
 			ctx.Stack.Push(new Cil.Int32(42)); // value
 			var instruction = Instruction.Create(OpCodes.Stfld, IntFieldT);
@@ -2576,7 +2615,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Stind_I()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1000)); // address
 			ctx.Stack.Push(new Cil.Int32(42)); // value
 			var instruction = Instruction.Create(OpCodes.Stind_I);
@@ -2590,7 +2629,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Stind_I1()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1000)); // address
 			ctx.Stack.Push(new Cil.Int32(42)); // value
 			var instruction = Instruction.Create(OpCodes.Stind_I1);
@@ -2604,7 +2643,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Stind_I2()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1000)); // address
 			ctx.Stack.Push(new Cil.Int32(42)); // value
 			var instruction = Instruction.Create(OpCodes.Stind_I2);
@@ -2618,7 +2657,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Stind_I4()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1000)); // address
 			ctx.Stack.Push(new Cil.Int32(42)); // value
 			var instruction = Instruction.Create(OpCodes.Stind_I4);
@@ -2632,7 +2671,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Stind_I8()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1000)); // address
 			ctx.Stack.Push(new Cil.Int32(42)); // value
 			var instruction = Instruction.Create(OpCodes.Stind_I8);
@@ -2646,7 +2685,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Stind_R4()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1000)); // address
 			ctx.Stack.Push(new Cil.Int32(42)); // value
 			var instruction = Instruction.Create(OpCodes.Stind_R4);
@@ -2660,7 +2699,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Stind_R8()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1000)); // address
 			ctx.Stack.Push(new Cil.Int32(42)); // value
 			var instruction = Instruction.Create(OpCodes.Stind_R8);
@@ -2674,7 +2713,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Stind_Ref()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1000)); // address
 			ctx.Stack.Push(new Cil.Int32(42)); // value
 			var instruction = Instruction.Create(OpCodes.Stind_Ref);
@@ -2688,85 +2727,85 @@ namespace FlintTests
 		[TestMethod]
 		public void Stloc()
 		{
-			var ctx = new CilMachine.RoutineContext(2, 1);
+			var ctx = new CilMachine.RoutineContext(varCount: 2, stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(42)); // value
 			var instruction = Instruction.Create(OpCodes.Stloc, Var(1));
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().BeEmpty();
-			ctx.Variables[1].Should().Be(new Cil.Int32(42));
+			ctx.Vars[1].Should().Be(new Cil.Int32(42));
 		}
 
 		[TestMethod]
 		public void Stloc_0()
 		{
-			var ctx = new CilMachine.RoutineContext(4, 1);
+			var ctx = new CilMachine.RoutineContext(varCount: 1, stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(42)); // value
 			var instruction = Instruction.Create(OpCodes.Stloc_0);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().BeEmpty();
-			ctx.Variables[0].Should().Be(new Cil.Int32(42));
+			ctx.Vars[0].Should().Be(new Cil.Int32(42));
 		}
 
 		[TestMethod]
 		public void Stloc_1()
 		{
-			var ctx = new CilMachine.RoutineContext(4, 1);
+			var ctx = new CilMachine.RoutineContext(varCount: 2, stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(42)); // value
 			var instruction = Instruction.Create(OpCodes.Stloc_1);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().BeEmpty();
-			ctx.Variables[1].Should().Be(new Cil.Int32(42));
+			ctx.Vars[1].Should().Be(new Cil.Int32(42));
 		}
 
 		[TestMethod]
 		public void Stloc_2()
 		{
-			var ctx = new CilMachine.RoutineContext(4, 1);
+			var ctx = new CilMachine.RoutineContext(varCount: 3, stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(42)); // value
 			var instruction = Instruction.Create(OpCodes.Stloc_2);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().BeEmpty();
-			ctx.Variables[2].Should().Be(new Cil.Int32(42));
+			ctx.Vars[2].Should().Be(new Cil.Int32(42));
 		}
 
 		[TestMethod]
 		public void Stloc_3()
 		{
-			var ctx = new CilMachine.RoutineContext(4, 1);
+			var ctx = new CilMachine.RoutineContext(varCount: 4, stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(42)); // value
 			var instruction = Instruction.Create(OpCodes.Stloc_3);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().BeEmpty();
-			ctx.Variables[3].Should().Be(new Cil.Int32(42));
+			ctx.Vars[3].Should().Be(new Cil.Int32(42));
 		}
 
 		[TestMethod]
 		public void Stloc_S()
 		{
-			var ctx = new CilMachine.RoutineContext(2, 1);
+			var ctx = new CilMachine.RoutineContext(varCount: 2, stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(42)); // value
 			var instruction = Instruction.Create(OpCodes.Stloc_S, Var(1));
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.Should().BeEmpty();
-			ctx.Variables[1].Should().Be(new Cil.Int32(42));
+			ctx.Vars[1].Should().Be(new Cil.Int32(42));
 		}
 
 		[TestMethod]
 		public void Stobj()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1000)); // address
 			ctx.Stack.Push(new Cil.This(ClassT)); // value
 			var instruction = Instruction.Create(OpCodes.Stobj, ClassT);
@@ -2780,7 +2819,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Stsfld()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.String("foo")); // value
 			var instruction = Instruction.Create(OpCodes.Stsfld, StringFieldT);
 
@@ -2793,7 +2832,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Sub()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Sub);
@@ -2807,7 +2846,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Sub_Ovf()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Sub_Ovf);
@@ -2821,7 +2860,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Sub_Ovf_Un()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Sub_Ovf_Un);
@@ -2835,7 +2874,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Switch()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(0));
 			var instruction = Instruction.Create(OpCodes.Switch, [Instruction.Create(OpCodes.Nop)]);
 
@@ -2845,9 +2884,20 @@ namespace FlintTests
 		}
 
 		[TestMethod]
+		public void Tail()
+		{
+			var ctx = new CilMachine.RoutineContext();
+			var instruction = Instruction.Create(OpCodes.Tail);
+
+			CilMachine.Eval(ctx, instruction);
+
+			IsEmpty(ctx).Should().BeTrue();
+		}
+
+		[TestMethod]
 		public void Throw()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Exception.Instance);
 			var instruction = Instruction.Create(OpCodes.Throw);
 
@@ -2857,9 +2907,21 @@ namespace FlintTests
 		}
 
 		[TestMethod]
+		public void Unaligned()
+		{
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
+			var instruction = Instruction.Create(OpCodes.Unaligned, (byte)128);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Unaligned(128));
+		}
+
+		[TestMethod]
 		public void Unbox()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(42));
 			var instruction = Instruction.Create(OpCodes.Unbox, IntT);
 
@@ -2872,7 +2934,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Unbox_Any()
 		{
-			var ctx = new CilMachine.RoutineContext(0, 1);
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(new Cil.This(ClassT));
 			var instruction = Instruction.Create(OpCodes.Unbox_Any, ClassT);
 
@@ -2883,9 +2945,20 @@ namespace FlintTests
 		}
 
 		[TestMethod]
+		public void Volatile()
+		{
+			var ctx = new CilMachine.RoutineContext();
+			var instruction = Instruction.Create(OpCodes.Volatile);
+
+			CilMachine.Eval(ctx, instruction);
+
+			IsEmpty(ctx).Should().BeTrue();
+		}
+
+		[TestMethod]
 		public void Xor()
 		{
-			var ctx = new CilMachine.RoutineContext(1, 2);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(1));
 			ctx.Stack.Push(new Cil.Int32(2));
 			var instruction = Instruction.Create(OpCodes.Xor);
