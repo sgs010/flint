@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Match
+﻿using Flint.Common;
+
+namespace Flint.Vm.Match
 {
 	class Call : Ast
 	{
@@ -61,7 +63,7 @@
 		public override void Capture(Ast other, IDictionary<string, Ast> captures)
 		{
 			if (other is Cil.Call)
-				captures.Add(Method, other);
+				captures.AddOrReplace(Method, other);
 		}
 	}
 }

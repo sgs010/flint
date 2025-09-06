@@ -63,6 +63,8 @@
 
 		private static void Traverse(Ast root, List<Ast> nodes, int maxCount)
 		{
+			if (root == null)
+				return;
 			if (maxCount == 0)
 				return;
 

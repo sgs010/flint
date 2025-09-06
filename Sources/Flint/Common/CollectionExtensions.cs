@@ -8,13 +8,13 @@
 				set.Remove(x);
 		}
 
-		public static void AddOrReplace<K, V>(this Dictionary<K, V> dic, K key, V value)
+		public static void AddOrReplace<K, V>(this IDictionary<K, V> dic, K key, V value)
 		{
 			if (dic.TryAdd(key, value) == false)
 				dic[key] = value;
 		}
 
-		public static V GetOrAddValue<K, V>(this Dictionary<K, V> dic, K key) where V : class, new()
+		public static V GetOrAddValue<K, V>(this IDictionary<K, V> dic, K key) where V : class, new()
 		{
 			if (dic.TryGetValue(key, out var value) == false)
 			{

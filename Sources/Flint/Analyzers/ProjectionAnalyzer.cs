@@ -26,6 +26,7 @@ namespace Flint.Analyzers
 		{
 			public TypeDefinition Type { get; init; }
 			public Dictionary<PropertyReference, EntityDefinition> Properties { get; } = [];
+			public bool IsChanged { get; set; }
 		}
 
 		private static HashSet<TypeReference> GetEntityTypes(ModuleDefinition asm)
@@ -139,6 +140,8 @@ namespace Flint.Analyzers
 			{
 				if (AllProperiesAreAccessed(entity))
 					continue; // do not advise a projection if all properties are accessed
+				if (SomePropertiesAreChanged(entity))
+					continue; // do not advise a projection if entity is changed
 
 				var sb = new StringBuilder();
 				sb.Append("consider using projection { ");
@@ -179,7 +182,7 @@ namespace Flint.Analyzers
 					continue;
 
 				var (captures, ok) = call.Match(
-					new Match.Func(), // Func is ldftn IL instruction, lambdas are translated into this
+					new Match.Ftn(), // Func is ldftn IL instruction, lambdas are translated into this
 					true);
 				if (ok == false)
 					continue;
@@ -214,20 +217,32 @@ namespace Flint.Analyzers
 			{
 				foreach (var expr in expressions)
 				{
-					var (captures, ok) = expr.Match(
+					// check write (call of set_Property method)
+					var (_, ok) = expr.Match(
+						new Match.Call(Any.Instance, prop.SetMethod.FullName, Any.Args));
+					if (ok)
+						entity.IsChanged = true;
+
+					// check read (call of get_Property method)
+					(_, ok) = expr.Match(
 						new Match.Call(Any.Instance, prop.GetMethod.FullName, Any.Args));
 					if (ok == false)
-						continue;
+						continue; // prop is not accessed, nothing to project
 
 					if (entity.Properties.ContainsKey(prop))
-						continue;
+						continue; // this prop is already marked, no need to process it again
 
 					EntityDefinition child = null;
 					if (IsGenericCollection(prop, out var itemType, entityTypes))
+					{
 						child = CreateEntityDefinition(itemType.Resolve(), expressions, entityTypes);
+						if (entity.IsChanged == false)
+							entity.IsChanged = IsCollectionChanged(expr, expressions);
+					}
 					else if (entityTypes.Contains(prop.PropertyType))
+					{
 						child = CreateEntityDefinition(prop.PropertyType.Resolve(), expressions, entityTypes);
-
+					}
 					entity.Properties.Add(prop, child);
 				}
 			}
@@ -256,6 +271,22 @@ namespace Flint.Analyzers
 			return true;
 		}
 
+		private static bool IsCollectionChanged(Ast col, IReadOnlyCollection<Ast> expressions)
+		{
+			string[] methods = ["Add", "Remove"];
+			foreach (var mtd in methods)
+			{
+				foreach (var expr in expressions)
+				{
+					var (_, ok) = expr.Match(
+						new Match.Call(col, mtd, Match.Any.Args));
+					if (ok)
+						return true;
+				}
+			}
+			return false;
+		}
+
 		private static bool AllProperiesAreAccessed(EntityDefinition entity)
 		{
 			if (entity.Type.Properties.Count != entity.Properties.Count)
@@ -270,6 +301,22 @@ namespace Flint.Analyzers
 			}
 
 			return true;
+		}
+
+		private static bool SomePropertiesAreChanged(EntityDefinition entity)
+		{
+			if (entity.IsChanged)
+				return true;
+
+			foreach (var child in entity.Properties.Values)
+			{
+				if (child == null)
+					continue;
+				if (SomePropertiesAreChanged(child))
+					return true;
+			}
+
+			return false;
 		}
 
 		private static void PrettyPrintMethod(StringBuilder sb, MethodDefinition mtd)

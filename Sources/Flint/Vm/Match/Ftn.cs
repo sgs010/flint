@@ -1,8 +1,10 @@
-﻿namespace Flint.Vm.Match
+﻿using Flint.Common;
+
+namespace Flint.Vm.Match
 {
-	class Func : Ast
+	class Ftn : Ast
 	{
-		public static readonly Func Instance = new Func();
+		public static readonly Ftn Instance = new Ftn();
 
 		public override IEnumerable<Ast> GetChildren()
 		{
@@ -21,7 +23,7 @@
 		public override void Capture(Ast other, IDictionary<string, Ast> captures)
 		{
 			if (other is Cil.Ftn func)
-				captures.Add(func.Method.Name, other);
+				captures.AddOrReplace(func.Method.Name, other);
 		}
 	}
 }

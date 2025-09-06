@@ -2,7 +2,7 @@
 
 namespace Samples
 {
-	static class Projections
+	public static class Projections
 	{
 		public static async void ReadWholeObject()
 		{
@@ -77,7 +77,7 @@ namespace Samples
 			}
 		}
 
-		public static async void ReadAllChanedProperties()
+		public static async void ReadAllChainedProperties()
 		{
 			// should not advise a projection because all properties are read
 
@@ -91,7 +91,7 @@ namespace Samples
 			Console.WriteLine($"{order.Id} {order.Number}");
 			foreach (var item in order.Items)
 			{
-				Console.WriteLine($"{item.Id} {item.Product.Id} {item.Product.Name}");
+				Console.WriteLine($"{item.Id} {item.Product.Id} {item.Product.Name} {item.Product.Price}");
 			}
 		}
 
@@ -249,7 +249,7 @@ namespace Samples
 			}
 		}
 
-		public static async void ReadForUpdate()
+		public static async void ReadForUpdate_ChangeProperty()
 		{
 			// should not advise any projections because entity is updated after read
 
@@ -258,7 +258,62 @@ namespace Samples
 			if (order.Number == 0)
 			{
 				order.Number = 12345;
+				await db.SaveChangesAsync();
+			}
+		}
+
+		public static async void ReadForUpdate_ChangeNestedProperty()
+		{
+			// should not advise any projections because entity is updated after read
+
+			using var db = new DB();
+			var item = await db.OrderItems.Include(i => i.Product).FirstAsync(i => i.Id == 42);
+			if (item.Product.Name == "foo")
+			{
+				item.Product.Price = 123;
+				await db.SaveChangesAsync();
+			}
+		}
+
+		public static async void ReadForUpdate_CollectionAdd()
+		{
+			// should not advise any projections because entity is updated after read
+
+			using var db = new DB();
+			var order = await db.Orders.Include(o => o.Items).FirstAsync(o => o.Id == 42);
+			if (order.Number == 123)
+			{
 				order.Items.Add(new OrderItem { Product = await db.Products.FirstAsync(p => p.Name == "test") });
+				await db.SaveChangesAsync();
+			}
+		}
+
+		public static async void ReadForUpdate_CollectionRemove()
+		{
+			// should not advise any projections because entity is updated after read
+
+			using var db = new DB();
+			var order = await db.Orders.Include(o => o.Items).FirstAsync(o => o.Id == 42);
+			if (order.Number == 123)
+			{
+				order.Items.Remove(order.Items.First());
+				await db.SaveChangesAsync();
+			}
+		}
+
+		public static async void ReadForUpdate_CollectionIterate()
+		{
+			// should not advise any projections because entity is updated after read
+
+			using var db = new DB();
+			var order = await db.Orders.Include(o => o.Items).FirstAsync(o => o.Id == 42);
+			if (order.Number == 123)
+			{
+				foreach (var item in order.Items)
+				{
+					if (item.Product.Name == "foo")
+						item.Product.Price = 123;
+				}
 				await db.SaveChangesAsync();
 			}
 		}
