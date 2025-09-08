@@ -11,12 +11,13 @@
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="8.6.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-    <PackageReference Include="MSTest" Version="3.10.2" />
+    <PackageReference Include="MSTest" Version="3.10.4" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Sources\Flint\Flint.csproj" />
     <ProjectReference Include="..\Samples\Samples.csproj" />
+    <ProjectReference Include="..\WebApp\WebApp.csproj" />
   </ItemGroup>
 
   <ItemGroup>

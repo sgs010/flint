@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples", "..\Tests\Samples
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlintTests", "..\Tests\FlintTests\FlintTests.csproj", "{03F0F292-3328-42DF-815B-5F88CAA43A4D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApp", "..\Tests\WebApp\WebApp.csproj", "{3DBFD996-A4B6-47BF-BB95-F2CC13755AF4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +32,10 @@ Global
 		{03F0F292-3328-42DF-815B-5F88CAA43A4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03F0F292-3328-42DF-815B-5F88CAA43A4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03F0F292-3328-42DF-815B-5F88CAA43A4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DBFD996-A4B6-47BF-BB95-F2CC13755AF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DBFD996-A4B6-47BF-BB95-F2CC13755AF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DBFD996-A4B6-47BF-BB95-F2CC13755AF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DBFD996-A4B6-47BF-BB95-F2CC13755AF4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -38,6 +44,7 @@ Global
 		{29D28E62-60EB-A14C-A0D2-8BED2D9FBD42} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{2585BA97-2CA0-4E40-B151-A4777713FF65} = {1A9FD3EA-4642-47C6-9F10-4E61D014F431}
 		{03F0F292-3328-42DF-815B-5F88CAA43A4D} = {1A9FD3EA-4642-47C6-9F10-4E61D014F431}
+		{3DBFD996-A4B6-47BF-BB95-F2CC13755AF4} = {1A9FD3EA-4642-47C6-9F10-4E61D014F431}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E95FA6C6-988E-428F-ACCB-9326BE41C2CB}

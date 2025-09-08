@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Mono.Cecil;
+using Mono.Cecil.Rocks;
 
 namespace FlintTests
 {
@@ -31,6 +32,20 @@ namespace FlintTests
 		[TestMethod]
 		public void ReadSomeProperties()
 		{
+			//var p = new ReaderParameters();
+			//p.ReadSymbols = true;
+
+			//using var x = AssemblyDefinition.ReadAssembly(GetType().Assembly.Location, p);
+			//foreach (var m in x.MainModule.GetAllTypes().SelectMany(t => t.Methods).Where(m => m.DebugInformation != null && m.DebugInformation.HasSequencePoints))
+			//{
+			//	foreach (var d in m.DebugInformation.GetSequencePointMapping())
+			//	{
+			//		System.Console.WriteLine($"{d.Key} => {d.Value.Document.Url} ({d.Value.StartLine},{d.Value.StartColumn})");
+			//	}
+			//}
+
+
+
 			using var asm = ModuleDefinition.ReadModule("Samples.dll");
 			var ctx = new AnalyzerContextMock();
 
