@@ -1,9 +1,11 @@
-﻿namespace Flint.Vm.Cil
+﻿using Mono.Cecil.Cil;
+
+namespace Flint.Vm.Cil
 {
 	class Int64 : Ast
 	{
 		public readonly long Value;
-		public Int64(long value)
+		public Int64(SequencePoint debug, long value) : base(debug)
 		{
 			Value = value;
 		}

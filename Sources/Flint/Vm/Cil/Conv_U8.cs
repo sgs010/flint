@@ -1,9 +1,11 @@
-﻿namespace Flint.Vm.Cil
+﻿using Mono.Cecil.Cil;
+
+namespace Flint.Vm.Cil
 {
 	class Conv_U8 : Ast
 	{
 		public readonly Ast Value;
-		public Conv_U8(Ast value)
+		public Conv_U8(SequencePoint debug, Ast value) : base(debug)
 		{
 			Value = value;
 		}

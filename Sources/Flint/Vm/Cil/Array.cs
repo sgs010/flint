@@ -1,4 +1,5 @@
 ﻿using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Flint.Vm.Cil
 {
@@ -6,7 +7,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly TypeReference Type;
 		public readonly Ast Size;
-		public Array(TypeReference type, Ast size)
+		public Array(SequencePoint debug, TypeReference type, Ast size) : base(debug)
 		{
 			Type = type;
 			Size = size;

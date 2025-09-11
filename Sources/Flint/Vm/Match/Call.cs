@@ -7,7 +7,7 @@ namespace Flint.Vm.Match
 		public readonly Ast Instance;
 		public readonly string Method;
 		public readonly Ast[] Args;
-		public Call(Ast instance, string method, params Ast[] args)
+		public Call(Ast instance, string method, params Ast[] args) : base(null)
 		{
 			Instance = instance;
 			Method = method;

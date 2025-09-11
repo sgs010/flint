@@ -1,9 +1,11 @@
-﻿namespace Flint.Vm.Cil
+﻿using Mono.Cecil.Cil;
+
+namespace Flint.Vm.Cil
 {
 	class Heapptr : Ast
 	{
 		public readonly Ast Address;
-		public Heapptr(Ast address)
+		public Heapptr(SequencePoint debug, Ast address) : base(debug)
 		{
 			Address = address;
 		}

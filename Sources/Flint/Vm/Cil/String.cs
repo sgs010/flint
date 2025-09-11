@@ -1,9 +1,11 @@
-﻿namespace Flint.Vm.Cil
+﻿using Mono.Cecil.Cil;
+
+namespace Flint.Vm.Cil
 {
 	class String : Ast
 	{
 		public readonly string Value;
-		public String(string value)
+		public String(SequencePoint debug, string value) : base(debug)
 		{
 			Value = value;
 		}

@@ -1,9 +1,11 @@
-﻿namespace Flint.Vm.Cil
+﻿using Mono.Cecil.Cil;
+
+namespace Flint.Vm.Cil
 {
 	class Argptr : Ast
 	{
 		public readonly int Number;
-		public Argptr(int number)
+		public Argptr(SequencePoint debug, int number) : base(debug)
 		{
 			Number = number;
 		}

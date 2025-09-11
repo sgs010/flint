@@ -44,15 +44,13 @@ namespace FlintTests
 			//	}
 			//}
 
-
-
-			using var asm = ModuleDefinition.ReadModule("Samples.dll");
+			using var asm = ModuleDefinition.ReadModule("Samples.dll", new ReaderParameters { ReadSymbols = true });
 			var ctx = new AnalyzerContextMock();
 
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ReadSomeProperties));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Id, Name } in method Samples.Projections.ReadSomeProperties()"
+				"consider using projection { Id, Name } in method Samples.Projections.ReadSomeProperties line 36"
 			]);
 		}
 

@@ -1,9 +1,11 @@
-﻿namespace Flint.Vm.Cil
+﻿using Mono.Cecil.Cil;
+
+namespace Flint.Vm.Cil
 {
 	class Unaligned : Ast
 	{
 		public readonly byte Address;
-		public Unaligned(byte address)
+		public Unaligned(SequencePoint debug, byte address) : base(debug)
 		{
 			Address = address;
 		}

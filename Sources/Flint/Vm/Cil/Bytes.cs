@@ -1,9 +1,11 @@
-﻿namespace Flint.Vm.Cil
+﻿using Mono.Cecil.Cil;
+
+namespace Flint.Vm.Cil
 {
 	class Bytes : Ast
 	{
 		public readonly Ast Count;
-		public Bytes(Ast count)
+		public Bytes(SequencePoint debug, Ast count) : base(debug)
 		{
 			Count = count;
 		}

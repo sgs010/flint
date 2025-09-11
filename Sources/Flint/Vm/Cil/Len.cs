@@ -1,9 +1,11 @@
-﻿namespace Flint.Vm.Cil
+﻿using Mono.Cecil.Cil;
+
+namespace Flint.Vm.Cil
 {
 	class Len : Ast
 	{
 		public readonly Ast Array;
-		public Len(Ast array)
+		public Len(SequencePoint debug, Ast array) : base(debug)
 		{
 			Array = array;
 		}

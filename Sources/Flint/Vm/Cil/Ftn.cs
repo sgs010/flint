@@ -1,4 +1,5 @@
 ﻿using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Flint.Vm.Cil
 {
@@ -6,7 +7,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly Ast Instance;
 		public readonly MethodDefinition Method;
-		public Ftn(Ast instance, MethodDefinition mtd)
+		public Ftn(SequencePoint debug, Ast instance, MethodDefinition mtd) : base(debug)
 		{
 			Instance = instance;
 			Method = mtd;

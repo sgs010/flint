@@ -8,21 +8,9 @@ namespace Flint.Vm
 	static class CilMachine
 	{
 		#region Interface
-		public static List<Ast> Run(MethodDefinition method)
+		public static List<Ast> Run(MethodDefinition mtd)
 		{
-			// check if method is async and resolve actual implementation
-			MethodDefinition asyncMethod = null;
-			if (method.HasCustomAttributes)
-			{
-				var asyncAttr = method.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.AsyncStateMachineAttribute");
-				if (asyncAttr != null)
-				{
-					var stmType = (TypeDefinition)asyncAttr.ConstructorArguments[0].Value;
-					asyncMethod = stmType.Methods.First(x => x.Name == "MoveNext");
-				}
-			}
-
-			var ctx = new RoutineContext(asyncMethod ?? method);
+			var ctx = new RoutineContext(mtd);
 			foreach (var instruction in ctx.Method.Body.Instructions)
 			{
 				Eval(ctx, instruction);
@@ -133,13 +121,13 @@ namespace Flint.Vm
 				case Code.Add:
 				case Code.Add_Ovf:
 				case Code.Add_Ovf_Un:
-					Add(ctx);
+					Add(ctx, instruction);
 					break;
 				case Code.And:
-					And(ctx);
+					And(ctx, instruction);
 					break;
 				case Code.Arglist:
-					Arglist(ctx);
+					Arglist(ctx, instruction);
 					break;
 				case Code.Beq:
 				case Code.Beq_S:
@@ -165,7 +153,7 @@ namespace Flint.Vm
 					ctx.Stack.Pop();
 					break;
 				case Code.Box:
-					Box(ctx);
+					Box(ctx, instruction);
 					break;
 				case Code.Br:
 				case Code.Br_S:
@@ -180,82 +168,82 @@ namespace Flint.Vm
 					break;
 				case Code.Call:
 				case Code.Callvirt:
-					Call(ctx, (MethodReference)instruction.Operand);
+					Call(ctx, instruction);
 					break;
 				case Code.Castclass:
-					Castclass(ctx, (TypeReference)instruction.Operand);
+					Castclass(ctx, instruction);
 					break;
 				case Code.Ceq:
-					Ceq(ctx);
+					Ceq(ctx, instruction);
 					break;
 				case Code.Cgt:
 				case Code.Cgt_Un:
-					Cgt(ctx);
+					Cgt(ctx, instruction);
 					break;
 				case Code.Ckfinite:
 					break;
 				case Code.Clt:
 				case Code.Clt_Un:
-					Clt(ctx);
+					Clt(ctx, instruction);
 					break;
 				case Code.Constrained:
 					break;
 				case Code.Conv_I:
 				case Code.Conv_Ovf_I:
 				case Code.Conv_Ovf_I_Un:
-					Conv_I(ctx);
+					Conv_I(ctx, instruction);
 					break;
 				case Code.Conv_I1:
 				case Code.Conv_Ovf_I1:
 				case Code.Conv_Ovf_I1_Un:
-					Conv_I1(ctx);
+					Conv_I1(ctx, instruction);
 					break;
 				case Code.Conv_I2:
 				case Code.Conv_Ovf_I2:
 				case Code.Conv_Ovf_I2_Un:
-					Conv_I2(ctx);
+					Conv_I2(ctx, instruction);
 					break;
 				case Code.Conv_I4:
 				case Code.Conv_Ovf_I4:
 				case Code.Conv_Ovf_I4_Un:
-					Conv_I4(ctx);
+					Conv_I4(ctx, instruction);
 					break;
 				case Code.Conv_I8:
 				case Code.Conv_Ovf_I8:
 				case Code.Conv_Ovf_I8_Un:
-					Conv_I8(ctx);
+					Conv_I8(ctx, instruction);
 					break;
 				case Code.Conv_R_Un:
 				case Code.Conv_R4:
-					Conv_R4(ctx);
+					Conv_R4(ctx, instruction);
 					break;
 				case Code.Conv_R8:
-					Conv_R8(ctx);
+					Conv_R8(ctx, instruction);
 					break;
 				case Code.Conv_U:
-					Conv_U(ctx);
+					Conv_U(ctx, instruction);
 					break;
 				case Code.Conv_U1:
-					Conv_U1(ctx);
+					Conv_U1(ctx, instruction);
 					break;
 				case Code.Conv_U2:
-					Conv_U2(ctx);
+					Conv_U2(ctx, instruction);
 					break;
 				case Code.Conv_U4:
-					Conv_U4(ctx);
+					Conv_U4(ctx, instruction);
 					break;
 				case Code.Conv_U8:
-					Conv_U8(ctx);
+					Conv_U8(ctx, instruction);
 					break;
 				case Code.Cpblk:
-					Cpblk(ctx);
+					Cpblk(ctx, instruction);
 					break;
 				case Code.Cpobj:
-					Cpobj(ctx);
+					Cpobj(ctx, instruction);
 					break;
 				case Code.Div:
 				case Code.Div_Un:
-					Div(ctx);
+					Div(ctx, instruction);
 					break;
 				case Code.Dup:
 					ctx.Stack.Push(ctx.Stack.Peek());
@@ -264,80 +252,80 @@ namespace Flint.Vm
 				case Code.Endfinally:
 					break;
 				case Code.Initblk:
-					Initblk(ctx);
+					Initblk(ctx, instruction);
 					break;
 				case Code.Initobj:
-					Initobj(ctx, (TypeReference)instruction.Operand);
+					Initobj(ctx, instruction);
 					break;
 				case Code.Isinst:
-					Isinst(ctx, (TypeReference)instruction.Operand);
+					Isinst(ctx, instruction);
 					break;
 				case Code.Jmp:
 					break;
 				case Code.Ldarg:
 				case Code.Ldarg_S:
-					Ldarg(ctx, ((ParameterReference)instruction.Operand).Index);
+					Ldarg(ctx, instruction);
 					break;
 				case Code.Ldarg_0:
-					Ldarg(ctx, 0);
+					Ldarg(ctx, instruction, 0);
 					break;
 				case Code.Ldarg_1:
-					Ldarg(ctx, 1);
+					Ldarg(ctx, instruction, 1);
 					break;
 				case Code.Ldarg_2:
-					Ldarg(ctx, 2);
+					Ldarg(ctx, instruction, 2);
 					break;
 				case Code.Ldarg_3:
-					Ldarg(ctx, 3);
+					Ldarg(ctx, instruction, 3);
 					break;
 				case Code.Ldarga:
 				case Code.Ldarga_S:
-					Ldarga(ctx, ((ParameterReference)instruction.Operand).Index);
+					Ldarga(ctx, instruction);
 					break;
 				case Code.Ldc_I4:
-					Ldc_I4(ctx, (int)instruction.Operand);
+					Ldc_I4(ctx, instruction, (int)instruction.Operand);
 					break;
 				case Code.Ldc_I4_0:
-					Ldc_I4(ctx, 0);
+					Ldc_I4(ctx, instruction, 0);
 					break;
 				case Code.Ldc_I4_1:
-					Ldc_I4(ctx, 1);
+					Ldc_I4(ctx, instruction, 1);
 					break;
 				case Code.Ldc_I4_2:
-					Ldc_I4(ctx, 2);
+					Ldc_I4(ctx, instruction, 2);
 					break;
 				case Code.Ldc_I4_3:
-					Ldc_I4(ctx, 3);
+					Ldc_I4(ctx, instruction, 3);
 					break;
 				case Code.Ldc_I4_4:
-					Ldc_I4(ctx, 4);
+					Ldc_I4(ctx, instruction, 4);
 					break;
 				case Code.Ldc_I4_5:
-					Ldc_I4(ctx, 5);
+					Ldc_I4(ctx, instruction, 5);
 					break;
 				case Code.Ldc_I4_6:
-					Ldc_I4(ctx, 6);
+					Ldc_I4(ctx, instruction, 6);
 					break;
 				case Code.Ldc_I4_7:
-					Ldc_I4(ctx, 7);
+					Ldc_I4(ctx, instruction, 7);
 					break;
 				case Code.Ldc_I4_8:
-					Ldc_I4(ctx, 8);
+					Ldc_I4(ctx, instruction, 8);
 					break;
 				case Code.Ldc_I4_M1:
-					Ldc_I4(ctx, -1);
+					Ldc_I4(ctx, instruction, -1);
 					break;
 				case Code.Ldc_I4_S:
-					Ldc_I4(ctx, (sbyte)instruction.Operand);
+					Ldc_I4(ctx, instruction, (sbyte)instruction.Operand);
 					break;
 				case Code.Ldc_I8:
-					Ldc_I8(ctx, (long)instruction.Operand);
+					Ldc_I8(ctx, instruction, (long)instruction.Operand);
 					break;
 				case Code.Ldc_R4:
-					Ldc_R4(ctx, (float)instruction.Operand);
+					Ldc_R4(ctx, instruction, (float)instruction.Operand);
 					break;
 				case Code.Ldc_R8:
-					Ldc_R8(ctx, (double)instruction.Operand);
+					Ldc_R8(ctx, instruction, (double)instruction.Operand);
 					break;
 				case Code.Ldelem_Any:
 				case Code.Ldelem_I:
@@ -351,19 +339,19 @@ namespace Flint.Vm
 				case Code.Ldelem_U1:
 				case Code.Ldelem_U2:
 				case Code.Ldelem_U4:
-					Ldelem(ctx);
+					Ldelem(ctx, instruction);
 					break;
 				case Code.Ldelema:
-					Ldelema(ctx);
+					Ldelema(ctx, instruction);
 					break;
 				case Code.Ldfld:
 				case Code.Ldflda:
 				case Code.Ldsfld:
 				case Code.Ldsflda:
-					Ldfld(ctx, (FieldDefinition)instruction.Operand);
+					Ldfld(ctx, instruction);
 					break;
 				case Code.Ldftn:
-					Ldftn(ctx, (MethodDefinition)instruction.Operand);
+					Ldftn(ctx, instruction);
 					break;
 				case Code.Ldind_I:
 				case Code.Ldind_I1:
@@ -376,39 +364,39 @@ namespace Flint.Vm
 				case Code.Ldind_U1:
 				case Code.Ldind_U2:
 				case Code.Ldind_U4:
-					Ldind(ctx);
+					Ldind(ctx, instruction);
 					break;
 				case Code.Ldlen:
-					Ldlen(ctx);
+					Ldlen(ctx, instruction);
 					break;
 				case Code.Ldloc:
 				case Code.Ldloc_S:
-					Ldloc(ctx, ((VariableReference)instruction.Operand).Index);
+					Ldloc(ctx, instruction);
 					break;
 				case Code.Ldloc_0:
-					Ldloc(ctx, 0);
+					Ldloc(ctx, instruction, 0);
 					break;
 				case Code.Ldloc_1:
-					Ldloc(ctx, 1);
+					Ldloc(ctx, instruction, 1);
 					break;
 				case Code.Ldloc_2:
-					Ldloc(ctx, 2);
+					Ldloc(ctx, instruction, 2);
 					break;
 				case Code.Ldloc_3:
-					Ldloc(ctx, 3);
+					Ldloc(ctx, instruction, 3);
 					break;
 				case Code.Ldloca:
 				case Code.Ldloca_S:
-					Ldloca(ctx, (VariableReference)instruction.Operand);
+					Ldloca(ctx, instruction);
 					break;
 				case Code.Ldnull:
 					ctx.Stack.Push(Cil.Null.Instance);
 					break;
 				case Code.Ldobj:
-					Ldind(ctx);
+					Ldind(ctx, instruction);
 					break;
 				case Code.Ldstr:
-					Ldstr(ctx, (string)instruction.Operand);
+					Ldstr(ctx, instruction);
 					break;
 				case Code.Ldtoken:
 					Ldtoken(ctx, instruction.Operand);
@@ -566,40 +554,51 @@ namespace Flint.Vm
 			return args;
 		}
 
-		private static void Add(RoutineContext ctx)
+		private static SequencePoint GetDebug(RoutineContext ctx, Instruction instruction)
 		{
+			return ctx.Method?.DebugInformation?.GetSequencePoint(instruction);
+		}
+
+		private static void Add(RoutineContext ctx, Instruction instruction)
+		{
+			var debug = GetDebug(ctx, instruction);
 			var right = ctx.Stack.Pop();
 			var left = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Add(left, right));
+			ctx.Stack.Push(new Cil.Add(debug, left, right));
 		}
 
-		private static void And(RoutineContext ctx)
+		private static void And(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var right = ctx.Stack.Pop();
 			var left = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.And(left, right));
+			ctx.Stack.Push(new Cil.And(debug, left, right));
 		}
 
-		private static void Arglist(RoutineContext ctx)
+		private static void Arglist(RoutineContext ctx, Instruction instruction)
 		{
-			ctx.Stack.Push(new Cil.Arglist(ctx.Method));
+			var debug = GetDebug(ctx, instruction);
+			ctx.Stack.Push(new Cil.Arglist(debug, ctx.Method));
 		}
 
-		private static void Box(RoutineContext ctx)
+		private static void Box(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Box(value));
+			ctx.Stack.Push(new Cil.Box(debug, value));
 		}
 
-		private static void Call(RoutineContext ctx, MethodReference method)
+		private static void Call(RoutineContext ctx, Instruction instruction)
 		{
+			var method = (MethodReference)instruction.Operand;
+			var debug = GetDebug(ctx, instruction);
 			var args = PopArgs(ctx, method);
 
 			Ast instance = null;
 			if (method.HasThis)
 				instance = ctx.Stack.Pop();
 
-			var call = new Cil.Call(instance, method, args);
+			var call = new Cil.Call(debug, instance, method, args);
 
 			ctx.Expressions.RemoveAll(args);
 			if (instance != null)
@@ -613,152 +612,180 @@ namespace Flint.Vm
 			{
 				var arg = args[i];
 				if (arg is Varptr var)
-					ctx.Vars[var.Index] = new Cil.OutArg(call, i);
+					ctx.Vars[var.Index] = new Cil.OutArg(debug, call, i);
 			}
 		}
 
-		private static void Castclass(RoutineContext ctx, TypeReference type)
+		private static void Castclass(RoutineContext ctx, Instruction instruction)
 		{
+			var type = (TypeReference)instruction.Operand;
+			var debug = GetDebug(ctx, instruction);
 			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Castclass(type, value));
+			ctx.Stack.Push(new Cil.Castclass(debug, type, value));
 		}
 
-		private static void Ceq(RoutineContext ctx)
+		private static void Ceq(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var right = ctx.Stack.Pop();
 			var left = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Ceq(left, right));
+			ctx.Stack.Push(new Cil.Ceq(debug, left, right));
 		}
 
-		private static void Cgt(RoutineContext ctx)
+		private static void Cgt(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var right = ctx.Stack.Pop();
 			var left = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Cgt(left, right));
+			ctx.Stack.Push(new Cil.Cgt(debug, left, right));
 		}
 
-		private static void Clt(RoutineContext ctx)
+		private static void Clt(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var right = ctx.Stack.Pop();
 			var left = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Clt(left, right));
+			ctx.Stack.Push(new Cil.Clt(debug, left, right));
 		}
 
-		private static void Conv_I(RoutineContext ctx)
+		private static void Conv_I(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Conv_I(value));
+			ctx.Stack.Push(new Cil.Conv_I(debug, value));
 		}
 
-		private static void Conv_I1(RoutineContext ctx)
+		private static void Conv_I1(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Conv_I1(value));
+			ctx.Stack.Push(new Cil.Conv_I1(debug, value));
 		}
 
-		private static void Conv_I2(RoutineContext ctx)
+		private static void Conv_I2(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Conv_I2(value));
+			ctx.Stack.Push(new Cil.Conv_I2(debug, value));
 		}
 
-		private static void Conv_I4(RoutineContext ctx)
+		private static void Conv_I4(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Conv_I4(value));
+			ctx.Stack.Push(new Cil.Conv_I4(debug, value));
 		}
 
-		private static void Conv_I8(RoutineContext ctx)
+		private static void Conv_I8(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Conv_I8(value));
+			ctx.Stack.Push(new Cil.Conv_I8(debug, value));
 		}
 
-		private static void Conv_R4(RoutineContext ctx)
+		private static void Conv_R4(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Conv_R4(value));
+			ctx.Stack.Push(new Cil.Conv_R4(debug, value));
 		}
 
-		private static void Conv_R8(RoutineContext ctx)
+		private static void Conv_R8(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Conv_R8(value));
+			ctx.Stack.Push(new Cil.Conv_R8(debug, value));
 		}
 
-		private static void Conv_U(RoutineContext ctx)
+		private static void Conv_U(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Conv_U(value));
+			ctx.Stack.Push(new Cil.Conv_U(debug, value));
 		}
 
-		private static void Conv_U1(RoutineContext ctx)
+		private static void Conv_U1(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Conv_U1(value));
+			ctx.Stack.Push(new Cil.Conv_U1(debug, value));
 		}
 
-		private static void Conv_U2(RoutineContext ctx)
+		private static void Conv_U2(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Conv_U2(value));
+			ctx.Stack.Push(new Cil.Conv_U2(debug, value));
 		}
 
-		private static void Conv_U4(RoutineContext ctx)
+		private static void Conv_U4(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Conv_U4(value));
+			ctx.Stack.Push(new Cil.Conv_U4(debug, value));
 		}
 
-		private static void Conv_U8(RoutineContext ctx)
+		private static void Conv_U8(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var value = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Conv_U8(value));
+			ctx.Stack.Push(new Cil.Conv_U8(debug, value));
 		}
 
-		private static void Cpblk(RoutineContext ctx)
+		private static void Cpblk(RoutineContext ctx, Instruction instruction)
 		{
 			var count = ctx.Stack.Pop();
 			var src = ctx.Stack.Pop();
 			var dest = ctx.Stack.Pop();
 		}
 
-		private static void Cpobj(RoutineContext ctx)
+		private static void Cpobj(RoutineContext ctx, Instruction instruction)
 		{
 			var src = ctx.Stack.Pop();
 			var dest = ctx.Stack.Pop();
 		}
 
-		private static void Div(RoutineContext ctx)
+		private static void Div(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var right = ctx.Stack.Pop();
 			var left = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Div(left, right));
+			ctx.Stack.Push(new Cil.Div(debug, left, right));
 		}
 
-		private static void Initblk(RoutineContext ctx)
+		private static void Initblk(RoutineContext ctx, Instruction instruction)
 		{
 			var count = ctx.Stack.Pop();
 			var value = ctx.Stack.Pop();
 			var address = ctx.Stack.Pop();
 		}
 
-		private static void Initobj(RoutineContext ctx, TypeReference type)
+		private static void Initobj(RoutineContext ctx, Instruction instruction)
 		{
 			var address = ctx.Stack.Pop();
 		}
 
-		public static void Isinst(RoutineContext ctx, TypeReference type)
+		public static void Isinst(RoutineContext ctx, Instruction instruction)
 		{
+			var type = (TypeReference)instruction.Operand;
+			var debug = GetDebug(ctx, instruction);
 			var instance = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Isinst(type, instance));
+			ctx.Stack.Push(new Cil.Isinst(debug, type, instance));
 		}
 
-		private static void Ldarg(RoutineContext ctx, int number)
+		private static void Ldarg(RoutineContext ctx, Instruction instruction)
 		{
+			var number = ((ParameterReference)instruction.Operand).Index;
+			Ldarg(ctx, instruction, number);
+		}
+
+		private static void Ldarg(RoutineContext ctx, Instruction instruction, int number)
+		{
+			var debug = GetDebug(ctx, instruction);
+
 			if (ctx.Method.HasThis && number == 0)
 			{
-				ctx.Stack.Push(new Cil.This(ctx.Method.DeclaringType));
+				ctx.Stack.Push(new Cil.This(debug, ctx.Method.DeclaringType));
 				return;
 			}
 
@@ -767,102 +794,128 @@ namespace Flint.Vm
 			if (value == null)
 			{
 				var parameter = ctx.Method.Parameters[argNum];
-				value = new Cil.Arg(argNum, parameter);
+				value = new Cil.Arg(debug, argNum, parameter);
 			}
 			ctx.Stack.Push(value);
 		}
 
-		private static void Ldarga(RoutineContext ctx, int number)
+		private static void Ldarga(RoutineContext ctx, Instruction instruction)
 		{
-			ctx.Stack.Push(new Cil.Argptr(number));
+			var number = ((ParameterReference)instruction.Operand).Index;
+			var debug = GetDebug(ctx, instruction);
+			ctx.Stack.Push(new Cil.Argptr(debug, number));
 		}
 
-		private static void Ldc_I4(RoutineContext ctx, int value)
+		private static void Ldc_I4(RoutineContext ctx, Instruction instruction, int value)
 		{
-			ctx.Stack.Push(new Cil.Int32(value));
+			var debug = GetDebug(ctx, instruction);
+			ctx.Stack.Push(new Cil.Int32(debug, value));
 		}
 
-		private static void Ldc_I8(RoutineContext ctx, long value)
+		private static void Ldc_I8(RoutineContext ctx, Instruction instruction, long value)
 		{
-			ctx.Stack.Push(new Cil.Int64(value));
+			var debug = GetDebug(ctx, instruction);
+			ctx.Stack.Push(new Cil.Int64(debug, value));
 		}
 
-		private static void Ldc_R4(RoutineContext ctx, float value)
+		private static void Ldc_R4(RoutineContext ctx, Instruction instruction, float value)
 		{
-			ctx.Stack.Push(new Cil.Float32(value));
+			var debug = GetDebug(ctx, instruction);
+			ctx.Stack.Push(new Cil.Float32(debug, value));
 		}
 
-		private static void Ldc_R8(RoutineContext ctx, double value)
+		private static void Ldc_R8(RoutineContext ctx, Instruction instruction, double value)
 		{
-			ctx.Stack.Push(new Cil.Float64(value));
+			var debug = GetDebug(ctx, instruction);
+			ctx.Stack.Push(new Cil.Float64(debug, value));
 		}
 
-		private static void Ldelem(RoutineContext ctx)
+		private static void Ldelem(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var index = ctx.Stack.Pop();
 			var array = ctx.Stack.Pop();
 
 			if (ctx.Arrays.TryGetValue(new ArrayIndex(array, index), out var value) == false)
-				value = new Cil.Elem(array, index);
+				value = new Cil.Elem(debug, array, index);
 
 			ctx.Stack.Push(value);
 		}
 
-		private static void Ldelema(RoutineContext ctx)
+		private static void Ldelema(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var index = ctx.Stack.Pop();
 			var array = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Elemptr(array, index));
+			ctx.Stack.Push(new Cil.Elemptr(debug, array, index));
 		}
 
-		private static void Ldfld(RoutineContext ctx, FieldDefinition fld)
+		private static void Ldfld(RoutineContext ctx, Instruction instruction)
 		{
+			var fld = (FieldDefinition)instruction.Operand;
+			var debug = GetDebug(ctx, instruction);
+
 			Ast instance = null;
 			if (fld.IsStatic == false)
 				instance = ctx.Stack.Pop();
 
 			if (ctx.Objects.TryGetValue(new ObjectField(instance, fld), out var value) == false)
-				value = new Cil.Fld(instance, fld);
+				value = new Cil.Fld(debug, instance, fld);
 
 			ctx.Stack.Push(value);
 		}
 
-		private static void Ldftn(RoutineContext ctx, MethodDefinition mtd)
+		private static void Ldftn(RoutineContext ctx, Instruction instruction)
 		{
-			ctx.Stack.Push(new Cil.Ftn(null, mtd));
+			var mtd = (MethodDefinition)instruction.Operand;
+			var debug = GetDebug(ctx, instruction);
+			ctx.Stack.Push(new Cil.Ftn(debug, null, mtd));
 		}
 
-		private static void Ldind(RoutineContext ctx)
+		private static void Ldind(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var address = ctx.Stack.Pop();
 			if (ctx.Heap.TryGetValue(address, out var value) == false)
-				value = new Cil.Heapptr(address);
+				value = new Cil.Heapptr(debug, address);
 			ctx.Stack.Push(value);
 		}
 
-		private static void Ldlen(RoutineContext ctx)
+		private static void Ldlen(RoutineContext ctx, Instruction instruction)
 		{
+			var debug = GetDebug(ctx, instruction);
 			var array = ctx.Stack.Pop();
-			ctx.Stack.Push(new Cil.Len(array));
+			ctx.Stack.Push(new Cil.Len(debug, array));
 		}
 
-		private static void Ldloc(RoutineContext ctx, int number)
+		private static void Ldloc(RoutineContext ctx, Instruction instruction)
+		{
+			var number = ((VariableReference)instruction.Operand).Index;
+			Ldloc(ctx, instruction, number);
+		}
+
+		private static void Ldloc(RoutineContext ctx, Instruction instruction, int number)
 		{
 			ctx.Stack.Push(ctx.Vars[number]);
 		}
 
-		private static void Ldloca(RoutineContext ctx, VariableReference v)
+		private static void Ldloca(RoutineContext ctx, Instruction instruction)
 		{
+			var v = (VariableReference)instruction.Operand;
+			var debug = GetDebug(ctx, instruction);
+
 			var value = ctx.Vars[v.Index];
 			if (value != null)
 				ctx.Stack.Push(value);
 			else
-				ctx.Stack.Push(new Cil.Varptr(v.Index));
+				ctx.Stack.Push(new Cil.Varptr(debug, v.Index));
 		}
 
-		private static void Ldstr(RoutineContext ctx, string value)
+		private static void Ldstr(RoutineContext ctx, Instruction instruction)
 		{
-			ctx.Stack.Push(new Cil.String(value));
+			var value = (string)instruction.Operand;
+			var debug = GetDebug(ctx, instruction);
+			ctx.Stack.Push(new Cil.String(debug, value));
 		}
 
 		private static void Ldtoken(RoutineContext ctx, object value)

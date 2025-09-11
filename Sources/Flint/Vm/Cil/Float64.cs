@@ -1,9 +1,11 @@
-﻿namespace Flint.Vm.Cil
+﻿using Mono.Cecil.Cil;
+
+namespace Flint.Vm.Cil
 {
 	class Float64 : Ast
 	{
 		public readonly double Value;
-		public Float64(double value)
+		public Float64(SequencePoint debug, double value) : base(debug)
 		{
 			Value = value;
 		}

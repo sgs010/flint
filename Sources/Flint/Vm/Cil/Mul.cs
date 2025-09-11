@@ -1,10 +1,12 @@
-﻿namespace Flint.Vm.Cil
+﻿using Mono.Cecil.Cil;
+
+namespace Flint.Vm.Cil
 {
 	class Mul : Ast
 	{
 		public readonly Ast Left;
 		public readonly Ast Right;
-		public Mul(Ast left, Ast right)
+		public Mul(SequencePoint debug, Ast left, Ast right) : base(debug)
 		{
 			Left = left;
 			Right = right;

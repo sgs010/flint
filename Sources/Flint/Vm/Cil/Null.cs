@@ -4,6 +4,8 @@
 	{
 		public static readonly Null Instance = new Null();
 
+		public Null() : base(null) { }
+
 		public override IEnumerable<Ast> GetChildren()
 		{
 			yield break;

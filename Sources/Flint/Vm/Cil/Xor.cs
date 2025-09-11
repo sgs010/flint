@@ -1,10 +1,12 @@
-﻿namespace Flint.Vm.Cil
+﻿using Mono.Cecil.Cil;
+
+namespace Flint.Vm.Cil
 {
 	class Xor : Ast
 	{
 		public readonly Ast Left;
 		public readonly Ast Right;
-		public Xor(Ast left, Ast right)
+		public Xor(SequencePoint debug, Ast left, Ast right) : base(debug)
 		{
 			Left = left;
 			Right = right;

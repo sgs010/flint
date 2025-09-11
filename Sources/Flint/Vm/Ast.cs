@@ -1,7 +1,15 @@
-﻿namespace Flint.Vm
+﻿using Mono.Cecil.Cil;
+
+namespace Flint.Vm
 {
 	abstract class Ast : IEquatable<Ast>
 	{
+		public readonly SequencePoint Debug;
+		protected Ast(SequencePoint debug)
+		{
+			Debug = debug;
+		}
+
 		public abstract IEnumerable<Ast> GetChildren();
 		public abstract bool Equals(Ast other);
 		public virtual void Capture(Ast other, IDictionary<string, Ast> captures) { }

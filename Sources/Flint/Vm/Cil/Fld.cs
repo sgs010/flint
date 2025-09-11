@@ -1,4 +1,5 @@
 ﻿using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Flint.Vm.Cil
 {
@@ -6,7 +7,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly Ast Instance;
 		public readonly FieldReference Field;
-		public Fld(Ast instance, FieldReference fld)
+		public Fld(SequencePoint debug, Ast instance, FieldReference fld) : base(debug)
 		{
 			Instance = instance;
 			Field = fld;

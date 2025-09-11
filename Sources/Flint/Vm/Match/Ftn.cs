@@ -6,6 +6,8 @@ namespace Flint.Vm.Match
 	{
 		public static readonly Ftn Instance = new Ftn();
 
+		public Ftn() : base(null) { }
+
 		public override IEnumerable<Ast> GetChildren()
 		{
 			yield break;

@@ -1,11 +1,12 @@
 ﻿using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Flint.Vm.Cil
 {
 	class Sizeof : Ast
 	{
 		public readonly TypeReference Type;
-		public Sizeof(TypeReference type)
+		public Sizeof(SequencePoint debug, TypeReference type) : base(debug)
 		{
 			Type = type;
 		}

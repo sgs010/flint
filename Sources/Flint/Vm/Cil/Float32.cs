@@ -1,9 +1,11 @@
-﻿namespace Flint.Vm.Cil
+﻿using Mono.Cecil.Cil;
+
+namespace Flint.Vm.Cil
 {
 	class Float32 : Ast
 	{
 		public readonly float Value;
-		public Float32(float value)
+		public Float32(SequencePoint debug, float value) : base(debug)
 		{
 			Value = value;
 		}

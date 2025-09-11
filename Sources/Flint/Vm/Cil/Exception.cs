@@ -4,6 +4,8 @@
 	{
 		public static readonly Exception Instance = new Exception();
 
+		public Exception() : base(null) { }
+
 		public override IEnumerable<Ast> GetChildren()
 		{
 			yield break;

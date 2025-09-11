@@ -1,4 +1,5 @@
 ﻿using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Flint.Vm.Cil
 {
@@ -6,7 +7,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly Ast Address;
 		public readonly TypeReference Type;
-		public Mkref(Ast address, TypeReference type)
+		public Mkref(SequencePoint debug, Ast address, TypeReference type) : base(debug)
 		{
 			Address = address;
 			Type = type;

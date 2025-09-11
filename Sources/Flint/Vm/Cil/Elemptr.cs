@@ -1,10 +1,12 @@
-﻿namespace Flint.Vm.Cil
+﻿using Mono.Cecil.Cil;
+
+namespace Flint.Vm.Cil
 {
 	class Elemptr : Ast
 	{
 		public readonly Ast Array;
 		public readonly Ast Index;
-		public Elemptr(Ast array, Ast index)
+		public Elemptr(SequencePoint debug, Ast array, Ast index) : base(debug)
 		{
 			Array = array;
 			Index = index;

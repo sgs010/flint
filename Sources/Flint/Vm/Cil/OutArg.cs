@@ -1,10 +1,12 @@
-﻿namespace Flint.Vm.Cil
+﻿using Mono.Cecil.Cil;
+
+namespace Flint.Vm.Cil
 {
 	class OutArg : Ast
 	{
 		public readonly Call Call;
 		public readonly int Index;
-		public OutArg(Call call, int index)
+		public OutArg(SequencePoint debug, Call call, int index) : base(debug)
 		{
 			Call = call;
 			Index = index;

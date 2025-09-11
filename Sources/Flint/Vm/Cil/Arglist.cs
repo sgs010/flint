@@ -1,11 +1,12 @@
 ﻿using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Flint.Vm.Cil
 {
 	class Arglist : Ast
 	{
 		public readonly MethodDefinition Method;
-		public Arglist(MethodDefinition method)
+		public Arglist(SequencePoint debug, MethodDefinition method) : base(debug)
 		{
 			Method = method;
 		}

@@ -1,10 +1,12 @@
-﻿namespace Flint.Vm.Cil
+﻿using Mono.Cecil.Cil;
+
+namespace Flint.Vm.Cil
 {
 	class Shl : Ast
 	{
 		public readonly Ast Value;
 		public readonly Ast Count;
-		public Shl(Ast value, Ast count)
+		public Shl(SequencePoint debug, Ast value, Ast count) : base(debug)
 		{
 			Value = value;
 			Count = count;

@@ -1,11 +1,12 @@
 ﻿using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Flint.Vm.Cil
 {
 	class Methodof : Ast
 	{
 		public readonly MethodReference Method;
-		public Methodof(MethodReference method)
+		public Methodof(SequencePoint debug, MethodReference method) : base(debug)
 		{
 			Method = method;
 		}

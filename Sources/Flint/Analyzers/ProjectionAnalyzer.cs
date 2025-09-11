@@ -3,6 +3,7 @@ using Flint.Common;
 using Flint.Vm;
 using Flint.Vm.Match;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using Cil = Flint.Vm.Cil;
 using Match = Flint.Vm.Match;
 
@@ -16,7 +17,20 @@ namespace Flint.Analyzers
 			var entityTypes = GetEntityTypes(asm);
 			foreach (var mtd in GetMethods(asm, className, methodName))
 			{
-				Analyze(ctx, mtd, entityTypes);
+				// analyze
+				var actualMethod = UnwrapAsync(mtd);
+				var projections = Analyze(ctx, actualMethod, entityTypes);
+
+				// report issues
+				foreach (var p in projections)
+				{
+					var sb = new StringBuilder();
+					sb.Append("consider using projection { ");
+					PrettyPrintEntity(sb, p.Entity, null);
+					sb.Append(" } in method ");
+					PrettyPrintMethod(sb, mtd, p.Debug);
+					ctx.Log(sb.ToString());
+				}
 			}
 		}
 		#endregion
@@ -27,6 +41,12 @@ namespace Flint.Analyzers
 			public TypeDefinition Type { get; init; }
 			public Dictionary<PropertyReference, EntityDefinition> Properties { get; } = [];
 			public bool IsChanged { get; set; }
+		}
+
+		sealed class ProjectionDefinition
+		{
+			public EntityDefinition Entity { get; init; }
+			public SequencePoint Debug { get; init; }
 		}
 
 		private static HashSet<TypeReference> GetEntityTypes(ModuleDefinition asm)
@@ -75,7 +95,23 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void Analyze(IAnalyzerContext ctx, MethodDefinition mtd, HashSet<TypeReference> entityTypes)
+		private static MethodDefinition UnwrapAsync(MethodDefinition method)
+		{
+			// check if method is async and return actual implementation
+			MethodDefinition asyncMethod = null;
+			if (method.HasCustomAttributes)
+			{
+				var asyncAttr = method.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.AsyncStateMachineAttribute");
+				if (asyncAttr != null)
+				{
+					var stmType = (TypeDefinition)asyncAttr.ConstructorArguments[0].Value;
+					asyncMethod = stmType.Methods.First(x => x.Name == "MoveNext");
+				}
+			}
+			return asyncMethod ?? method;
+		}
+
+		private static List<ProjectionDefinition> Analyze(IAnalyzerContext ctx, MethodDefinition mtd, HashSet<TypeReference> entityTypes)
 		{
 			// eval method body
 			var expressions = CilMachine.Run(mtd);
@@ -117,7 +153,7 @@ namespace Flint.Analyzers
 			}
 
 			// gather accessed properties
-			var entities = new List<EntityDefinition>();
+			var projections = new List<ProjectionDefinition>();
 			foreach (var root in roots)
 			{
 				if (marks.TryGetValue(root, out var rootExpressions) == false)
@@ -130,26 +166,15 @@ namespace Flint.Analyzers
 
 				var entity = CreateEntityDefinition(et, rootExpressions, entityTypes);
 				if (entity.Properties.Count == 0)
-					continue;
-
-				entities.Add(entity);
-			}
-
-			// report issues
-			foreach (var entity in entities)
-			{
+					continue; // no properties accessed
 				if (AllProperiesAreAccessed(entity))
 					continue; // do not advise a projection if all properties are accessed
 				if (SomePropertiesAreChanged(entity))
 					continue; // do not advise a projection if entity is changed
 
-				var sb = new StringBuilder();
-				sb.Append("consider using projection { ");
-				PrettyPrintEntity(sb, entity, null);
-				sb.Append(" } in method ");
-				PrettyPrintMethod(sb, mtd);
-				ctx.Log(sb.ToString());
+				projections.Add(new ProjectionDefinition { Entity = entity, Debug = root.Debug });
 			}
+			return projections;
 		}
 
 		private static (Cil.Call root, bool ok) CaptureAnyRoot(Ast expression, IEnumerable<string> methodNames)
@@ -319,14 +344,19 @@ namespace Flint.Analyzers
 			return false;
 		}
 
-		private static void PrettyPrintMethod(StringBuilder sb, MethodDefinition mtd)
+		private static void PrettyPrintMethod(StringBuilder sb, MethodDefinition mtd, SequencePoint debug)
 		{
 			sb.Append(mtd.DeclaringType.Namespace);
 			sb.Append('.');
 			sb.Append(mtd.DeclaringType.Name);
 			sb.Append('.');
 			sb.Append(mtd.Name);
-			sb.Append("()");
+
+			if (debug != null)
+			{
+				sb.Append(" line ");
+				sb.Append(debug.StartLine);
+			}
 		}
 
 		private static void PrettyPrintEntity(StringBuilder sb, EntityDefinition entity, string prefix)
