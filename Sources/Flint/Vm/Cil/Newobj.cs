@@ -8,7 +8,7 @@ namespace Flint.Vm.Cil
 		public readonly TypeReference Type;
 		public readonly MethodReference Constructor;
 		public readonly Ast[] Args;
-		public Newobj(SequencePoint debug, TypeReference type, MethodReference ctor, Ast[] args) : base(debug)
+		public Newobj(SequencePoint sp, TypeReference type, MethodReference ctor, Ast[] args) : base(sp)
 		{
 			Type = type;
 			Constructor = ctor;

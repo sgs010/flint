@@ -7,7 +7,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly TypeReference Type;
 		public readonly Ast Instance;
-		public Isinst(SequencePoint debug, TypeReference type, Ast instance) : base(debug)
+		public Isinst(SequencePoint sp, TypeReference type, Ast instance) : base(sp)
 		{
 			Type = type;
 			Instance = instance;

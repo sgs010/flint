@@ -7,7 +7,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly TypeReference Type;
 		public readonly Ast Address;
-		public Refanyval(SequencePoint debug, TypeReference type, Ast address) : base(debug)
+		public Refanyval(SequencePoint sp, TypeReference type, Ast address) : base(sp)
 		{
 			Type = type;
 			Address = address;

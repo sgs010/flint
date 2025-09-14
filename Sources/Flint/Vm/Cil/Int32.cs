@@ -5,7 +5,7 @@ namespace Flint.Vm.Cil
 	class Int32 : Ast
 	{
 		public readonly int Value;
-		public Int32(SequencePoint debug, int value) : base(debug)
+		public Int32(SequencePoint sp, int value) : base(sp)
 		{
 			Value = value;
 		}

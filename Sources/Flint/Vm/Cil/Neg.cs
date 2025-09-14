@@ -5,7 +5,7 @@ namespace Flint.Vm.Cil
 	class Neg : Ast
 	{
 		public readonly Ast Value;
-		public Neg(SequencePoint debug, Ast value) : base(debug)
+		public Neg(SequencePoint sp, Ast value) : base(sp)
 		{
 			Value = value;
 		}

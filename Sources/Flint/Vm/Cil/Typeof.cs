@@ -6,7 +6,7 @@ namespace Flint.Vm.Cil
 	class Typeof : Ast
 	{
 		public readonly TypeReference Type;
-		public Typeof(SequencePoint debug, TypeReference type) : base(debug)
+		public Typeof(SequencePoint sp, TypeReference type) : base(sp)
 		{
 			Type = type;
 		}

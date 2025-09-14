@@ -7,7 +7,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly Ast Instance;
 		public readonly MethodDefinition Method;
-		public Ftn(SequencePoint debug, Ast instance, MethodDefinition mtd) : base(debug)
+		public Ftn(SequencePoint sp, Ast instance, MethodDefinition mtd) : base(sp)
 		{
 			Instance = instance;
 			Method = mtd;

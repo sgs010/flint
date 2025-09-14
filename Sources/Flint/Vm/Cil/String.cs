@@ -5,7 +5,7 @@ namespace Flint.Vm.Cil
 	class String : Ast
 	{
 		public readonly string Value;
-		public String(SequencePoint debug, string value) : base(debug)
+		public String(SequencePoint sp, string value) : base(sp)
 		{
 			Value = value;
 		}

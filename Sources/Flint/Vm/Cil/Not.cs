@@ -5,7 +5,7 @@ namespace Flint.Vm.Cil
 	class Not : Ast
 	{
 		public readonly Ast Value;
-		public Not(SequencePoint debug, Ast value) : base(debug)
+		public Not(SequencePoint sp, Ast value) : base(sp)
 		{
 			Value = value;
 		}

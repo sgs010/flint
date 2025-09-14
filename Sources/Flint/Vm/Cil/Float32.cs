@@ -5,7 +5,7 @@ namespace Flint.Vm.Cil
 	class Float32 : Ast
 	{
 		public readonly float Value;
-		public Float32(SequencePoint debug, float value) : base(debug)
+		public Float32(SequencePoint sp, float value) : base(sp)
 		{
 			Value = value;
 		}

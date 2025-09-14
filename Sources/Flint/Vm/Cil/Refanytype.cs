@@ -5,7 +5,7 @@ namespace Flint.Vm.Cil
 	class Refanytype : Ast
 	{
 		public readonly Ast Reference;
-		public Refanytype(SequencePoint debug, Ast reference) : base(debug)
+		public Refanytype(SequencePoint sp, Ast reference) : base(sp)
 		{
 			Reference = reference;
 		}

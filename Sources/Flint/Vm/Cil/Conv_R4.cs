@@ -5,7 +5,7 @@ namespace Flint.Vm.Cil
 	class Conv_R4 : Ast
 	{
 		public readonly Ast Value;
-		public Conv_R4(SequencePoint debug, Ast value) : base(debug)
+		public Conv_R4(SequencePoint sp, Ast value) : base(sp)
 		{
 			Value = value;
 		}

@@ -5,7 +5,7 @@ namespace Flint.Vm.Cil
 	class Len : Ast
 	{
 		public readonly Ast Array;
-		public Len(SequencePoint debug, Ast array) : base(debug)
+		public Len(SequencePoint sp, Ast array) : base(sp)
 		{
 			Array = array;
 		}

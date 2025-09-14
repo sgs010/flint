@@ -5,7 +5,7 @@ namespace Flint.Vm.Cil
 	class Varptr : Ast
 	{
 		public readonly int Index;
-		public Varptr(SequencePoint debug, int index) : base(debug)
+		public Varptr(SequencePoint sp, int index) : base(sp)
 		{
 			Index = index;
 		}

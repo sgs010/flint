@@ -6,7 +6,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly Ast Value;
 		public readonly Ast Count;
-		public Shl(SequencePoint debug, Ast value, Ast count) : base(debug)
+		public Shl(SequencePoint sp, Ast value, Ast count) : base(sp)
 		{
 			Value = value;
 			Count = count;

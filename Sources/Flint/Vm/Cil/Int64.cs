@@ -5,7 +5,7 @@ namespace Flint.Vm.Cil
 	class Int64 : Ast
 	{
 		public readonly long Value;
-		public Int64(SequencePoint debug, long value) : base(debug)
+		public Int64(SequencePoint sp, long value) : base(sp)
 		{
 			Value = value;
 		}

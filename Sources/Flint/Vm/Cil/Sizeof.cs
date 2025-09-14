@@ -6,7 +6,7 @@ namespace Flint.Vm.Cil
 	class Sizeof : Ast
 	{
 		public readonly TypeReference Type;
-		public Sizeof(SequencePoint debug, TypeReference type) : base(debug)
+		public Sizeof(SequencePoint sp, TypeReference type) : base(sp)
 		{
 			Type = type;
 		}

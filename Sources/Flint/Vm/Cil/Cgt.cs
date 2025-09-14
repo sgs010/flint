@@ -6,7 +6,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly Ast Left;
 		public readonly Ast Right;
-		public Cgt(SequencePoint debug, Ast left, Ast right) : base(debug)
+		public Cgt(SequencePoint sp, Ast left, Ast right) : base(sp)
 		{
 			Left = left;
 			Right = right;

@@ -7,7 +7,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly TypeReference Type;
 		public readonly Ast Value;
-		public Castclass(SequencePoint debug, TypeReference type, Ast value) : base(debug)
+		public Castclass(SequencePoint sp, TypeReference type, Ast value) : base(sp)
 		{
 			Type = type;
 			Value = value;

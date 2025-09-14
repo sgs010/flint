@@ -6,7 +6,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly Call Call;
 		public readonly int Index;
-		public OutArg(SequencePoint debug, Call call, int index) : base(debug)
+		public OutArg(SequencePoint sp, Call call, int index) : base(sp)
 		{
 			Call = call;
 			Index = index;

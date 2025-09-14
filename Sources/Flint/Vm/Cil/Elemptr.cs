@@ -6,7 +6,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly Ast Array;
 		public readonly Ast Index;
-		public Elemptr(SequencePoint debug, Ast array, Ast index) : base(debug)
+		public Elemptr(SequencePoint sp, Ast array, Ast index) : base(sp)
 		{
 			Array = array;
 			Index = index;

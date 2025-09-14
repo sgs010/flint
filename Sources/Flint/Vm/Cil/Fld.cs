@@ -7,7 +7,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly Ast Instance;
 		public readonly FieldReference Field;
-		public Fld(SequencePoint debug, Ast instance, FieldReference fld) : base(debug)
+		public Fld(SequencePoint sp, Ast instance, FieldReference fld) : base(sp)
 		{
 			Instance = instance;
 			Field = fld;

@@ -7,7 +7,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly Ast Address;
 		public readonly TypeReference Type;
-		public Mkref(SequencePoint debug, Ast address, TypeReference type) : base(debug)
+		public Mkref(SequencePoint sp, Ast address, TypeReference type) : base(sp)
 		{
 			Address = address;
 			Type = type;

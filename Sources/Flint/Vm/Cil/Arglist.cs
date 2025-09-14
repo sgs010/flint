@@ -6,7 +6,7 @@ namespace Flint.Vm.Cil
 	class Arglist : Ast
 	{
 		public readonly MethodDefinition Method;
-		public Arglist(SequencePoint debug, MethodDefinition method) : base(debug)
+		public Arglist(SequencePoint sp, MethodDefinition method) : base(sp)
 		{
 			Method = method;
 		}

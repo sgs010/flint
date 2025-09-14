@@ -6,7 +6,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly Ast Array;
 		public readonly Ast Index;
-		public Elem(SequencePoint debug, Ast array, Ast index) : base(debug)
+		public Elem(SequencePoint sp, Ast array, Ast index) : base(sp)
 		{
 			Array = array;
 			Index = index;

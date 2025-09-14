@@ -5,7 +5,7 @@ namespace Flint.Vm.Cil
 	class Unaligned : Ast
 	{
 		public readonly byte Address;
-		public Unaligned(SequencePoint debug, byte address) : base(debug)
+		public Unaligned(SequencePoint sp, byte address) : base(sp)
 		{
 			Address = address;
 		}

@@ -6,7 +6,7 @@ namespace Flint.Vm.Cil
 	class Methodof : Ast
 	{
 		public readonly MethodReference Method;
-		public Methodof(SequencePoint debug, MethodReference method) : base(debug)
+		public Methodof(SequencePoint sp, MethodReference method) : base(sp)
 		{
 			Method = method;
 		}

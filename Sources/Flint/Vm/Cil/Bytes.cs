@@ -5,7 +5,7 @@ namespace Flint.Vm.Cil
 	class Bytes : Ast
 	{
 		public readonly Ast Count;
-		public Bytes(SequencePoint debug, Ast count) : base(debug)
+		public Bytes(SequencePoint sp, Ast count) : base(sp)
 		{
 			Count = count;
 		}

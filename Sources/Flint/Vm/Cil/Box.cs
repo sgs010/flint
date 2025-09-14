@@ -5,7 +5,7 @@ namespace Flint.Vm.Cil
 	class Box : Ast
 	{
 		public readonly Ast Value;
-		public Box(SequencePoint debug, Ast value) : base(debug)
+		public Box(SequencePoint sp, Ast value) : base(sp)
 		{
 			Value = value;
 		}

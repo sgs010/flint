@@ -7,7 +7,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly int Number;
 		public readonly ParameterReference Reference;
-		public Arg(SequencePoint debug, int number, ParameterReference reference) : base(debug)
+		public Arg(SequencePoint sp, int number, ParameterReference reference) : base(sp)
 		{
 			Number = number;
 			Reference = reference;

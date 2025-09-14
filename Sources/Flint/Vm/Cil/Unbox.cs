@@ -7,7 +7,7 @@ namespace Flint.Vm.Cil
 	{
 		public TypeReference Type;
 		public readonly Ast Value;
-		public Unbox(SequencePoint debug, TypeReference type, Ast value) : base(debug)
+		public Unbox(SequencePoint sp, TypeReference type, Ast value) : base(sp)
 		{
 			Type = type;
 			Value = value;

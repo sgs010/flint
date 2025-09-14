@@ -7,7 +7,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly TypeReference Type;
 		public readonly Ast Size;
-		public Array(SequencePoint debug, TypeReference type, Ast size) : base(debug)
+		public Array(SequencePoint sp, TypeReference type, Ast size) : base(sp)
 		{
 			Type = type;
 			Size = size;

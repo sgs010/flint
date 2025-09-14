@@ -28,7 +28,7 @@ namespace Flint.Analyzers
 					sb.Append("consider using projection { ");
 					PrettyPrintEntity(sb, p.Entity, null);
 					sb.Append(" } in method ");
-					PrettyPrintMethod(sb, mtd, p.Debug);
+					PrettyPrintMethod(sb, mtd, p.SequencePoint);
 					ctx.Log(sb.ToString());
 				}
 			}
@@ -46,7 +46,7 @@ namespace Flint.Analyzers
 		sealed class ProjectionDefinition
 		{
 			public EntityDefinition Entity { get; init; }
-			public SequencePoint Debug { get; init; }
+			public SequencePoint SequencePoint { get; init; }
 		}
 
 		private static HashSet<TypeReference> GetEntityTypes(ModuleDefinition asm)
@@ -172,7 +172,7 @@ namespace Flint.Analyzers
 				if (SomePropertiesAreChanged(entity))
 					continue; // do not advise a projection if entity is changed
 
-				projections.Add(new ProjectionDefinition { Entity = entity, Debug = root.Debug });
+				projections.Add(new ProjectionDefinition { Entity = entity, SequencePoint = root.SequencePoint });
 			}
 			return projections;
 		}
@@ -344,7 +344,7 @@ namespace Flint.Analyzers
 			return false;
 		}
 
-		private static void PrettyPrintMethod(StringBuilder sb, MethodDefinition mtd, SequencePoint debug)
+		private static void PrettyPrintMethod(StringBuilder sb, MethodDefinition mtd, SequencePoint sp)
 		{
 			sb.Append(mtd.DeclaringType.Namespace);
 			sb.Append('.');
@@ -352,10 +352,10 @@ namespace Flint.Analyzers
 			sb.Append('.');
 			sb.Append(mtd.Name);
 
-			if (debug != null)
+			if (sp != null)
 			{
 				sb.Append(" line ");
-				sb.Append(debug.StartLine);
+				sb.Append(sp.StartLine);
 			}
 		}
 

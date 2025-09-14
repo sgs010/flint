@@ -5,7 +5,7 @@ namespace Flint.Vm.Cil
 	class Argptr : Ast
 	{
 		public readonly int Number;
-		public Argptr(SequencePoint debug, int number) : base(debug)
+		public Argptr(SequencePoint sp, int number) : base(sp)
 		{
 			Number = number;
 		}

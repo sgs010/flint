@@ -8,7 +8,7 @@ namespace Flint.Vm.Cil
 		public readonly Ast Instance;
 		public readonly MethodReference Method;
 		public readonly Ast[] Args;
-		public Call(SequencePoint debug, Ast instance, MethodReference method, Ast[] args) : base(debug)
+		public Call(SequencePoint sp, Ast instance, MethodReference method, Ast[] args) : base(sp)
 		{
 			Instance = instance;
 			Method = method;

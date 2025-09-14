@@ -5,7 +5,7 @@ namespace Flint.Vm.Cil
 	class Heapptr : Ast
 	{
 		public readonly Ast Address;
-		public Heapptr(SequencePoint debug, Ast address) : base(debug)
+		public Heapptr(SequencePoint sp, Ast address) : base(sp)
 		{
 			Address = address;
 		}

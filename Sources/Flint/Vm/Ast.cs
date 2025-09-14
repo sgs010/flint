@@ -4,10 +4,10 @@ namespace Flint.Vm
 {
 	abstract class Ast : IEquatable<Ast>
 	{
-		public readonly SequencePoint Debug;
-		protected Ast(SequencePoint debug)
+		public readonly SequencePoint SequencePoint;
+		protected Ast(SequencePoint sp)
 		{
-			Debug = debug;
+			SequencePoint = sp;
 		}
 
 		public abstract IEnumerable<Ast> GetChildren();
