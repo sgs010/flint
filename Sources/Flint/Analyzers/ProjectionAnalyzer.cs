@@ -18,8 +18,8 @@ namespace Flint.Analyzers
 			foreach (var mtd in GetMethods(asm, className, methodName))
 			{
 				// analyze
-				var actualMethod = UnwrapAsync(mtd);
-				var projections = Analyze(ctx, actualMethod, entityTypes);
+				var actualMethod = UnwrapAsyncMethod(mtd);
+				var projections = Analyze(actualMethod, entityTypes);
 
 				// report issues
 				foreach (var p in projections)
@@ -95,7 +95,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static MethodDefinition UnwrapAsync(MethodDefinition method)
+		private static MethodDefinition UnwrapAsyncMethod(MethodDefinition method)
 		{
 			// check if method is async and return actual implementation
 			MethodDefinition asyncMethod = null;
@@ -111,10 +111,11 @@ namespace Flint.Analyzers
 			return asyncMethod ?? method;
 		}
 
-		private static List<ProjectionDefinition> Analyze(IAnalyzerContext ctx, MethodDefinition mtd, HashSet<TypeReference> entityTypes)
+		private static List<ProjectionDefinition> Analyze(MethodDefinition mtd, HashSet<TypeReference> entityTypes)
 		{
 			// eval method body
-			var expressions = CilMachine.Run(mtd);
+			var expressions = new List<Ast>();
+			Eval(mtd, expressions);
 
 			// find roots (methods where IQueryable monad is unwrapped; ToListAsync and so on)
 			// for every found root mark every ast accessible from it
@@ -143,12 +144,9 @@ namespace Flint.Analyzers
 				var rootExpressions = marks.GetOrAddValue(root);
 				Mark(expr, root, rootExpressions);
 
-				// some methods (i.e. ToDictionaryAsync) use lambdas
-				// we must analyze such lambdas too because they can read entity properties
-				var lambdas = CaptureLambdas(root,
-				[
-					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToDictionaryAsync",
-				]);
+				// some methods (i.e. ToDictionaryAsync) use lambdas, analyze them too
+				var lambdas = new List<Ast>();
+				CollectLambdaExpressions(rootExpressions, lambdas);
 				rootExpressions.AddRange(lambdas);
 			}
 
@@ -177,6 +175,29 @@ namespace Flint.Analyzers
 			return projections;
 		}
 
+		private static void Eval(MethodDefinition mtd, List<Ast> expressions)
+		{
+			// eval method body
+			var methodExpressions = CilMachine.Run(mtd);
+			expressions.AddRange(methodExpressions);
+
+			// eval lambdas
+			foreach (var expr in methodExpressions)
+			{
+				var (captures, ok) = expr.Match(
+					new Match.Ftn(),
+					true);
+				if (ok == false)
+					continue;
+
+				foreach (Cil.Ftn ftn in captures.Values)
+				{
+					var lambdaMethod = UnwrapAsyncMethod(ftn.Method);
+					Eval(lambdaMethod, expressions);
+				}
+			}
+		}
+
 		private static (Cil.Call root, bool ok) CaptureAnyRoot(Ast expression, IEnumerable<string> methodNames)
 		{
 			foreach (var name in methodNames)
@@ -193,32 +214,24 @@ namespace Flint.Analyzers
 			return (null, false);
 		}
 
-		private static List<Ast> CaptureLambdas(Cil.Call call, IEnumerable<string> methodNames)
+		private static void CollectLambdaExpressions(IEnumerable<Ast> methodExpressions, List<Ast> lambdaExpressions)
 		{
-			// if method uses lambdas (i.e. ToDictionaryAsync(x => x.Id) and so on)
-			// we eval a body of such lambda and return the result expressions
-			// later we gonna use these expressions to look for entity property access operations
-
-			var lambdas = new List<Ast>();
-			var callName = call.Method.DeclaringType.FullName + "." + call.Method.Name;
-			foreach (var methodName in methodNames)
+			foreach (var expr in methodExpressions)
 			{
-				if (callName != methodName)
-					continue;
-
-				var (captures, ok) = call.Match(
-					new Match.Ftn(), // Func is ldftn IL instruction, lambdas are translated into this
+				var (captures, ok) = expr.Match(
+					new Match.Ftn(), // Ftn is ldftn IL instruction, lambdas are translated into this
 					true);
 				if (ok == false)
 					continue;
 
-				foreach (Cil.Ftn func in captures.Values)
+				foreach (Cil.Ftn ftn in captures.Values)
 				{
-					var expressions = CilMachine.Run(func.Method);
-					lambdas.AddRange(expressions);
+					var lambdaMethod = UnwrapAsyncMethod(ftn.Method);
+					var lambda = CilMachine.Run(lambdaMethod);
+					lambdaExpressions.AddRange(lambda);
+					CollectLambdaExpressions(lambda, lambdaExpressions);
 				}
 			}
-			return lambdas;
 		}
 
 		private static void Mark(Ast expression, Ast root, List<Ast> marks)
@@ -244,13 +257,15 @@ namespace Flint.Analyzers
 				{
 					// check write (call of set_Property method)
 					var (_, ok) = expr.Match(
-						new Match.Call(Any.Instance, prop.SetMethod.FullName, Any.Args));
+						new Match.Call(Any.Instance, prop.SetMethod.FullName, Any.Args),
+						true);
 					if (ok)
 						entity.IsChanged = true;
 
 					// check read (call of get_Property method)
 					(_, ok) = expr.Match(
-						new Match.Call(Any.Instance, prop.GetMethod.FullName, Any.Args));
+						new Match.Call(Any.Instance, prop.GetMethod.FullName, Any.Args),
+						true);
 					if (ok == false)
 						continue; // prop is not accessed, nothing to project
 

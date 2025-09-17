@@ -24,19 +24,19 @@ namespace Samples
 			var users = await db.Users.ToListAsync();
 			foreach (var user in users)
 			{
-				Console.WriteLine($"{user.Id} {user.Name} {user.Email}");
+				Console.WriteLine($"{user.Id} {user.FirstName} {user.LastName} {user.Email}");
 			}
 		}
 
 		public static async void ReadSomeProperties()
 		{
-			// should advise a projection { Id, Name }
+			// should advise a projection { Id, FirstName }
 
 			using var db = new DB();
 			var users = await db.Users.ToListAsync();
 			foreach (var user in users)
 			{
-				Console.WriteLine($"{user.Id} {user.Name}");
+				Console.WriteLine($"{user.Id} {user.FirstName}");
 			}
 		}
 
@@ -46,10 +46,10 @@ namespace Samples
 
 			using var db = new DB();
 
-			var usersByName = await db.Users.Where(x => x.Name == "John").ToListAsync();
+			var usersByName = await db.Users.Where(x => x.FirstName == "John").ToListAsync();
 			foreach (var user in usersByName)
 			{
-				Console.WriteLine($"{user.Id} {user.Name}");
+				Console.WriteLine($"{user.Id} {user.FirstName}");
 			}
 
 			var usersByEmail = await db.Users.Where(x => x.Email.StartsWith("test")).ToListAsync();
@@ -136,116 +136,116 @@ namespace Samples
 
 		public static async void ToListAsync()
 		{
-			// should advise a projection { Name }
+			// should advise a projection { FirstName }
 
 			using var db = new DB();
 			var users = await db.Users.ToListAsync();
 			foreach (var user in users)
 			{
-				Console.WriteLine($"{user.Name}");
+				Console.WriteLine($"{user.FirstName}");
 			}
 		}
 
 		public static async void ToArrayAsync()
 		{
-			// should advise a projection { Name }
+			// should advise a projection { FirstName }
 
 			using var db = new DB();
 			var users = await db.Users.ToArrayAsync();
 			foreach (var user in users)
 			{
-				Console.WriteLine($"{user.Name}");
+				Console.WriteLine($"{user.FirstName}");
 			}
 		}
 
 		public static async void ToHashSetAsync()
 		{
-			// should advise a projection { Name }
+			// should advise a projection { FirstName }
 
 			using var db = new DB();
 			var users = await db.Users.ToHashSetAsync();
 			foreach (var user in users)
 			{
-				Console.WriteLine($"{user.Name}");
+				Console.WriteLine($"{user.FirstName}");
 			}
 		}
 
 		public static async void ToDictionaryAsync()
 		{
-			// should advise a projection { Id, Name }
+			// should advise a projection { Id, FirstName }
 
 			using var db = new DB();
 			var users = await db.Users.ToDictionaryAsync(x => x.Id);
 			foreach (var (_, user) in users)
 			{
-				Console.WriteLine($"{user.Name}");
+				Console.WriteLine($"{user.FirstName}");
 			}
 		}
 
 		public static async void FirstAsync()
 		{
-			// should advise a projection { Name }
+			// should advise a projection { FirstName }
 
 			using var db = new DB();
 			var user = await db.Users.FirstAsync(x => x.Id == 42);
-			Console.WriteLine($"{user.Name}");
+			Console.WriteLine($"{user.FirstName}");
 		}
 
 		public static async void FirstOrDefaultAsync()
 		{
-			// should advise a projection { Name }
+			// should advise a projection { FirstName }
 
 			using var db = new DB();
 			var user = await db.Users.FirstOrDefaultAsync(x => x.Id == 42);
 			if (user != null)
-				Console.WriteLine($"{user.Name}");
+				Console.WriteLine($"{user.FirstName}");
 		}
 
 		public static async void LastAsync()
 		{
-			// should advise a projection { Name }
+			// should advise a projection { FirstName }
 
 			using var db = new DB();
 			var user = await db.Users.LastAsync(x => x.Id == 42);
-			Console.WriteLine($"{user.Name}");
+			Console.WriteLine($"{user.FirstName}");
 		}
 
 		public static async void LastOrDefaultAsync()
 		{
-			// should advise a projection { Name }
+			// should advise a projection { FirstName }
 
 			using var db = new DB();
 			var user = await db.Users.LastOrDefaultAsync(x => x.Id == 42);
-			Console.WriteLine($"{user.Name}");
+			Console.WriteLine($"{user.FirstName}");
 		}
 
 		public static async void SingleAsync()
 		{
-			// should advise a projection { Name }
+			// should advise a projection { FirstName }
 
 			using var db = new DB();
 			var user = await db.Users.SingleAsync(x => x.Id == 42);
-			Console.WriteLine($"{user.Name}");
+			Console.WriteLine($"{user.FirstName}");
 		}
 
 		public static async void SingleOrDefaultAsync()
 		{
-			// should advise a projection { Name }
+			// should advise a projection { FirstName }
 
 			using var db = new DB();
 			var user = await db.Users.SingleOrDefaultAsync(x => x.Id == 42);
 			if (user != null)
-				Console.WriteLine($"{user.Name}");
+				Console.WriteLine($"{user.FirstName}");
 		}
 
 		public static async void AsAsyncEnumerable()
 		{
-			// should advise a projection { Name }
+			// should advise a projection { FirstName }
 
 			using var db = new DB();
 			await foreach (var user in db.Users.Where(x => x.Email != null).AsAsyncEnumerable())
 			{
-				Console.WriteLine($"{user.Name}");
+				Console.WriteLine($"{user.FirstName}");
 			}
 		}
 
@@ -316,6 +316,24 @@ namespace Samples
 				}
 				await db.SaveChangesAsync();
 			}
+		}
+
+		record struct TodoDto(int Id, string Name, string User);
+		public static void NestedLambdas()
+		{
+			// should advise projection { Id, Name, User.FirstName, User.LastName }
+
+			var app = new App();
+			app.MapGet("/todos", async (DB db) =>
+			{
+				var todos = await db.Todos.Where(x => x.IsCompleted).ToListAsync();
+				return todos.Select(t => new TodoDto
+				{
+					Id = t.Id,
+					Name = t.Name,
+					User = t.User.FirstName + t.User.LastName,
+				});
+			});
 		}
 	}
 }

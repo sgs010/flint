@@ -42,7 +42,7 @@ namespace FlintTests
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ReadSomeProperties));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Id, Name } in method Samples.Projections.ReadSomeProperties line 36"
+				"consider using projection { Id, FirstName } in method Samples.Projections.ReadSomeProperties line 36"
 			]);
 		}
 
@@ -55,7 +55,7 @@ namespace FlintTests
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.MultipleQueries));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Id, Name } in method Samples.Projections.MultipleQueries line 49",
+				"consider using projection { Id, FirstName } in method Samples.Projections.MultipleQueries line 49",
 				"consider using projection { Id, Email } in method Samples.Projections.MultipleQueries line 55",
 			]);
 		}
@@ -106,7 +106,7 @@ namespace FlintTests
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ToListAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Name } in method Samples.Projections.ToListAsync line 142"
+				"consider using projection { FirstName } in method Samples.Projections.ToListAsync line 142"
 			]);
 		}
 
@@ -119,7 +119,7 @@ namespace FlintTests
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ToArrayAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Name } in method Samples.Projections.ToArrayAsync line 154"
+				"consider using projection { FirstName } in method Samples.Projections.ToArrayAsync line 154"
 			]);
 		}
 
@@ -132,7 +132,7 @@ namespace FlintTests
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ToHashSetAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Name } in method Samples.Projections.ToHashSetAsync line 166"
+				"consider using projection { FirstName } in method Samples.Projections.ToHashSetAsync line 166"
 			]);
 		}
 
@@ -145,7 +145,7 @@ namespace FlintTests
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ToDictionaryAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Id, Name } in method Samples.Projections.ToDictionaryAsync line 178"
+				"consider using projection { Id, FirstName } in method Samples.Projections.ToDictionaryAsync line 178"
 			]);
 		}
 
@@ -158,7 +158,7 @@ namespace FlintTests
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.FirstAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Name } in method Samples.Projections.FirstAsync line 190"
+				"consider using projection { FirstName } in method Samples.Projections.FirstAsync line 190"
 			]);
 		}
 
@@ -171,7 +171,7 @@ namespace FlintTests
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.FirstOrDefaultAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Name } in method Samples.Projections.FirstOrDefaultAsync line 199"
+				"consider using projection { FirstName } in method Samples.Projections.FirstOrDefaultAsync line 199"
 			]);
 		}
 
@@ -184,7 +184,7 @@ namespace FlintTests
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.LastAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Name } in method Samples.Projections.LastAsync line 209"
+				"consider using projection { FirstName } in method Samples.Projections.LastAsync line 209"
 			]);
 		}
 
@@ -197,7 +197,7 @@ namespace FlintTests
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.LastOrDefaultAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Name } in method Samples.Projections.LastOrDefaultAsync line 218"
+				"consider using projection { FirstName } in method Samples.Projections.LastOrDefaultAsync line 218"
 			]);
 		}
 
@@ -210,7 +210,7 @@ namespace FlintTests
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.SingleAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Name } in method Samples.Projections.SingleAsync line 227"
+				"consider using projection { FirstName } in method Samples.Projections.SingleAsync line 227"
 			]);
 		}
 
@@ -223,7 +223,7 @@ namespace FlintTests
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.SingleOrDefaultAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Name } in method Samples.Projections.SingleOrDefaultAsync line 236"
+				"consider using projection { FirstName } in method Samples.Projections.SingleOrDefaultAsync line 236"
 			]);
 		}
 
@@ -236,7 +236,7 @@ namespace FlintTests
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.AsAsyncEnumerable));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Name } in method Samples.Projections.AsAsyncEnumerable line 246"
+				"consider using projection { FirstName } in method Samples.Projections.AsAsyncEnumerable line 246"
 			]);
 		}
 
@@ -293,6 +293,19 @@ namespace FlintTests
 			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ReadForUpdate_CollectionIterate));
 
 			ctx.Output.Should().BeEmpty();
+		}
+
+		[TestMethod]
+		public void NestedLambdas()
+		{
+			using var asm = LoadSamples();
+			var ctx = new AnalyzerContextMock();
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.NestedLambdas));
+
+			ctx.Output.Should().BeEquivalentTo([
+				"consider using projection { Id, Name, User.FirstName, User.LastName } in method Samples.Projections.NestedLambdas line 329"
+			]);
 		}
 	}
 }
