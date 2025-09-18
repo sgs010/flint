@@ -256,14 +256,14 @@ namespace Flint.Analyzers
 				foreach (var expr in expressions)
 				{
 					// check write (call of set_Property method)
-					var (_, ok) = expr.Match(
+					var (captures, ok) = expr.Match(
 						new Match.Call(Any.Instance, prop.SetMethod.FullName, Any.Args),
 						true);
 					if (ok)
 						entity.IsChanged = true;
 
 					// check read (call of get_Property method)
-					(_, ok) = expr.Match(
+					(captures, ok) = expr.Match(
 						new Match.Call(Any.Instance, prop.GetMethod.FullName, Any.Args),
 						true);
 					if (ok == false)
@@ -277,7 +277,7 @@ namespace Flint.Analyzers
 					{
 						child = CreateEntityDefinition(itemType.Resolve(), expressions, entityTypes);
 						if (entity.IsChanged == false)
-							entity.IsChanged = IsCollectionChanged(expr, expressions);
+							entity.IsChanged = IsCollectionChanged(expr, captures.Values);
 					}
 					else if (entityTypes.Contains(prop.PropertyType))
 					{
@@ -311,15 +311,16 @@ namespace Flint.Analyzers
 			return true;
 		}
 
-		private static bool IsCollectionChanged(Ast col, IReadOnlyCollection<Ast> expressions)
+		private static bool IsCollectionChanged(Ast expr, IReadOnlyCollection<Ast> captures)
 		{
 			string[] methods = ["Add", "Remove"];
 			foreach (var mtd in methods)
 			{
-				foreach (var expr in expressions)
+				foreach (var capture in captures)
 				{
 					var (_, ok) = expr.Match(
-						new Match.Call(col, mtd, Match.Any.Args));
+						new Match.Call(capture, mtd, Match.Any.Args), 
+						true);
 					if (ok)
 						return true;
 				}

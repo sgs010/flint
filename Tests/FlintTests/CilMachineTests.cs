@@ -2080,6 +2080,18 @@ namespace FlintTests
 		}
 
 		[TestMethod]
+		public void Ldtoken_Fieldof()
+		{
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
+			var instruction = Instruction.Create(OpCodes.Ldtoken, IntFieldT);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Fieldof(SP, IntFieldT));
+		}
+
+		[TestMethod]
 		public void Ldvirtftn()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);

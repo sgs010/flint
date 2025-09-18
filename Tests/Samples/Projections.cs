@@ -319,7 +319,8 @@ namespace Samples
 		}
 
 		record struct TodoDto(int Id, string Name, string User);
-		public static void NestedLambdas()
+
+		public static void LambdaRead()
 		{
 			// should advise projection { Id, Name, User.FirstName, User.LastName }
 
@@ -333,6 +334,26 @@ namespace Samples
 					Name = t.Name,
 					User = t.User.FirstName + t.User.LastName,
 				});
+			});
+		}
+
+		public static void LambdaWrite()
+		{
+			// should not advise any projection
+
+			var app = new App();
+			app.MapPost("/todos/{id}", async (int id, DB db) =>
+			{
+				var todo = await db.Todos.FirstOrDefaultAsync(x => x.Id == id);
+				if (todo == null)
+					return 404;
+
+				if (todo.IsCompleted == false)
+				{
+					todo.IsCompleted = true;
+					await db.SaveChangesAsync();
+				}
+				return 200;
 			});
 		}
 	}

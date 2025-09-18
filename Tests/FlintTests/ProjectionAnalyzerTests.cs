@@ -296,16 +296,27 @@ namespace FlintTests
 		}
 
 		[TestMethod]
-		public void NestedLambdas()
+		public void LambdaRead()
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.NestedLambdas));
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.LambdaRead));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using projection { Id, Name, User.FirstName, User.LastName } in method Samples.Projections.NestedLambdas line 329"
+				"consider using projection { Id, Name, User.FirstName, User.LastName } in method Samples.Projections.LambdaRead line 330"
 			]);
+		}
+
+		[TestMethod]
+		public void LambdaWrite()
+		{
+			using var asm = LoadSamples();
+			var ctx = new AnalyzerContextMock();
+
+			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.LambdaWrite));
+
+			ctx.Output.Should().BeEmpty();
 		}
 	}
 }

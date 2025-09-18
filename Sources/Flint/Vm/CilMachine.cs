@@ -943,6 +943,8 @@ namespace Flint.Vm
 				token = new Cil.Typeof(sp, t);
 			else if (value is MethodReference m)
 				token = new Cil.Methodof(sp, m);
+			else if (value is FieldReference f)
+				token = new Cil.Fieldof(sp, f);
 			else throw new NotImplementedException($"Unknown token {value}");
 
 			ctx.Stack.Push(token);
