@@ -37,10 +37,10 @@ namespace Flint
 
 		private static void ShowHelpMessage()
 		{
-			Console.WriteLine("Flint - a tool to analyze and suggest improvements for EF Core code.");
+			Console.WriteLine("Flint - linter tool to analyze and suggest improvements for EF Core code.");
 			Console.WriteLine("Usage: flint --input=<path_to_assembly>");
 			Console.WriteLine("Options:");
-			Console.WriteLine("  --input\tPath to the assembly (DLL or EXE) to analyze.");
+			Console.WriteLine("  --input - Path to the assembly (DLL or EXE) to analyze.");
 			Console.WriteLine("Example:");
 			Console.WriteLine("  flint --input=MyApp.dll");
 		}
