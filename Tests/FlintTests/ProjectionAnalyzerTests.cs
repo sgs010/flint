@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using Flint.Analyzers;
+using FluentAssertions;
 using Mono.Cecil;
 
 namespace FlintTests
@@ -16,8 +17,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ReadWholeObject));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.ReadWholeObject));
 
 			ctx.Output.Should().BeEmpty();
 		}
@@ -27,8 +29,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ReadAllProperties));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.ReadAllProperties));
 
 			ctx.Output.Should().BeEmpty();
 		}
@@ -38,8 +41,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ReadSomeProperties));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.ReadSomeProperties));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { Id, FirstName } in method Samples.Projections.ReadSomeProperties line 36"
@@ -51,8 +55,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.MultipleQueries));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.MultipleQueries));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { Id, FirstName } in method Samples.Projections.MultipleQueries line 49",
@@ -65,8 +70,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ComplexProjection));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.ComplexProjection));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { Number, Items = { Product.Name } } in method Samples.Projections.ComplexProjection line 68",
@@ -78,8 +84,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ReadAllChainedProperties));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.ReadAllChainedProperties));
 
 			ctx.Output.Should().BeEmpty();
 		}
@@ -89,8 +96,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.SimpleCRUD));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.SimpleCRUD));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { Name, Price } in method Samples.Projections.SimpleCRUD line 111",
@@ -102,8 +110,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ToListAsync));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.ToListAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { FirstName } in method Samples.Projections.ToListAsync line 142"
@@ -115,8 +124,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ToArrayAsync));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.ToArrayAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { FirstName } in method Samples.Projections.ToArrayAsync line 154"
@@ -128,8 +138,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ToHashSetAsync));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.ToHashSetAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { FirstName } in method Samples.Projections.ToHashSetAsync line 166"
@@ -141,8 +152,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ToDictionaryAsync));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.ToDictionaryAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { Id, FirstName } in method Samples.Projections.ToDictionaryAsync line 178"
@@ -154,8 +166,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.FirstAsync));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.FirstAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { FirstName } in method Samples.Projections.FirstAsync line 190"
@@ -167,8 +180,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.FirstOrDefaultAsync));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.FirstOrDefaultAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { FirstName } in method Samples.Projections.FirstOrDefaultAsync line 199"
@@ -180,8 +194,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.LastAsync));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.LastAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { FirstName } in method Samples.Projections.LastAsync line 209"
@@ -193,8 +208,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.LastOrDefaultAsync));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.LastOrDefaultAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { FirstName } in method Samples.Projections.LastOrDefaultAsync line 218"
@@ -206,8 +222,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.SingleAsync));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.SingleAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { FirstName } in method Samples.Projections.SingleAsync line 227"
@@ -219,8 +236,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.SingleOrDefaultAsync));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.SingleOrDefaultAsync));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { FirstName } in method Samples.Projections.SingleOrDefaultAsync line 236"
@@ -232,8 +250,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.AsAsyncEnumerable));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.AsAsyncEnumerable));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { FirstName } in method Samples.Projections.AsAsyncEnumerable line 246"
@@ -245,8 +264,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ReadForUpdate_ChangeProperty));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.ReadForUpdate_ChangeProperty));
 
 			ctx.Output.Should().BeEmpty();
 		}
@@ -256,8 +276,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ReadForUpdate_ChangeNestedProperty));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.ReadForUpdate_ChangeNestedProperty));
 
 			ctx.Output.Should().BeEmpty();
 		}
@@ -267,8 +288,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ReadForUpdate_CollectionAdd));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.ReadForUpdate_CollectionAdd));
 
 			ctx.Output.Should().BeEmpty();
 		}
@@ -278,8 +300,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ReadForUpdate_CollectionRemove));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.ReadForUpdate_CollectionRemove));
 
 			ctx.Output.Should().BeEmpty();
 		}
@@ -289,8 +312,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.ReadForUpdate_CollectionIterate));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.ReadForUpdate_CollectionIterate));
 
 			ctx.Output.Should().BeEmpty();
 		}
@@ -300,8 +324,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.LambdaRead));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.LambdaRead));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider using projection { Id, Name, User.FirstName, User.LastName } in method Samples.Projections.LambdaRead line 330"
@@ -313,8 +338,9 @@ namespace FlintTests
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			Flint.Analyzers.ProjectionAnalyzer.Run(ctx, asm, nameof(Samples.Projections), nameof(Samples.Projections.LambdaWrite));
+			ProjectionAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Projections), nameof(Samples.Projections.LambdaWrite));
 
 			ctx.Output.Should().BeEmpty();
 		}

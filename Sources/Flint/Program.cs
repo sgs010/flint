@@ -70,7 +70,9 @@ namespace Flint
 		{
 			using var asm = ModuleDefinition.ReadModule(parameters.Input, new ReaderParameters { ReadSymbols = true });
 			var ctx = new AnalyzerContext();
-			ProjectionAnalyzer.Run(ctx, asm);
+			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
+			Parallel.Invoke(
+				() => ProjectionAnalyzer.Run(ctx, asm, entityTypes));
 		}
 	}
 }
