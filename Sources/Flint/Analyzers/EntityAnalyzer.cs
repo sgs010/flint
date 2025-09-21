@@ -1,6 +1,8 @@
-﻿using Flint.Common;
+﻿using System.Text;
+using Flint.Common;
 using Flint.Vm;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using Cil = Flint.Vm.Cil;
 using Match = Flint.Vm.Match;
 
@@ -89,6 +91,21 @@ namespace Flint.Analyzers
 				Analyze(method, entityTypes, entities);
 			}
 			return entities.ToArray();
+		}
+
+		public static void PrettyPrintMethod(StringBuilder sb, MethodDefinition mtd, SequencePoint sp)
+		{
+			sb.Append(mtd.DeclaringType.Namespace);
+			sb.Append('.');
+			sb.Append(mtd.DeclaringType.Name);
+			sb.Append('.');
+			sb.Append(mtd.Name);
+
+			if (sp != null)
+			{
+				sb.Append(" line ");
+				sb.Append(sp.StartLine);
+			}
 		}
 		#endregion
 

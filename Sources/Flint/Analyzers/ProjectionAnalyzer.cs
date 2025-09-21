@@ -24,7 +24,7 @@ namespace Flint.Analyzers
 				sb.Append("consider using projection { ");
 				PrettyPrintEntity(sb, entity, null);
 				sb.Append(" } in method ");
-				PrettyPrintMethod(sb, entity.Method, entity.Root.SequencePoint);
+				EntityAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.SequencePoint);
 				ctx.Log(sb.ToString());
 			}
 		}
@@ -54,21 +54,6 @@ namespace Flint.Analyzers
 					return true;
 			}
 			return false;
-		}
-
-		private static void PrettyPrintMethod(StringBuilder sb, MethodDefinition mtd, SequencePoint sp)
-		{
-			sb.Append(mtd.DeclaringType.Namespace);
-			sb.Append('.');
-			sb.Append(mtd.DeclaringType.Name);
-			sb.Append('.');
-			sb.Append(mtd.Name);
-
-			if (sp != null)
-			{
-				sb.Append(" line ");
-				sb.Append(sp.StartLine);
-			}
 		}
 
 		private static void PrettyPrintEntity(StringBuilder sb, EntityDefinition entity, string prefix)
