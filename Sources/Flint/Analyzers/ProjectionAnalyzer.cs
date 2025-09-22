@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Flint.Analyzers
 {
@@ -16,7 +15,7 @@ namespace Flint.Analyzers
 					continue; // no properties accessed
 				if (AllProperiesAreAccessed(entity))
 					continue; // do not advise a projection if all properties are accessed
-				if (SomePropertiesAreChanged(entity))
+				if (EntityAnalyzer.SomePropertiesAreChanged(entity))
 					continue; // do not advise a projection if entity is changed
 
 				// report issue
@@ -42,18 +41,6 @@ namespace Flint.Analyzers
 					return false;
 			}
 			return true;
-		}
-
-		private static bool SomePropertiesAreChanged(EntityDefinition entity)
-		{
-			foreach (var prop in entity.Properties)
-			{
-				if (prop.Write)
-					return true;
-				if (prop.Entity != null && SomePropertiesAreChanged(prop.Entity))
-					return true;
-			}
-			return false;
 		}
 
 		private static void PrettyPrintEntity(StringBuilder sb, EntityDefinition entity, string prefix)

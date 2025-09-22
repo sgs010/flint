@@ -72,7 +72,9 @@ namespace Flint
 			var ctx = new AnalyzerContext();
 			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 			Parallel.Invoke(
-				() => ProjectionAnalyzer.Run(ctx, asm, entityTypes));
+				() => ProjectionAnalyzer.Run(ctx, asm, entityTypes),
+				() => IncludeAnalyzer.Run(ctx, asm, entityTypes),
+				() => TrackingAnalyzer.Run(ctx, asm, entityTypes));
 		}
 	}
 }

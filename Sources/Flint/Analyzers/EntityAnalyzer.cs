@@ -32,6 +32,18 @@ namespace Flint.Analyzers
 	internal class EntityAnalyzer
 	{
 		#region Interface
+		public static bool SomePropertiesAreChanged(EntityDefinition entity)
+		{
+			foreach (var prop in entity.Properties)
+			{
+				if (prop.Write)
+					return true;
+				if (prop.Entity != null && SomePropertiesAreChanged(prop.Entity))
+					return true;
+			}
+			return false;
+		}
+
 		public static bool IsGenericCollection(PropertyReference prop, out TypeReference itemType, HashSet<TypeReference> allowedTypes = null)
 		{
 			// check if property is a System.Collections.Generic.ICollection<T>
