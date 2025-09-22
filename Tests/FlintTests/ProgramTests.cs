@@ -30,7 +30,9 @@ namespace FlintTests
 
 			var output = _mockOut.ToString().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
 			output.Should().BeEquivalentTo([
-				"consider using projection { Id, Name, User.FirstName, User.LastName } in method WebApp.Program.Main line 18"
+				"consider using projection { Id, Name, User.FirstName, User.LastName } in method WebApp.Program.Main line 18",
+				"add Include(t => t.User) in method WebApp.Program.Main line 18",
+				"add AsNoTracking() in method WebApp.Program.Main line 18",
 			]);
 		}
 	}

@@ -1,6 +1,9 @@
-Flint is EF Core linter tool. Good to check things after vibe coders.
+Flint is EF Core linter tool. Good to check things after vibe coders. 
+This is CLI tool designed for CI/CD pipeline. Flint processes compiled assemblies, no source code is required.
 
-Supported suggestions:
-1. consider using projection;
+Supported checks:
+1. Consider using projection {...} - avoid SELECT * FROM issue.
+2. Add Include(...) - avoid N+1 problem.
+3. Add AsNoTracking() - reduce memory usage.
 
 Usage: flint --input=<path_to_assembly>
