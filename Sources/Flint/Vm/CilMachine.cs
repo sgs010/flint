@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using Flint.Common;
+﻿using Flint.Common;
 using Flint.Vm.Cil;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -491,7 +490,7 @@ namespace Flint.Vm
 					break;
 				case Code.Stfld:
 				case Code.Stsfld:
-					Stfld(ctx, (FieldDefinition)instruction.Operand);
+					Stfld(ctx, instruction);
 					break;
 				case Code.Stind_I:
 				case Code.Stind_I1:
@@ -867,7 +866,7 @@ namespace Flint.Vm
 
 		private static void Ldfld(RoutineContext ctx, Instruction instruction)
 		{
-			var fld = (FieldDefinition)instruction.Operand;
+			var fld = ((FieldReference)instruction.Operand).Resolve();
 			var sp = GetSequencePoint(ctx, instruction);
 
 			Ast instance = null;
@@ -1107,8 +1106,9 @@ namespace Flint.Vm
 			ctx.Heap.AddOrReplace(address, value);
 		}
 
-		private static void Stfld(RoutineContext ctx, FieldDefinition fld)
+		private static void Stfld(RoutineContext ctx, Instruction instruction)
 		{
+			var fld = ((FieldReference)instruction.Operand).Resolve();
 			var value = ctx.Stack.Pop();
 
 			Ast instance = null;

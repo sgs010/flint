@@ -21,13 +21,17 @@ namespace Flint.Analyzers
 				if (missingIncludes.Count == 0)
 					continue; // all is ok
 
-				// report issue
-				var sb = new StringBuilder();
-				sb.Append("add ");
-				PrettyPrintIncludes(sb, missingIncludes);
-				sb.Append(" in method ");
-				EntityAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.SequencePoint);
-				ctx.Log(sb.ToString());
+				// report issues
+				var chains = SplitIntoChains(missingIncludes);
+				foreach (var chain in chains)
+				{
+					var sb = new StringBuilder();
+					sb.Append("add ");
+					PrettyPrintIncludes(sb, chain);
+					sb.Append(" in method ");
+					EntityAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.SequencePoint);
+					ctx.Log(sb.ToString());
+				}
 			}
 		}
 		#endregion
@@ -54,6 +58,28 @@ namespace Flint.Analyzers
 
 				Analyze(prop.Entity, false, missingIncludes);
 			}
+		}
+
+		private static List<List<Include>> SplitIntoChains(List<Include> includes)
+		{
+			var chains = new List<List<Include>>();
+			foreach (var x in includes)
+			{
+				if (x.TopLevel)
+				{
+					// start new chain
+					chains.Add([x]);
+				}
+				else
+				{
+					// add to current chain
+					if (chains.Count > 0)
+						chains.Last().Add(x);
+					else
+						chains.Add([x]);
+				}
+			}
+			return chains;
 		}
 
 		private static void PrettyPrintIncludes(StringBuilder sb, List<Include> includes)

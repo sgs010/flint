@@ -2,7 +2,7 @@
 
 namespace Samples
 {
-	public static class Projections
+	public static class Projection
 	{
 		public static async void ReadWholeObject()
 		{
