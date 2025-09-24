@@ -38,6 +38,16 @@ namespace WebApp
 				return Results.NoContent();
 			});
 
+			app.MapGet("/blog/{id}", async (int id, DB db) =>
+			{
+				var blog = await db.Blogs.FirstOrDefaultAsync(b => b.Id == 42);
+				return new
+				{
+					Posts = blog.Posts.Select(post => new { post.Author.FirstName, post.Author.LastName }),
+					Tags = blog.Tags.Select(tag => tag.Name)
+				};
+			});
+
 			app.Run();
 		}
 	}

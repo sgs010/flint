@@ -2,7 +2,7 @@
 
 namespace Samples
 {
-	public static class Includes
+	public static class Include
 	{
 		record struct TodoDto(int Id, string Name, string User);
 
@@ -81,6 +81,23 @@ namespace Samples
 			foreach (var item in order.Items)
 			{
 				Console.WriteLine($"{item.Product.Name}");
+			}
+		}
+
+		public static async void MultipleChains()
+		{
+			// should advise Include(b => b.Posts).ThenInclude(p => p.Author)
+			// should advise Include(b => b.Tags)
+
+			using var db = new DB();
+			var blog = await db.Blogs.FirstOrDefaultAsync(b => b.Id == 42);
+			foreach (var post in blog.Posts)
+			{
+				Console.WriteLine($"{post.Author.FirstName} {post.Author.LastName}");
+			}
+			foreach (var tag in blog.Tags)
+			{
+				Console.WriteLine($"{tag.Name}");
 			}
 		}
 	}

@@ -74,7 +74,7 @@ namespace Flint
 			Parallel.Invoke(
 				() => ProjectionAnalyzer.Run(ctx, asm, entityTypes),
 				() => IncludeAnalyzer.Run(ctx, asm, entityTypes),
-				() => TrackingAnalyzer.Run(ctx, asm, entityTypes));
+				() => AsNoTrackingAnalyzer.Run(ctx, asm, entityTypes));
 		}
 	}
 }

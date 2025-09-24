@@ -3,7 +3,7 @@ using Mono.Cecil;
 
 namespace Flint.Analyzers
 {
-	internal class TrackingAnalyzer
+	internal class AsNoTrackingAnalyzer
 	{
 		#region Interface
 		public static void Run(IAnalyzerContext ctx, ModuleDefinition asm, HashSet<TypeReference> entityTypes, string className = null, string methodName = null)
