@@ -214,6 +214,9 @@ namespace Flint.Analyzers
 
 		private static void Eval(MethodDefinition mtd, List<Ast> expressions)
 		{
+			if (mtd.HasBody == false)
+				return; // this is an abstract method, nothing to evaluate
+
 			// eval method body
 			var methodExpressions = CilMachine.Run(mtd);
 			expressions.AddRange(methodExpressions);
