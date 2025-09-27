@@ -49,7 +49,7 @@ namespace WebApp
 				};
 			});
 
-			app.MapPut("/post/{id}", async (int id, [FromBody] string text, IRepository repo, IEventBus bus) =>
+			app.MapPost("/post/{id}", async (int id, [FromBody] string text, IRepository repo, IEventBus bus) =>
 			{
 				var post = new Post { BlogId = id, Text = text };
 				repo.Posts.Add(post);

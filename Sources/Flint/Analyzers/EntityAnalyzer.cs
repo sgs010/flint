@@ -98,7 +98,7 @@ namespace Flint.Analyzers
 		public static EntityDefinition[] Analyze(ModuleDefinition asm, HashSet<TypeReference> entityTypes, string className = null, string methodName = null)
 		{
 			var entities = new List<EntityDefinition>();
-			foreach (var method in GetMethods(asm, className, methodName))
+			foreach (var method in MethodAnalyzer.GetMethods(asm, className, methodName))
 			{
 				Analyze(method, entityTypes, entities);
 			}
@@ -122,46 +122,10 @@ namespace Flint.Analyzers
 		#endregion
 
 		#region Implementation
-		private static IEnumerable<MethodDefinition> GetMethods(ModuleDefinition asm, string className = null, string methodName = null)
-		{
-			foreach (var type in asm.Types)
-			{
-				if (className != null && type.Name != className)
-					continue;
-
-				foreach (var mtd in type.Methods)
-				{
-					if (methodName != null && mtd.Name != methodName)
-						continue;
-
-					yield return mtd;
-				}
-			}
-		}
-
-		private static MethodDefinition UnwrapAsyncMethod(MethodDefinition method)
-		{
-			// check if method is async and return actual implementation
-			MethodDefinition asyncMethod = null;
-			if (method.HasCustomAttributes)
-			{
-				var asyncAttr = method.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.AsyncStateMachineAttribute");
-				if (asyncAttr != null)
-				{
-					var stmType = (TypeDefinition)asyncAttr.ConstructorArguments[0].Value;
-					asyncMethod = stmType.Methods.First(x => x.Name == "MoveNext");
-				}
-			}
-			return asyncMethod ?? method;
-		}
-
 		private static void Analyze(MethodDefinition method, HashSet<TypeReference> entityTypes, List<EntityDefinition> entities)
 		{
-			var actualMethod = UnwrapAsyncMethod(method);
-
 			// eval method body
-			var expressions = new List<Ast>();
-			Eval(actualMethod, expressions);
+			var expressions = MethodAnalyzer.Eval(method);
 
 			// find roots (methods where IQueryable monad is unwrapped; ToListAsync and so on)
 			// for every found root mark every ast accessible from it
@@ -192,7 +156,7 @@ namespace Flint.Analyzers
 
 				// some methods (i.e. ToDictionaryAsync) use lambdas, analyze them too
 				var lambdas = new List<Ast>();
-				CollectLambdaExpressions(rootExpressions, lambdas);
+				MethodAnalyzer.CollectLambdaExpressions(rootExpressions, lambdas);
 				rootExpressions.AddRange(lambdas);
 			}
 
@@ -209,32 +173,6 @@ namespace Flint.Analyzers
 
 				var entity = CreateEntityDefinition(method, root, et, rootExpressions, entityTypes);
 				entities.Add(entity);
-			}
-		}
-
-		private static void Eval(MethodDefinition mtd, List<Ast> expressions)
-		{
-			if (mtd.HasBody == false)
-				return; // this is an abstract method, nothing to evaluate
-
-			// eval method body
-			var methodExpressions = CilMachine.Run(mtd);
-			expressions.AddRange(methodExpressions);
-
-			// eval lambdas
-			foreach (var expr in methodExpressions)
-			{
-				var (captures, ok) = expr.Match(
-					new Match.Ftn(),
-					true);
-				if (ok == false)
-					continue;
-
-				foreach (Cil.Ftn ftn in captures.Values)
-				{
-					var lambdaMethod = UnwrapAsyncMethod(ftn.Method);
-					Eval(lambdaMethod, expressions);
-				}
 			}
 		}
 
@@ -266,26 +204,6 @@ namespace Flint.Analyzers
 			marks.Add(expression);
 			foreach (var child in expression.GetChildren())
 				Mark(child, root, marks);
-		}
-
-		private static void CollectLambdaExpressions(IEnumerable<Ast> methodExpressions, List<Ast> lambdaExpressions)
-		{
-			foreach (var expr in methodExpressions)
-			{
-				var (captures, ok) = expr.Match(
-					new Match.Ftn(), // Ftn is ldftn IL instruction, lambdas are translated into this
-					true);
-				if (ok == false)
-					continue;
-
-				foreach (Cil.Ftn ftn in captures.Values)
-				{
-					var lambdaMethod = UnwrapAsyncMethod(ftn.Method);
-					var lambda = CilMachine.Run(lambdaMethod);
-					lambdaExpressions.AddRange(lambda);
-					CollectLambdaExpressions(lambda, lambdaExpressions);
-				}
-			}
 		}
 
 		private static EntityDefinition CreateEntityDefinition(MethodDefinition mtd, Ast root, TypeDefinition type, IReadOnlyCollection<Ast> expressions, HashSet<TypeReference> entityTypes)

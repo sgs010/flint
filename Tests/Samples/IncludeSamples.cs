@@ -2,7 +2,7 @@
 
 namespace Samples
 {
-	public static class Include
+	public static class IncludeSamples
 	{
 		record struct TodoDto(int Id, string Name, string User);
 

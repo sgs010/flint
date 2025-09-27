@@ -2,7 +2,7 @@
 
 namespace Samples
 {
-	public static class AsNoTracking
+	public static class AsNoTrackingSamples
 	{
 		public static void Read()
 		{

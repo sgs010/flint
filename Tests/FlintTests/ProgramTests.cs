@@ -40,7 +40,7 @@ namespace FlintTests
 				"add AsNoTracking() in method WebApp.Program.Main line 44",
 				"consider adding AsSplitQuery() in method WebApp.Program.Main line 44",
 
-				//"consider using Outbox pattern in method WebApp.Program.Main line 58",
+				"consider using Outbox pattern in method WebApp.Program.Main line 58",
 			]);
 		}
 	}

@@ -2,7 +2,7 @@
 
 namespace Samples
 {
-	public static class AsSplitQuery
+	public static class AsSplitQuerySamples
 	{
 		public static async void MultipleChains()
 		{

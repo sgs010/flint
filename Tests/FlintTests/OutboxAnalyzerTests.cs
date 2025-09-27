@@ -5,7 +5,7 @@ using Mono.Cecil;
 namespace FlintTests
 {
 	[TestClass]
-	public class AsSplitQueryAnalyzerTests
+	public class OutboxAnalyzerTests
 	{
 		private static ModuleDefinition LoadSamples()
 		{
@@ -13,39 +13,39 @@ namespace FlintTests
 		}
 
 		[TestMethod]
-		public void MultipleChains()
+		public void NoOutbox()
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
 			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			AsSplitQueryAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.MultipleChains));
+			OutboxAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.NoOutbox));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider adding AsSplitQuery() in method Samples.AsSplitQuerySamples.MultipleChains line 12"
+				"consider using Outbox pattern in method Samples.OutboxSamples.NoOutbox line 16"
 			]);
 		}
 
 		[TestMethod]
-		public void MultipleChainsWithSplit()
+		public void DelayedOutbox()
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
 			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			AsSplitQueryAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.MultipleChainsWithSplit));
+			OutboxAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.DelayedOutbox));
 
 			ctx.Output.Should().BeEmpty();
 		}
 
 		[TestMethod]
-		public void SingleChain()
+		public void ImmediateOutbox()
 		{
 			using var asm = LoadSamples();
 			var ctx = new AnalyzerContextMock();
 			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			AsSplitQueryAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.SingleChain));
+			OutboxAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.ImmediateOutbox));
 
 			ctx.Output.Should().BeEmpty();
 		}

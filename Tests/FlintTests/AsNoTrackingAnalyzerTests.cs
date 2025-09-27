@@ -19,10 +19,10 @@ namespace FlintTests
 			var ctx = new AnalyzerContextMock();
 			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			AsNoTrackingAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.AsNoTracking), nameof(Samples.AsNoTracking.Read));
+			AsNoTrackingAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.AsNoTrackingSamples), nameof(Samples.AsNoTrackingSamples.Read));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"add AsNoTracking() in method Samples.AsNoTracking.Read line 14"
+				"add AsNoTracking() in method Samples.AsNoTrackingSamples.Read line 14"
 			]);
 		}
 
@@ -33,7 +33,7 @@ namespace FlintTests
 			var ctx = new AnalyzerContextMock();
 			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			AsNoTrackingAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.AsNoTracking), nameof(Samples.AsNoTracking.Update));
+			AsNoTrackingAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.AsNoTrackingSamples), nameof(Samples.AsNoTrackingSamples.Update));
 
 			ctx.Output.Should().BeEmpty();
 		}

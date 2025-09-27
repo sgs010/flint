@@ -19,10 +19,10 @@ namespace FlintTests
 			var ctx = new AnalyzerContextMock();
 			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Include), nameof(Samples.Include.Lambda_NestedEntity));
+			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.Lambda_NestedEntity));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"add Include(t => t.User) in method Samples.Include.Lambda_NestedEntity line 16"
+				"add Include(t => t.User) in method Samples.IncludeSamples.Lambda_NestedEntity line 16"
 			]);
 		}
 
@@ -33,7 +33,7 @@ namespace FlintTests
 			var ctx = new AnalyzerContextMock();
 			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Include), nameof(Samples.Include.Lambda_NoNestedEntities));
+			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.Lambda_NoNestedEntities));
 
 			ctx.Output.Should().BeEmpty();
 		}
@@ -45,10 +45,10 @@ namespace FlintTests
 			var ctx = new AnalyzerContextMock();
 			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Include), nameof(Samples.Include.ChainedEntities_NoInclude));
+			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.ChainedEntities_NoInclude));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"add Include(o => o.Items).ThenInclude(oi => oi.Product) in method Samples.Include.ChainedEntities_NoInclude line 47"
+				"add Include(o => o.Items).ThenInclude(oi => oi.Product) in method Samples.IncludeSamples.ChainedEntities_NoInclude line 47"
 			]);
 		}
 
@@ -59,7 +59,7 @@ namespace FlintTests
 			var ctx = new AnalyzerContextMock();
 			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Include), nameof(Samples.Include.ChainedEntities_FullInclude));
+			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.ChainedEntities_FullInclude));
 
 			ctx.Output.Should().BeEmpty();
 		}
@@ -71,10 +71,10 @@ namespace FlintTests
 			var ctx = new AnalyzerContextMock();
 			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Include), nameof(Samples.Include.ChainedEntities_PartialInclude));
+			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.ChainedEntities_PartialInclude));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"add ThenInclude(oi => oi.Product) in method Samples.Include.ChainedEntities_PartialInclude line 77"
+				"add ThenInclude(oi => oi.Product) in method Samples.IncludeSamples.ChainedEntities_PartialInclude line 77"
 			]);
 		}
 
@@ -85,11 +85,11 @@ namespace FlintTests
 			var ctx = new AnalyzerContextMock();
 			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.Include), nameof(Samples.Include.MultipleChains));
+			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.MultipleChains));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"add Include(b => b.Posts).ThenInclude(p => p.Author) in method Samples.Include.MultipleChains line 93",
-				"add Include(b => b.Tags) in method Samples.Include.MultipleChains line 93"
+				"add Include(b => b.Posts).ThenInclude(p => p.Author) in method Samples.IncludeSamples.MultipleChains line 93",
+				"add Include(b => b.Tags) in method Samples.IncludeSamples.MultipleChains line 93"
 			]);
 		}
 	}
