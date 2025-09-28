@@ -91,15 +91,15 @@ namespace Flint.Vm
 		}
 	}
 
-	static class AstExtensions
-	{
-		public static void Capture(this Ast[] col, Ast[] other, IDictionary<string, Ast> captures)
-		{
-			if (col.Length != other.Length)
-				throw new InvalidOperationException();
+	//static class AstExtensions
+	//{
+	//	public static void Capture(this Ast[] col, Ast[] other, IDictionary<string, Ast> captures)
+	//	{
+	//		if (col.Length != other.Length)
+	//			throw new InvalidOperationException();
 
-			for (var i = 0; i < col.Length; ++i)
-				col[i].Capture(other[i], captures);
-		}
-	}
+	//		for (var i = 0; i < col.Length; ++i)
+	//			col[i].Capture(other[i], captures);
+	//	}
+	//}
 }

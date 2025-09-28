@@ -4,7 +4,7 @@ namespace Samples
 {
 	public static class AsNoTrackingSamples
 	{
-		public static void Read()
+		public static void Read_NoAsNoTracking()
 		{
 			// should advise to add AsNoTracking
 
@@ -12,6 +12,23 @@ namespace Samples
 			app.MapGet("/test", async (DB db) =>
 			{
 				var todos = await db.Todos.Where(x => x.IsCompleted).ToListAsync();
+				return todos.Select(t => new
+				{
+					Id = t.Id,
+					Name = t.Name,
+					User = t.User.FirstName + t.User.LastName,
+				});
+			});
+		}
+
+		public static void Read_HasAsNoTracking()
+		{
+			// should not advise to add AsNoTracking because it is already present
+
+			var app = new App();
+			app.MapGet("/test", async (DB db) =>
+			{
+				var todos = await db.Todos.Where(x => x.IsCompleted).AsNoTracking().ToListAsync();
 				return todos.Select(t => new
 				{
 					Id = t.Id,

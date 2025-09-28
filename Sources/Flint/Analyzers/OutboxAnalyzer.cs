@@ -28,6 +28,14 @@ namespace Flint.Analyzers
 			// if 1,2 are true and 3 is false - suggest Outbox pattern
 
 			var expressions = MethodAnalyzer.EvalRecursive(mtd);
+
+			var hasSaveChangesAsync = expressions.OfCall("Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync").Any();
+			if (hasSaveChangesAsync == false)
+				return;
+
+			var hasSendMessageAsync = expressions.OfCall("Azure.Messaging.ServiceBus.ServiceBusSender.SendMessageAsync").Any();
+			if (hasSendMessageAsync == false)
+				return;
 		}
 		#endregion
 	}

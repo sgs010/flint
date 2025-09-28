@@ -870,6 +870,136 @@ namespace FlintTests
 		}
 
 		[TestMethod]
+		public void Conv_Ovf_U()
+		{
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
+			ctx.Stack.Push(Cil.Null.Instance);
+			var instruction = Instruction.Create(OpCodes.Conv_Ovf_U);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Conv_U(SP, Cil.Null.Instance));
+		}
+
+		[TestMethod]
+		public void Conv_Ovf_U_Un()
+		{
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
+			ctx.Stack.Push(Cil.Null.Instance);
+			var instruction = Instruction.Create(OpCodes.Conv_Ovf_U_Un);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Conv_U(SP, Cil.Null.Instance));
+		}
+
+		[TestMethod]
+		public void Conv_Ovf_U1()
+		{
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
+			ctx.Stack.Push(Cil.Null.Instance);
+			var instruction = Instruction.Create(OpCodes.Conv_Ovf_U1);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Conv_U1(SP, Cil.Null.Instance));
+		}
+
+		[TestMethod]
+		public void Conv_Ovf_U1_Un()
+		{
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
+			ctx.Stack.Push(Cil.Null.Instance);
+			var instruction = Instruction.Create(OpCodes.Conv_Ovf_U1_Un);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Conv_U1(SP, Cil.Null.Instance));
+		}
+
+		[TestMethod]
+		public void Conv_Ovf_U2()
+		{
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
+			ctx.Stack.Push(Cil.Null.Instance);
+			var instruction = Instruction.Create(OpCodes.Conv_Ovf_U2);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Conv_U2(SP, Cil.Null.Instance));
+		}
+
+		[TestMethod]
+		public void Conv_Ovf_U2_Un()
+		{
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
+			ctx.Stack.Push(Cil.Null.Instance);
+			var instruction = Instruction.Create(OpCodes.Conv_Ovf_U2_Un);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Conv_U2(SP, Cil.Null.Instance));
+		}
+
+		[TestMethod]
+		public void Conv_Ovf_U4()
+		{
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
+			ctx.Stack.Push(Cil.Null.Instance);
+			var instruction = Instruction.Create(OpCodes.Conv_Ovf_U4);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Conv_U4(SP, Cil.Null.Instance));
+		}
+
+		[TestMethod]
+		public void Conv_Ovf_U4_Un()
+		{
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
+			ctx.Stack.Push(Cil.Null.Instance);
+			var instruction = Instruction.Create(OpCodes.Conv_Ovf_U4_Un);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Conv_U4(SP, Cil.Null.Instance));
+		}
+
+		[TestMethod]
+		public void Conv_Ovf_U8()
+		{
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
+			ctx.Stack.Push(Cil.Null.Instance);
+			var instruction = Instruction.Create(OpCodes.Conv_Ovf_U8);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Conv_U8(SP, Cil.Null.Instance));
+		}
+
+		[TestMethod]
+		public void Conv_Ovf_U8_Un()
+		{
+			var ctx = new CilMachine.RoutineContext(stackSize: 1);
+			ctx.Stack.Push(Cil.Null.Instance);
+			var instruction = Instruction.Create(OpCodes.Conv_Ovf_U8_Un);
+
+			CilMachine.Eval(ctx, instruction);
+
+			ctx.Stack.Should().HaveCount(1);
+			ctx.Stack.Peek().Should().Be(new Cil.Conv_U8(SP, Cil.Null.Instance));
+		}
+
+		[TestMethod]
 		public void Conv_R_Un()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);

@@ -231,18 +231,28 @@ namespace Flint.Vm
 					Conv_R8(ctx, instruction);
 					break;
 				case Code.Conv_U:
+				case Code.Conv_Ovf_U:
+				case Code.Conv_Ovf_U_Un:
 					Conv_U(ctx, instruction);
 					break;
 				case Code.Conv_U1:
+				case Code.Conv_Ovf_U1:
+				case Code.Conv_Ovf_U1_Un:
 					Conv_U1(ctx, instruction);
 					break;
 				case Code.Conv_U2:
+				case Code.Conv_Ovf_U2:
+				case Code.Conv_Ovf_U2_Un:
 					Conv_U2(ctx, instruction);
 					break;
 				case Code.Conv_U4:
+				case Code.Conv_Ovf_U4:
+				case Code.Conv_Ovf_U4_Un:
 					Conv_U4(ctx, instruction);
 					break;
 				case Code.Conv_U8:
+				case Code.Conv_Ovf_U8:
+				case Code.Conv_Ovf_U8_Un:
 					Conv_U8(ctx, instruction);
 					break;
 				case Code.Cpblk:

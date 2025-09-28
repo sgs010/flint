@@ -40,9 +40,9 @@ namespace Flint.Vm.Match
 
 		private static bool InstanceEquals(Match.Call m, Cil.Call c)
 		{
-			if (m.Instance == null && c.Instance == null)
+			if (m.Instance == Any.Instance)
 				return true;
-			if (m.Instance == Any.Instance && c.Instance != null)
+			if (m.Instance == null && c.Instance == null)
 				return true;
 			if (m.Instance != null && c.Instance != null && m.Instance.Equals(c.Instance))
 				return true;

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Flint.Vm;
 using Mono.Cecil;
 
 namespace Flint.Analyzers
@@ -13,6 +14,10 @@ namespace Flint.Analyzers
 			{
 				if (EntityAnalyzer.SomePropertiesAreChanged(entity))
 					continue; // entity is changed, do not advise to add AsNoTracking
+
+				var hasAsNoTracking = entity.Root.OfCall("Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AsNoTracking").Any();
+				if (hasAsNoTracking)
+					continue; // AsNoTracking is already present
 
 				// report issue
 				var sb = new StringBuilder();
