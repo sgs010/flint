@@ -2,12 +2,12 @@
 
 namespace Samples
 {
-	interface IEventBus
+	public interface IEventBus
 	{
 		Task PublishAsync(string message);
 	}
 
-	class EventBus : IEventBus
+	public class EventBus : IEventBus
 	{
 		private readonly ServiceBusSender _bus;
 		public EventBus(ServiceBusSender bus)

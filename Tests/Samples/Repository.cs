@@ -2,7 +2,7 @@
 
 namespace Samples
 {
-	interface IRepository
+	public interface IRepository
 	{
 		DbSet<Blog> Blogs { get; }
 		DbSet<Post> Posts { get; }
@@ -11,7 +11,7 @@ namespace Samples
 		Task SaveChangesAsync();
 	}
 
-	class Repository : IRepository
+	public class Repository : IRepository
 	{
 		private readonly DB _db;
 		public Repository(DB db)
