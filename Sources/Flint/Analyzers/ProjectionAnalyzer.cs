@@ -1,14 +1,13 @@
 ﻿using System.Text;
-using Mono.Cecil;
 
 namespace Flint.Analyzers
 {
 	internal class ProjectionAnalyzer
 	{
 		#region Interface
-		public static void Run(IAnalyzerContext ctx, ModuleDefinition asm, HashSet<TypeReference> entityTypes, string className = null, string methodName = null)
+		public static void Run(IAnalyzerContext ctx, AssemblyDefinition asm, string className = null, string methodName = null)
 		{
-			var entities = EntityAnalyzer.Analyze(asm, entityTypes, className, methodName);
+			var entities = EntityAnalyzer.Analyze(asm, className, methodName);
 			foreach (var entity in entities)
 			{
 				if (entity.Properties.Length == 0)
@@ -23,7 +22,7 @@ namespace Flint.Analyzers
 				sb.Append("consider using projection { ");
 				PrettyPrintEntity(sb, entity, null);
 				sb.Append(" } in method ");
-				EntityAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.SequencePoint);
+				MethodAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.SequencePoint);
 				ctx.Log(sb.ToString());
 			}
 		}

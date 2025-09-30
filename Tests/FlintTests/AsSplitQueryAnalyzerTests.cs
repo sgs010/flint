@@ -1,25 +1,18 @@
 ﻿using Flint.Analyzers;
 using FluentAssertions;
-using Mono.Cecil;
 
 namespace FlintTests
 {
 	[TestClass]
 	public class AsSplitQueryAnalyzerTests
 	{
-		private static ModuleDefinition LoadSamples()
-		{
-			return ModuleDefinition.ReadModule("Samples.dll", new ReaderParameters { ReadSymbols = true });
-		}
-
 		[TestMethod]
 		public void MultipleChains()
 		{
-			using var asm = LoadSamples();
+			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			AsSplitQueryAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.MultipleChains));
+			AsSplitQueryAnalyzer.Run(ctx, asm, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.MultipleChains));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider adding AsSplitQuery() in method Samples.AsSplitQuerySamples.MultipleChains line 12"
@@ -29,11 +22,10 @@ namespace FlintTests
 		[TestMethod]
 		public void MultipleChainsWithSplit()
 		{
-			using var asm = LoadSamples();
+			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			AsSplitQueryAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.MultipleChainsWithSplit));
+			AsSplitQueryAnalyzer.Run(ctx, asm, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.MultipleChainsWithSplit));
 
 			ctx.Output.Should().BeEmpty();
 		}
@@ -41,11 +33,10 @@ namespace FlintTests
 		[TestMethod]
 		public void SingleChain()
 		{
-			using var asm = LoadSamples();
+			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			AsSplitQueryAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.SingleChain));
+			AsSplitQueryAnalyzer.Run(ctx, asm, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.SingleChain));
 
 			ctx.Output.Should().BeEmpty();
 		}

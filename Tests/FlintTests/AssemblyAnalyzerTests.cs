@@ -9,7 +9,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Analyze_EntityTypes()
 		{
-			var asm = AssemblyAnalyzer.Analyze("Samples.dll");
+			var asm = AssemblyAnalyzer.Load("Samples.dll");
 
 			asm.EntityTypes.Should().Contain(x => x.FullName == "Samples.User");
 			asm.EntityTypes.Should().Contain(x => x.FullName == "Samples.Order");
@@ -19,7 +19,7 @@ namespace FlintTests
 		[TestMethod]
 		public void Analyze_InterfaceImplementations()
 		{
-			var asm = AssemblyAnalyzer.Analyze("Samples.dll");
+			var asm = AssemblyAnalyzer.Load("Samples.dll");
 
 			asm.InterfaceImplementations
 				.Where(x => x.Key.FullName == "Samples.IRepository")

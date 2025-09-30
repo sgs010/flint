@@ -8,4 +8,4 @@ Supported checks:
 3. Add AsNoTracking() - reduce memory usage.
 4. Consider adding AsSplitQuery() - avoid cartesian explosion.
 
-Usage: flint --input=<path_to_assembly>
+Usage: FlintCLI --input=<path_to_assembly>

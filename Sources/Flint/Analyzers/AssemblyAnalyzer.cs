@@ -9,8 +9,8 @@ namespace Flint.Analyzers
 	sealed class AssemblyDefinition : Disposable
 	{
 		public required ModuleDefinition Module { get; init; }
-		public required FrozenSet<TypeReference> EntityTypes { get; init; }
-		public required FrozenDictionary<TypeReference, ImmutableArray<TypeReference>> InterfaceImplementations { get; init; }
+		public required FrozenSet<TypeDefinition> EntityTypes { get; init; }
+		public required FrozenDictionary<TypeDefinition, ImmutableArray<TypeDefinition>> InterfaceImplementations { get; init; }
 
 		protected override void BaseDispose(bool disposing)
 		{
@@ -26,11 +26,11 @@ namespace Flint.Analyzers
 	internal class AssemblyAnalyzer
 	{
 		#region Interface
-		public static AssemblyDefinition Analyze(string path)
+		public static AssemblyDefinition Load(string path)
 		{
 			var module = ModuleDefinition.ReadModule(path, new ReaderParameters { ReadSymbols = true });
-			var entityMap = new HashSet<TypeReference>();
-			var interfaceMap = new Dictionary<TypeReference, List<TypeReference>>();
+			var entityMap = new HashSet<TypeDefinition>();
+			var interfaceMap = new Dictionary<TypeDefinition, List<TypeDefinition>>();
 
 			foreach (var t in module.Types)
 			{
@@ -48,7 +48,7 @@ namespace Flint.Analyzers
 		#endregion
 
 		#region Implementation
-		private static void TryPopulateEntityMap(TypeDefinition type, HashSet<TypeReference> entityMap)
+		private static void TryPopulateEntityMap(TypeDefinition type, HashSet<TypeDefinition> entityMap)
 		{
 			if (type.BaseType == null)
 				return;
@@ -64,22 +64,23 @@ namespace Flint.Analyzers
 				if (prop.PropertyType.Name != "DbSet`1")
 					continue;
 
-				var entity = ((GenericInstanceType)prop.PropertyType).GenericArguments.First();
+				var entity = ((GenericInstanceType)prop.PropertyType).GenericArguments.First().Resolve();
 				entityMap.Add(entity);
 			}
 		}
 
-		private static void TryPopulateInterfaceMap(TypeDefinition type, Dictionary<TypeReference, List<TypeReference>> interfaceMap)
+		private static void TryPopulateInterfaceMap(TypeDefinition type, Dictionary<TypeDefinition, List<TypeDefinition>> interfaceMap)
 		{
 			if (type.IsInterface)
 				return;
 
 			foreach (var intr in type.Interfaces)
 			{
-				if (interfaceMap.TryGetValue(intr.InterfaceType, out var implementations) == false)
+				var interfaceType = intr.InterfaceType.Resolve();
+				if (interfaceMap.TryGetValue(interfaceType, out var implementations) == false)
 				{
 					implementations = [];
-					interfaceMap.Add(intr.InterfaceType, implementations);
+					interfaceMap.Add(interfaceType, implementations);
 				}
 				implementations.Add(type);
 			}

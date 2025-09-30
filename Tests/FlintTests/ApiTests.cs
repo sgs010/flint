@@ -3,7 +3,7 @@
 namespace FlintTests
 {
 	[TestClass]
-	public class ProgramTests
+	public class ApiTests
 	{
 		private StringWriter _mockOut;
 		private TextWriter _originalOut;
@@ -26,7 +26,7 @@ namespace FlintTests
 		[TestMethod]
 		public void TestWebApp()
 		{
-			Flint.Program.Main(["--input=WebApp.dll"]);
+			Flint.Api.Run("WebApp.dll");
 
 			var output = _mockOut.ToString().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
 			output.Should().BeEquivalentTo([

@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using Mono.Cecil;
 using Match = Flint.Vm.Match;
 
 namespace Flint.Analyzers
@@ -7,9 +6,9 @@ namespace Flint.Analyzers
 	internal class AsSplitQueryAnalyzer
 	{
 		#region Interface
-		public static void Run(IAnalyzerContext ctx, ModuleDefinition asm, HashSet<TypeReference> entityTypes, string className = null, string methodName = null)
+		public static void Run(IAnalyzerContext ctx, AssemblyDefinition asm, string className = null, string methodName = null)
 		{
-			var entities = EntityAnalyzer.Analyze(asm, entityTypes, className, methodName);
+			var entities = EntityAnalyzer.Analyze(asm, className, methodName);
 			foreach (var entity in entities)
 			{
 				if (entity.Properties.Length == 0)
@@ -30,7 +29,7 @@ namespace Flint.Analyzers
 				// report issue
 				var sb = new StringBuilder();
 				sb.Append("consider adding AsSplitQuery() in method ");
-				EntityAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.SequencePoint);
+				MethodAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.SequencePoint);
 				ctx.Log(sb.ToString());
 			}
 		}

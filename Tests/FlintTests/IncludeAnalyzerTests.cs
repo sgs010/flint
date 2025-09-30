@@ -1,25 +1,18 @@
 ﻿using Flint.Analyzers;
 using FluentAssertions;
-using Mono.Cecil;
 
 namespace FlintTests
 {
 	[TestClass]
 	public class IncludeAnalyzerTests
 	{
-		private static ModuleDefinition LoadSamples()
-		{
-			return ModuleDefinition.ReadModule("Samples.dll", new ReaderParameters { ReadSymbols = true });
-		}
-
 		[TestMethod]
 		public void Lambda_NestedEntity()
 		{
-			using var asm = LoadSamples();
+			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.Lambda_NestedEntity));
+			IncludeAnalyzer.Run(ctx, asm, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.Lambda_NestedEntity));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"add Include(t => t.User) in method Samples.IncludeSamples.Lambda_NestedEntity line 16"
@@ -29,11 +22,10 @@ namespace FlintTests
 		[TestMethod]
 		public void Lambda_NoNestedEntities()
 		{
-			using var asm = LoadSamples();
+			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.Lambda_NoNestedEntities));
+			IncludeAnalyzer.Run(ctx, asm, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.Lambda_NoNestedEntities));
 
 			ctx.Output.Should().BeEmpty();
 		}
@@ -41,11 +33,10 @@ namespace FlintTests
 		[TestMethod]
 		public void ChainedEntities_NoInclude()
 		{
-			using var asm = LoadSamples();
+			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.ChainedEntities_NoInclude));
+			IncludeAnalyzer.Run(ctx, asm, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.ChainedEntities_NoInclude));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"add Include(o => o.Items).ThenInclude(oi => oi.Product) in method Samples.IncludeSamples.ChainedEntities_NoInclude line 47"
@@ -55,11 +46,10 @@ namespace FlintTests
 		[TestMethod]
 		public void ChainedEntities_FullInclude()
 		{
-			using var asm = LoadSamples();
+			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.ChainedEntities_FullInclude));
+			IncludeAnalyzer.Run(ctx, asm, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.ChainedEntities_FullInclude));
 
 			ctx.Output.Should().BeEmpty();
 		}
@@ -67,11 +57,10 @@ namespace FlintTests
 		[TestMethod]
 		public void ChainedEntities_PartialInclude()
 		{
-			using var asm = LoadSamples();
+			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.ChainedEntities_PartialInclude));
+			IncludeAnalyzer.Run(ctx, asm, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.ChainedEntities_PartialInclude));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"add ThenInclude(oi => oi.Product) in method Samples.IncludeSamples.ChainedEntities_PartialInclude line 77"
@@ -81,11 +70,10 @@ namespace FlintTests
 		[TestMethod]
 		public void MultipleChains()
 		{
-			using var asm = LoadSamples();
+			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
-			var entityTypes = EntityAnalyzer.GetEntityTypes(asm);
 
-			IncludeAnalyzer.Run(ctx, asm, entityTypes, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.MultipleChains));
+			IncludeAnalyzer.Run(ctx, asm, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.MultipleChains));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"add Include(b => b.Posts).ThenInclude(p => p.Author) in method Samples.IncludeSamples.MultipleChains line 93",

@@ -51,6 +51,8 @@ namespace Flint.Vm.Match
 
 		private static bool MethodEquals(Match.Call m, Cil.Call c)
 		{
+			if (m.Method == null)
+				return true;
 			if (m.Method.Equals(c.Method.FullName))
 				return true;
 			if (m.Method.Equals(c.Method.DeclaringType.FullName + "." + c.Method.Name))
@@ -62,8 +64,8 @@ namespace Flint.Vm.Match
 
 		public override void Capture(Ast other, IDictionary<string, Ast> captures)
 		{
-			if (other is Cil.Call)
-				captures.AddOrReplace(Method, other);
+			if (other is Cil.Call call)
+				captures.AddOrReplace(Method ?? call.Method.FullName, call);
 		}
 	}
 }

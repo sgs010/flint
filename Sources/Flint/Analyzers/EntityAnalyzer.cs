@@ -44,7 +44,7 @@ namespace Flint.Analyzers
 			return false;
 		}
 
-		public static bool IsGenericCollection(PropertyReference prop, out TypeReference itemType, HashSet<TypeReference> allowedTypes = null)
+		public static bool IsGenericCollection(PropertyReference prop, out TypeDefinition itemType, ISet<TypeDefinition> allowedTypes = null)
 		{
 			// check if property is a System.Collections.Generic.ICollection<T>
 
@@ -62,7 +62,7 @@ namespace Flint.Analyzers
 			if (allowedTypes != null && allowedTypes.Contains(t) == false)
 				return false;
 
-			itemType = t;
+			itemType = t.Resolve();
 			return true;
 		}
 
@@ -95,34 +95,19 @@ namespace Flint.Analyzers
 			return entityTypes;
 		}
 
-		public static EntityDefinition[] Analyze(ModuleDefinition asm, HashSet<TypeReference> entityTypes, string className = null, string methodName = null)
+		public static EntityDefinition[] Analyze(AssemblyDefinition asm, string className = null, string methodName = null)
 		{
 			var entities = new List<EntityDefinition>();
-			foreach (var method in MethodAnalyzer.GetMethods(asm, className, methodName))
+			foreach (var method in MethodAnalyzer.GetMethods(asm.Module, className, methodName))
 			{
-				Analyze(method, entityTypes, entities);
+				Analyze(asm, method, entities);
 			}
 			return entities.ToArray();
-		}
-
-		public static void PrettyPrintMethod(StringBuilder sb, MethodDefinition mtd, SequencePoint sp)
-		{
-			sb.Append(mtd.DeclaringType.Namespace);
-			sb.Append('.');
-			sb.Append(mtd.DeclaringType.Name);
-			sb.Append('.');
-			sb.Append(mtd.Name);
-
-			if (sp != null)
-			{
-				sb.Append(" line ");
-				sb.Append(sp.StartLine);
-			}
 		}
 		#endregion
 
 		#region Implementation
-		private static void Analyze(MethodDefinition method, HashSet<TypeReference> entityTypes, List<EntityDefinition> entities)
+		private static void Analyze(AssemblyDefinition asm, MethodDefinition method, List<EntityDefinition> entities)
 		{
 			// eval method body
 			var expressions = MethodAnalyzer.Eval(method);
@@ -168,10 +153,10 @@ namespace Flint.Analyzers
 
 				// et is T from METHOD<T> (i.e. ToListAsync<T>)
 				var et = (TypeDefinition)((GenericInstanceMethod)root.Method).GenericArguments.First();
-				if (entityTypes.Contains(et) == false)
+				if (asm.EntityTypes.Contains(et) == false)
 					continue;
 
-				var entity = CreateEntityDefinition(method, root, et, rootExpressions, entityTypes);
+				var entity = CreateEntityDefinition( method, root, et, rootExpressions, asm.EntityTypes);
 				entities.Add(entity);
 			}
 		}
@@ -206,7 +191,7 @@ namespace Flint.Analyzers
 				Mark(child, root, marks);
 		}
 
-		private static EntityDefinition CreateEntityDefinition(MethodDefinition mtd, Ast root, TypeDefinition type, IReadOnlyCollection<Ast> expressions, HashSet<TypeReference> entityTypes)
+		private static EntityDefinition CreateEntityDefinition(MethodDefinition mtd, Ast root, TypeDefinition type, IReadOnlyCollection<Ast> expressions, ISet<TypeDefinition> entityTypes)
 		{
 			var entityProperties = new List<EntityPropertyDefinition>(type.Properties.Count);
 			foreach (var prop in type.Properties)

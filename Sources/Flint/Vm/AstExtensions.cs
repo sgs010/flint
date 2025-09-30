@@ -2,7 +2,7 @@
 {
 	static class AstExtensions
 	{
-		public static IEnumerable<Ast> OfCall(this Ast expression, string methodName)
+		public static IEnumerable<Cil.Call> OfCall(this Ast expression, string methodName = null)
 		{
 			var (captures, ok) = expression.Match(
 				new Match.Call(Match.Any.Instance, methodName, Match.Any.Args),
@@ -11,10 +11,10 @@
 				yield break;
 
 			foreach (var cap in captures)
-				yield return cap.Value;
+				yield return (Cil.Call)cap.Value;
 		}
 
-		public static IEnumerable<Ast> OfCall(this IEnumerable<Ast> expressions, string methodName)
+		public static IEnumerable<Cil.Call> OfCall(this IEnumerable<Ast> expressions, string methodName = null)
 		{
 			foreach (var expr in expressions)
 				foreach (var call in expr.OfCall(methodName))
