@@ -1,8 +1,8 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using Flint.Common;
 using Flint.Vm;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Cil = Flint.Vm.Cil;
 using Match = Flint.Vm.Match;
 
@@ -14,7 +14,7 @@ namespace Flint.Analyzers
 		public required MethodDefinition Method { get; init; }
 		public required Ast Root { get; init; }
 		public required TypeDefinition Type { get; init; }
-		public required EntityPropertyDefinition[] Properties { get; init; }
+		public required ImmutableArray<EntityPropertyDefinition> Properties { get; init; }
 	}
 	#endregion
 
@@ -66,51 +66,21 @@ namespace Flint.Analyzers
 			return true;
 		}
 
-		public static HashSet<TypeReference> GetEntityTypes(ModuleDefinition asm)
-		{
-			// look for classes inherited from Microsoft.EntityFrameworkCore.DbContext
-			// browse it's properties and collect T from Microsoft.EntityFrameworkCore.DbSet<T>
-
-			var entityTypes = new HashSet<TypeReference>();
-			foreach (var type in asm.Types)
-			{
-				if (type.BaseType == null)
-					continue;
-				if (type.BaseType.Namespace != "Microsoft.EntityFrameworkCore")
-					continue;
-				if (type.BaseType.Name != "DbContext")
-					continue;
-
-				foreach (var prop in type.Properties)
-				{
-					if (prop.PropertyType.Namespace != "Microsoft.EntityFrameworkCore")
-						continue;
-					if (prop.PropertyType.Name != "DbSet`1")
-						continue;
-
-					var entity = ((GenericInstanceType)prop.PropertyType).GenericArguments.First();
-					entityTypes.Add(entity);
-				}
-			}
-			return entityTypes;
-		}
-
-		public static EntityDefinition[] Analyze(AssemblyDefinition asm, string className = null, string methodName = null)
+		public static ImmutableArray<EntityDefinition> Analyze(AssemblyDefinition asm, string className = null, string methodName = null)
 		{
 			var entities = new List<EntityDefinition>();
-			foreach (var method in MethodAnalyzer.GetMethods(asm.Module, className, methodName))
+			foreach (var method in MethodAnalyzer.GetMethods(asm, className, methodName))
 			{
 				Analyze(asm, method, entities);
 			}
-			return entities.ToArray();
+			return [.. entities];
 		}
 		#endregion
 
 		#region Implementation
 		private static void Analyze(AssemblyDefinition asm, MethodDefinition method, List<EntityDefinition> entities)
 		{
-			// eval method body
-			var expressions = MethodAnalyzer.Eval(method);
+			var expressions = MethodAnalyzer.Eval(asm, method);
 
 			// find roots (methods where IQueryable monad is unwrapped; ToListAsync and so on)
 			// for every found root mark every ast accessible from it
@@ -156,7 +126,7 @@ namespace Flint.Analyzers
 				if (asm.EntityTypes.Contains(et) == false)
 					continue;
 
-				var entity = CreateEntityDefinition( method, root, et, rootExpressions, asm.EntityTypes);
+				var entity = CreateEntityDefinition(method, root, et, rootExpressions, asm.EntityTypes);
 				entities.Add(entity);
 			}
 		}
@@ -233,7 +203,7 @@ namespace Flint.Analyzers
 				if (propRead || propWrite)
 					entityProperties.Add(new EntityPropertyDefinition { Property = prop, Entity = propEnt, Read = propRead, Write = propWrite });
 			}
-			return new EntityDefinition { Method = mtd, Root = root, Type = type, Properties = entityProperties.ToArray() };
+			return new EntityDefinition { Method = mtd, Root = root, Type = type, Properties = [.. entityProperties] };
 		}
 
 		private static bool IsCollectionChanged(Ast expr, IReadOnlyCollection<Ast> captures)

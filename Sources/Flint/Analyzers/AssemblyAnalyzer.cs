@@ -1,6 +1,7 @@
 ﻿using System.Collections.Frozen;
 using System.Collections.Immutable;
 using Flint.Common;
+using Flint.Vm;
 using Mono.Cecil;
 
 namespace Flint.Analyzers
@@ -11,6 +12,7 @@ namespace Flint.Analyzers
 		public required ModuleDefinition Module { get; init; }
 		public required FrozenSet<TypeDefinition> EntityTypes { get; init; }
 		public required FrozenDictionary<TypeDefinition, ImmutableArray<TypeDefinition>> InterfaceImplementations { get; init; }
+		public required FrozenDictionary<MethodDefinition, ImmutableArray<Ast>> MethodExpressions { get; init; }
 
 		protected override void BaseDispose(bool disposing)
 		{
@@ -31,18 +33,21 @@ namespace Flint.Analyzers
 			var module = ModuleDefinition.ReadModule(path, new ReaderParameters { ReadSymbols = true });
 			var entityMap = new HashSet<TypeDefinition>();
 			var interfaceMap = new Dictionary<TypeDefinition, List<TypeDefinition>>();
+			var methodMap = new Dictionary<MethodDefinition, List<Ast>>();
 
 			foreach (var t in module.Types)
 			{
 				TryPopulateEntityMap(t, entityMap);
 				TryPopulateInterfaceMap(t, interfaceMap);
+				TryPopulateMethodMap(t, methodMap);
 			}
 
 			return new AssemblyDefinition
 			{
 				Module = module,
 				EntityTypes = entityMap.ToFrozenSet(),
-				InterfaceImplementations = interfaceMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray())
+				InterfaceImplementations = interfaceMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray()),
+				MethodExpressions = methodMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray())
 			};
 		}
 		#endregion
@@ -83,6 +88,23 @@ namespace Flint.Analyzers
 					interfaceMap.Add(interfaceType, implementations);
 				}
 				implementations.Add(type);
+			}
+		}
+
+		private static void TryPopulateMethodMap(TypeDefinition type, Dictionary<MethodDefinition, List<Ast>> methodMap)
+		{
+			if (type.IsInterface)
+				return; // do not process interfaces
+			if (type.IsCompilerGenerated())
+				return; // do not process auto generated classes
+
+			foreach (var method in type.Methods)
+			{
+				if (method.IsCompilerGenerated())
+					continue; // do not process auto generated methods
+
+				var expressions = MethodAnalyzer.EvalRaw(method);
+				methodMap.Add(method, expressions);
 			}
 		}
 		#endregion
