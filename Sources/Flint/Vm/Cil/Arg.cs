@@ -6,11 +6,11 @@ namespace Flint.Vm.Cil
 	class Arg : Ast
 	{
 		public readonly int Number;
-		public readonly ParameterReference Reference;
-		public Arg(SequencePoint sp, int number, ParameterReference reference) : base(sp)
+		public readonly ParameterDefinition Parameter;
+		public Arg(SequencePoint sp, int number, ParameterDefinition parameter) : base(sp)
 		{
 			Number = number;
-			Reference = reference;
+			Parameter = parameter;
 		}
 
 		public override IEnumerable<Ast> GetChildren()
@@ -20,7 +20,7 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Arg), Number, Reference);
+			return HashCode.Combine(typeof(Arg), Number, Parameter);
 		}
 
 		public override bool Equals(Ast other)
@@ -28,7 +28,7 @@ namespace Flint.Vm.Cil
 			if (other is Arg arg)
 			{
 				return Number.Equals(arg.Number)
-					&& Reference.Equals(arg.Reference);
+					&& Parameter.Equals(arg.Parameter);
 			}
 			return false;
 		}

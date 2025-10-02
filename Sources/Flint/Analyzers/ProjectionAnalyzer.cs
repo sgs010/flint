@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Flint.Common;
 
 namespace Flint.Analyzers
 {
@@ -61,7 +62,7 @@ namespace Flint.Analyzers
 				}
 				else
 				{
-					if (EntityAnalyzer.IsGenericCollection(prop.Property, out var _))
+					if (prop.Property.PropertyType.IsGenericCollection())
 					{
 						// property is a collection of ONE-TO-MANY entities
 						sb.Append(prop.Property.Name);

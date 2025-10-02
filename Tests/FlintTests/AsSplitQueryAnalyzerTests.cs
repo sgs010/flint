@@ -6,13 +6,27 @@ namespace FlintTests
 	[TestClass]
 	public class AsSplitQueryAnalyzerTests
 	{
+		private static AssemblyDefinition ASM;
+
+		[ClassInitialize]
+		public static void Setup(TestContext ctx)
+		{
+			ASM = AssemblyAnalyzer.Load("Samples.dll");
+		}
+
+		[ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+		public static void Cleanup()
+		{
+			ASM.Dispose();
+			ASM = null;
+		}
+
 		[TestMethod]
 		public void MultipleChains()
 		{
-			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
 
-			AsSplitQueryAnalyzer.Run(ctx, asm, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.MultipleChains));
+			AsSplitQueryAnalyzer.Run(ctx, ASM, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.MultipleChains));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"consider adding AsSplitQuery() in method Samples.AsSplitQuerySamples.MultipleChains line 12"
@@ -22,10 +36,9 @@ namespace FlintTests
 		[TestMethod]
 		public void MultipleChainsWithSplit()
 		{
-			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
 
-			AsSplitQueryAnalyzer.Run(ctx, asm, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.MultipleChainsWithSplit));
+			AsSplitQueryAnalyzer.Run(ctx, ASM, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.MultipleChainsWithSplit));
 
 			ctx.Output.Should().BeEmpty();
 		}
@@ -33,10 +46,9 @@ namespace FlintTests
 		[TestMethod]
 		public void SingleChain()
 		{
-			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
 
-			AsSplitQueryAnalyzer.Run(ctx, asm, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.SingleChain));
+			AsSplitQueryAnalyzer.Run(ctx, ASM, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.SingleChain));
 
 			ctx.Output.Should().BeEmpty();
 		}

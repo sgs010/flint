@@ -6,13 +6,27 @@ namespace FlintTests
 	[TestClass]
 	public class AsNoTrackingAnalyzerTests
 	{
+		private static AssemblyDefinition ASM;
+
+		[ClassInitialize]
+		public static void Setup(TestContext ctx)
+		{
+			ASM = AssemblyAnalyzer.Load("Samples.dll");
+		}
+
+		[ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+		public static void Cleanup()
+		{
+			ASM.Dispose();
+			ASM = null;
+		}
+
 		[TestMethod]
 		public void Read_NoAsNoTracking()
 		{
-			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
 
-			AsNoTrackingAnalyzer.Run(ctx, asm, nameof(Samples.AsNoTrackingSamples), nameof(Samples.AsNoTrackingSamples.Read_NoAsNoTracking));
+			AsNoTrackingAnalyzer.Run(ctx, ASM, nameof(Samples.AsNoTrackingSamples), nameof(Samples.AsNoTrackingSamples.Read_NoAsNoTracking));
 
 			ctx.Output.Should().BeEquivalentTo([
 				"add AsNoTracking() in method Samples.AsNoTrackingSamples.Read_NoAsNoTracking line 14"
@@ -22,10 +36,9 @@ namespace FlintTests
 		[TestMethod]
 		public void Read_HasAsNoTracking()
 		{
-			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
 
-			AsNoTrackingAnalyzer.Run(ctx, asm, nameof(Samples.AsNoTrackingSamples), nameof(Samples.AsNoTrackingSamples.Read_HasAsNoTracking));
+			AsNoTrackingAnalyzer.Run(ctx, ASM, nameof(Samples.AsNoTrackingSamples), nameof(Samples.AsNoTrackingSamples.Read_HasAsNoTracking));
 
 			ctx.Output.Should().BeEmpty();
 		}
@@ -33,10 +46,9 @@ namespace FlintTests
 		[TestMethod]
 		public void Update()
 		{
-			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
 
-			AsNoTrackingAnalyzer.Run(ctx, asm, nameof(Samples.AsNoTrackingSamples), nameof(Samples.AsNoTrackingSamples.Update));
+			AsNoTrackingAnalyzer.Run(ctx, ASM, nameof(Samples.AsNoTrackingSamples), nameof(Samples.AsNoTrackingSamples.Update));
 
 			ctx.Output.Should().BeEmpty();
 		}

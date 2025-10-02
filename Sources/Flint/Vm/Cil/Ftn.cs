@@ -6,11 +6,13 @@ namespace Flint.Vm.Cil
 	class Ftn : Ast
 	{
 		public readonly Ast Instance;
-		public readonly MethodDefinition Method;
-		public Ftn(SequencePoint sp, Ast instance, MethodDefinition mtd) : base(sp)
+		public readonly MethodReference Method;
+		public readonly MethodDefinition MethodImpl;
+		public Ftn(SequencePoint sp, Ast instance, MethodReference method) : base(sp)
 		{
 			Instance = instance;
-			Method = mtd;
+			Method = method;
+			MethodImpl = method.Resolve();
 		}
 
 		public override IEnumerable<Ast> GetChildren()
@@ -21,7 +23,7 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Ftn), Instance, Method);
+			return HashCode.Combine(typeof(Ftn), Instance, Method, MethodImpl);
 		}
 
 		public override bool Equals(Ast other)

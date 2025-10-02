@@ -876,11 +876,12 @@ namespace Flint.Vm
 
 		private static void Ldfld(RoutineContext ctx, Instruction instruction)
 		{
-			var fld = ((FieldReference)instruction.Operand).Resolve();
+			var fld = (FieldReference)instruction.Operand;
+			var fldImpl = fld.Resolve();
 			var sp = GetSequencePoint(ctx, instruction);
 
 			Ast instance = null;
-			if (fld.IsStatic == false)
+			if (fldImpl.IsStatic == false)
 				instance = ctx.Stack.Pop();
 
 			if (ctx.Objects.TryGetValue(new ObjectField(instance, fld), out var value) == false)
@@ -891,7 +892,7 @@ namespace Flint.Vm
 
 		private static void Ldftn(RoutineContext ctx, Instruction instruction)
 		{
-			var mtd = (MethodDefinition)instruction.Operand;
+			var mtd = (MethodReference)instruction.Operand;
 			var sp = GetSequencePoint(ctx, instruction);
 			ctx.Stack.Push(new Cil.Ftn(sp, null, mtd));
 		}
@@ -961,7 +962,7 @@ namespace Flint.Vm
 
 		private static void Ldvirtftn(RoutineContext ctx, Instruction instruction)
 		{
-			var mtd = (MethodDefinition)instruction.Operand;
+			var mtd = (MethodReference)instruction.Operand;
 			var sp = GetSequencePoint(ctx, instruction);
 			var instance = ctx.Stack.Pop();
 			ctx.Stack.Push(new Cil.Ftn(sp, instance, mtd));
@@ -1007,10 +1008,10 @@ namespace Flint.Vm
 
 		private static void Newobj(RoutineContext ctx, Instruction instruction)
 		{
-			var method = (MethodReference)instruction.Operand;
+			var ctor = (MethodReference)instruction.Operand;
 			var sp = GetSequencePoint(ctx, instruction);
-			var args = PopArgs(ctx, method);
-			var newobj = new Cil.Newobj(sp, method.DeclaringType, method, args);
+			var args = PopArgs(ctx, ctor);
+			var newobj = new Cil.Newobj(sp, ctor.DeclaringType, ctor, args);
 
 			ctx.Expressions.RemoveAll(args);
 			ctx.Expressions.Add(newobj);
@@ -1118,11 +1119,12 @@ namespace Flint.Vm
 
 		private static void Stfld(RoutineContext ctx, Instruction instruction)
 		{
-			var fld = ((FieldReference)instruction.Operand).Resolve();
+			var fld = (FieldReference)instruction.Operand;
+			var fldImpl = fld.Resolve();
 			var value = ctx.Stack.Pop();
 
 			Ast instance = null;
-			if (fld.IsStatic == false)
+			if (fldImpl.IsStatic == false)
 				instance = ctx.Stack.Pop();
 
 			ctx.Objects.AddOrReplace(new ObjectField(instance, fld), value);

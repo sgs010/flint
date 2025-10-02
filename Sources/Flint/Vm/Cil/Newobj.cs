@@ -6,12 +6,14 @@ namespace Flint.Vm.Cil
 	class Newobj : Ast
 	{
 		public readonly TypeReference Type;
-		public readonly MethodReference Constructor;
+		public readonly MethodReference Ctor;
+		public readonly MethodDefinition CtorImpl;
 		public readonly Ast[] Args;
 		public Newobj(SequencePoint sp, TypeReference type, MethodReference ctor, Ast[] args) : base(sp)
 		{
 			Type = type;
-			Constructor = ctor;
+			Ctor = ctor;
+			CtorImpl = ctor.Resolve();
 			Args = args;
 		}
 
@@ -23,7 +25,7 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Newobj), Type, Constructor, Args);
+			return HashCode.Combine(typeof(Newobj), Type, Ctor, Args);
 		}
 
 		public override bool Equals(Ast other)
@@ -31,7 +33,7 @@ namespace Flint.Vm.Cil
 			if (other is Newobj newobj)
 			{
 				return Type.Equals(newobj.Type)
-					&& Constructor.Equals(newobj.Constructor)
+					&& Ctor.Equals(newobj.Ctor)
 					&& Args.SequenceEqual(newobj.Args);
 			}
 			return false;

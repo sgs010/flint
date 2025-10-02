@@ -7,11 +7,13 @@ namespace Flint.Vm.Cil
 	{
 		public readonly Ast Instance;
 		public readonly MethodReference Method;
+		public readonly MethodDefinition MethodImpl;
 		public readonly Ast[] Args;
 		public Call(SequencePoint sp, Ast instance, MethodReference method, Ast[] args) : base(sp)
 		{
 			Instance = instance;
 			Method = method;
+			MethodImpl = method.Resolve();
 			Args = args;
 		}
 

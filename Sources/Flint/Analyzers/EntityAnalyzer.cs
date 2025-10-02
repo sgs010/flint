@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq.Expressions;
 using Flint.Common;
 using Flint.Vm;
 using Mono.Cecil;
@@ -44,34 +45,24 @@ namespace Flint.Analyzers
 			return false;
 		}
 
-		public static bool IsGenericCollection(PropertyReference prop, out TypeDefinition itemType, ISet<TypeDefinition> allowedTypes = null)
-		{
-			// check if property is a System.Collections.Generic.ICollection<T>
-
-			itemType = null;
-
-			if (prop.PropertyType.IsGenericInstance == false)
-				return false;
-			if (prop.PropertyType.Namespace != "System.Collections.Generic")
-				return false;
-			if (prop.PropertyType.Name != "ICollection`1")
-				return false;
-
-			// get T from System.Collections.Generic.ICollection<T>
-			var t = ((GenericInstanceType)prop.PropertyType).GenericArguments.First();
-			if (allowedTypes != null && allowedTypes.Contains(t) == false)
-				return false;
-
-			itemType = t.Resolve();
-			return true;
-		}
-
 		public static ImmutableArray<EntityDefinition> Analyze(AssemblyDefinition asm, string className = null, string methodName = null)
 		{
 			var entities = new List<EntityDefinition>();
 			foreach (var method in MethodAnalyzer.GetMethods(asm, className, methodName))
 			{
 				Analyze(asm, method, entities);
+			}
+			return [.. entities];
+		}
+
+		public static ImmutableArray<EntityDefinition> CollectEntities(AssemblyDefinition asm, MethodDefinition method, IReadOnlyCollection<Ast> expressions)
+		{
+			var entities = new List<EntityDefinition>(asm.EntityTypes.Count);
+			foreach (var et in asm.EntityTypes)
+			{
+				var entity = CreateEntityDefinition(method, null, et, expressions, asm.EntityTypes);
+				if (entity.Properties.Length > 0)
+					entities.Add(entity);
 			}
 			return [.. entities];
 		}
@@ -189,7 +180,7 @@ namespace Flint.Analyzers
 
 					if (propEnt == null)
 					{
-						if (IsGenericCollection(prop, out var itemType, entityTypes))
+						if (prop.PropertyType.IsGenericCollection(out var itemType, entityTypes))
 						{
 							propEnt = CreateEntityDefinition(mtd, root, itemType.Resolve(), expressions, entityTypes);
 							propWrite = IsCollectionChanged(expr, captureRead.Values);

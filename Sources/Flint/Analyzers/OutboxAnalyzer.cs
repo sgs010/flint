@@ -1,8 +1,8 @@
-﻿using System.Text;
+﻿using System.Collections.Frozen;
+using System.Text;
+using Flint.Common;
 using Flint.Vm;
 using Mono.Cecil;
-using Cil = Flint.Vm.Cil;
-using Match = Flint.Vm.Match;
 
 namespace Flint.Analyzers
 {
@@ -24,7 +24,7 @@ namespace Flint.Analyzers
 			// general idea:
 			// 1. look for direct or nested call of Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync
 			// 2. same for Azure.Messaging.ServiceBus.ServiceBusSender.SendMessageAsync
-			// 3. look for writing an entity with a word "Outbox" in the name
+			// 3. look for adding an entity with a word "Outbox" in the name
 			// if 1,2 are true and 3 is false - suggest Outbox pattern
 
 			var expressions = MethodAnalyzer.EvalRecursive(asm, method);
@@ -37,9 +37,18 @@ namespace Flint.Analyzers
 			if (hasSendMessageAsync == false)
 				return; // SendMessageAsync is not found
 
-			//var entities = EntityAnalyzer.CollectEntities(asm, method, expressions);
-			//if (entities.Length == 0)
-			//	return; // no entities found
+			var outboxes = asm.EntityTypes.Where(x => x.Name.Contains("Outbox")).ToFrozenSet();
+			foreach (var add in expressions.OfCall("Add"))
+			{
+				if (add.Method.DeclaringType.IsDbSet(out var _, outboxes))
+					return; // message added to outbox
+			}
+
+			// report issue
+			var sb = new StringBuilder();
+			sb.Append("consider using Outbox pattern in method ");
+			MethodAnalyzer.PrettyPrintMethod(sb, method, null);
+			ctx.Log(sb.ToString());
 		}
 		#endregion
 	}

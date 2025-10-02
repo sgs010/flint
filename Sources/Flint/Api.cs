@@ -15,7 +15,8 @@ namespace Flint
 				() => ProjectionAnalyzer.Run(ctx, asm),
 				() => IncludeAnalyzer.Run(ctx, asm),
 				() => AsNoTrackingAnalyzer.Run(ctx, asm),
-				() => AsSplitQueryAnalyzer.Run(ctx, asm));
+				() => AsSplitQueryAnalyzer.Run(ctx, asm),
+				() => OutboxAnalyzer.Run(ctx, asm));
 		}
 	}
 }

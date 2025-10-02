@@ -6,22 +6,33 @@ namespace FlintTests
 	[TestClass]
 	public class AssemblyAnalyzerTests
 	{
-		[TestMethod]
-		public void Analyze_EntityTypes()
-		{
-			var asm = AssemblyAnalyzer.Load("Samples.dll");
+		private static AssemblyDefinition ASM;
 
-			asm.EntityTypes.Should().Contain(x => x.FullName == "Samples.User");
-			asm.EntityTypes.Should().Contain(x => x.FullName == "Samples.Order");
-			asm.EntityTypes.Should().Contain(x => x.FullName == "Samples.Product");
+		[ClassInitialize]
+		public static void Setup(TestContext ctx)
+		{
+			ASM = AssemblyAnalyzer.Load("Samples.dll");
+		}
+
+		[ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+		public static void Cleanup()
+		{
+			ASM.Dispose();
+			ASM = null;
 		}
 
 		[TestMethod]
-		public void Analyze_InterfaceImplementations()
+		public void EntityTypes()
 		{
-			var asm = AssemblyAnalyzer.Load("Samples.dll");
+			ASM.EntityTypes.Should().Contain(x => x.FullName == "Samples.User");
+			ASM.EntityTypes.Should().Contain(x => x.FullName == "Samples.Order");
+			ASM.EntityTypes.Should().Contain(x => x.FullName == "Samples.Product");
+		}
 
-			asm.InterfaceImplementations
+		[TestMethod]
+		public void InterfaceImplementations()
+		{
+			ASM.InterfaceImplementations
 				.Where(x => x.Key.FullName == "Samples.IRepository")
 				.SelectMany(x => x.Value)
 				.Where(x => x.FullName == "Samples.Repository")

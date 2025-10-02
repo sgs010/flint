@@ -37,9 +37,9 @@ namespace Flint.Analyzers
 
 			foreach (var t in module.Types)
 			{
-				TryPopulateEntityMap(t, entityMap);
-				TryPopulateInterfaceMap(t, interfaceMap);
-				TryPopulateMethodMap(t, methodMap);
+				TryPopulateEntities(t, entityMap);
+				TryPopulateInterfaces(t, interfaceMap);
+				TryPopulateMethods(t, methodMap);
 			}
 
 			return new AssemblyDefinition
@@ -53,7 +53,7 @@ namespace Flint.Analyzers
 		#endregion
 
 		#region Implementation
-		private static void TryPopulateEntityMap(TypeDefinition type, HashSet<TypeDefinition> entityMap)
+		private static void TryPopulateEntities(TypeDefinition type, HashSet<TypeDefinition> entityMap)
 		{
 			if (type.BaseType == null)
 				return;
@@ -64,17 +64,12 @@ namespace Flint.Analyzers
 
 			foreach (var prop in type.Properties)
 			{
-				if (prop.PropertyType.Namespace != "Microsoft.EntityFrameworkCore")
-					continue;
-				if (prop.PropertyType.Name != "DbSet`1")
-					continue;
-
-				var entity = ((GenericInstanceType)prop.PropertyType).GenericArguments.First().Resolve();
-				entityMap.Add(entity);
+				if (prop.PropertyType.IsDbSet(out var entityType))
+					entityMap.Add(entityType);
 			}
 		}
 
-		private static void TryPopulateInterfaceMap(TypeDefinition type, Dictionary<TypeDefinition, List<TypeDefinition>> interfaceMap)
+		private static void TryPopulateInterfaces(TypeDefinition type, Dictionary<TypeDefinition, List<TypeDefinition>> interfaceMap)
 		{
 			if (type.IsInterface)
 				return;
@@ -91,7 +86,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void TryPopulateMethodMap(TypeDefinition type, Dictionary<MethodDefinition, List<Ast>> methodMap)
+		private static void TryPopulateMethods(TypeDefinition type, Dictionary<MethodDefinition, List<Ast>> methodMap)
 		{
 			if (type.IsInterface)
 				return; // do not process interfaces

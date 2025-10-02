@@ -5,8 +5,8 @@ namespace Flint.Vm.Cil
 {
 	class This : Ast
 	{
-		public readonly TypeReference Type;
-		public This(SequencePoint sp, TypeReference type) : base(sp)
+		public readonly TypeDefinition Type;
+		public This(SequencePoint sp, TypeDefinition type) : base(sp)
 		{
 			Type = type;
 		}

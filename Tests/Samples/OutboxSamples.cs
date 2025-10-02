@@ -17,7 +17,6 @@
 
 				return 200;
 			});
-
 		}
 
 		public static void DelayedOutbox()
@@ -32,7 +31,6 @@
 				await repo.SaveChangesAsync();
 				return 200;
 			});
-
 		}
 
 		public static void ImmediateOutbox()

@@ -6,26 +6,39 @@ namespace FlintTests
 	[TestClass]
 	public class OutboxAnalyzerTests
 	{
+		private static AssemblyDefinition ASM;
+
+		[ClassInitialize]
+		public static void Setup(TestContext ctx)
+		{
+			ASM = AssemblyAnalyzer.Load("Samples.dll");
+		}
+
+		[ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+		public static void Cleanup()
+		{
+			ASM.Dispose();
+			ASM = null;
+		}
+
 		[TestMethod]
 		public void NoOutbox()
 		{
-			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
 
-			OutboxAnalyzer.Run(ctx, asm, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.NoOutbox));
+			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.NoOutbox));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using Outbox pattern in method Samples.OutboxSamples.NoOutbox line 16"
+				"consider using Outbox pattern in method Samples.OutboxSamples.NoOutbox"
 			]);
 		}
 
 		[TestMethod]
 		public void DelayedOutbox()
 		{
-			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
 
-			OutboxAnalyzer.Run(ctx, asm, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.DelayedOutbox));
+			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.DelayedOutbox));
 
 			ctx.Output.Should().BeEmpty();
 		}
@@ -33,10 +46,9 @@ namespace FlintTests
 		[TestMethod]
 		public void ImmediateOutbox()
 		{
-			using var asm = AssemblyAnalyzer.Load("Samples.dll");
 			var ctx = new AnalyzerContextMock();
 
-			OutboxAnalyzer.Run(ctx, asm, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.ImmediateOutbox));
+			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.ImmediateOutbox));
 
 			ctx.Output.Should().BeEmpty();
 		}
