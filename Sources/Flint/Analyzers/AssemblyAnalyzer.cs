@@ -58,7 +58,7 @@ namespace Flint.Analyzers
 			var module = ModuleDefinition.ReadModule(path, new ReaderParameters { ReadSymbols = true });
 			var entityMap = new HashSet<TypeDefinition>();
 			var interfaceMap = new Dictionary<TypeReference, List<TypeDefinition>>();
-			var methodMap = new Dictionary<MethodDefinition, ImmutableArray<Ast>>();
+			var methodMap = new Dictionary<MethodDefinition, ImmutableArray<Ast>>(MethodReferenceEqualityComparer.Instance);
 
 			foreach (var t in module.Types)
 			{
@@ -67,8 +67,8 @@ namespace Flint.Analyzers
 				PopulateMethods(t, methodMap);
 			}
 
-			var innerCallMap = new Dictionary<MethodReference, List<CallDefinition>>();
-			var outerCallMap = new Dictionary<MethodReference, List<CallDefinition>>();
+			var innerCallMap = new Dictionary<MethodReference, List<CallDefinition>>(MethodReferenceEqualityComparer.Instance);
+			var outerCallMap = new Dictionary<MethodReference, List<CallDefinition>>(MethodReferenceEqualityComparer.Instance);
 			foreach (var m in methodMap)
 			{
 				PopulateCalls(m.Key, m.Value, innerCallMap, outerCallMap);

@@ -2,6 +2,34 @@
 
 namespace Flint.Common
 {
+	#region MethodReferenceEqualityComparer
+	sealed class MethodReferenceEqualityComparer : IEqualityComparer<MethodReference>
+	{
+		public static MethodReferenceEqualityComparer Instance = new();
+
+		public static bool Equals(MethodReference x, MethodReference y)
+		{
+			return x.MetadataToken.Equals(y.MetadataToken);
+		}
+
+		public static int GetHashCode(MethodReference obj)
+		{
+			return obj.MetadataToken.GetHashCode();
+		}
+
+		bool IEqualityComparer<MethodReference>.Equals(MethodReference x, MethodReference y)
+		{
+			return MethodReferenceEqualityComparer.Equals(x, y);
+		}
+
+		int IEqualityComparer<MethodReference>.GetHashCode(MethodReference obj)
+		{
+			return MethodReferenceEqualityComparer.GetHashCode(obj);
+		}
+	}
+	#endregion
+
+	#region ReflectionExtensions
 	static class ReflectionExtensions
 	{
 		#region Interface
@@ -87,9 +115,14 @@ namespace Flint.Common
 			return true;
 		}
 
+		public static string GetFullName(this MethodReference method)
+		{
+			return method.DeclaringType.FullName + "." + method.Name;
+		}
+
 		public static bool HasFullName(this MethodReference method, string name)
 		{
-			return name.Equals(method.DeclaringType.FullName + "." + method.Name, StringComparison.Ordinal);
+			return method.GetFullName().Equals(name, StringComparison.Ordinal);
 		}
 		#endregion
 
@@ -110,4 +143,5 @@ namespace Flint.Common
 		}
 		#endregion
 	}
+	#endregion
 }

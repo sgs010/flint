@@ -35,19 +35,18 @@ namespace Flint.Analyzers
 			if (sendMessageAsync.Count == 0)
 				return; // SendMessageAsync is not found
 
+			foreach (var outbox in asm.EntityTypes.Where(x => x.Name.Contains("Outbox")))
+			{
+				var add = MethodAnalyzer.GetCalls(asm, method, $"Microsoft.EntityFrameworkCore.DbSet`1<{outbox.FullName}>.Add");
+				if (add.Count > 0)
+					return; // outbox is used
+			}
 
-			//var outboxes = asm.EntityTypes.Where(x => x.Name.Contains("Outbox")).ToFrozenSet();
-			//foreach (var add in expressions.OfCall("Add"))
-			//{
-			//	if (add.Method.DeclaringType.IsDbSet(out var _, outboxes))
-			//		return; // message added to outbox
-			//}
-
-			//// report issue
-			//var sb = new StringBuilder();
-			//sb.Append("consider using Outbox pattern in method ");
-			//MethodAnalyzer.PrettyPrintMethod(sb, method, null);
-			//ctx.Log(sb.ToString());
+			// report issue
+			var sb = new StringBuilder();
+			sb.Append("consider using Outbox pattern in method ");
+			MethodAnalyzer.PrettyPrintMethod(sb, method, sendMessageAsync.First().SequencePoint);
+			ctx.Log(sb.ToString());
 		}
 
 		//private static void Analyze(IAnalyzerContext ctx, AssemblyDefinition asm, MethodDefinition method)
