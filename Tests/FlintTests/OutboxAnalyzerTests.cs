@@ -29,7 +29,7 @@ namespace FlintTests
 			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.NoOutbox));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using Outbox pattern in method Samples.OutboxSamples.NoOutbox"
+				"consider using Outbox pattern in method Samples.OutboxSamples.NoOutbox line 16"
 			]);
 		}
 

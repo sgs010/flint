@@ -1,4 +1,5 @@
-﻿using Flint.Common;
+﻿using System.Collections.Immutable;
+using Flint.Common;
 using Flint.Vm.Cil;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -8,14 +9,14 @@ namespace Flint.Vm
 	static class CilMachine
 	{
 		#region Interface
-		public static List<Ast> Run(MethodDefinition mtd)
+		public static ImmutableArray<Ast> Run(MethodDefinition mtd)
 		{
 			var ctx = new RoutineContext(mtd);
 			foreach (var instruction in ctx.Method.Body.Instructions)
 			{
 				Eval(ctx, instruction);
 			}
-			return ctx.Expressions.ToList();
+			return [.. ctx.Expressions];
 		}
 		#endregion
 

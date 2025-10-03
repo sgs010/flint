@@ -31,7 +31,7 @@ namespace Flint.Common
 			return asyncMethod ?? method;
 		}
 
-		public static bool SignatureEquals(this MethodDefinition left, MethodDefinition right)
+		public static bool SignatureEquals(this MethodReference left, MethodReference right)
 		{
 			return left.Name.Equals(right.Name)
 				&& left.ReturnType.Equals(right.ReturnType)
@@ -85,6 +85,11 @@ namespace Flint.Common
 
 			itemType = t.Resolve();
 			return true;
+		}
+
+		public static bool HasFullName(this MethodReference method, string name)
+		{
+			return name.Equals(method.DeclaringType.FullName + "." + method.Name, StringComparison.Ordinal);
 		}
 		#endregion
 

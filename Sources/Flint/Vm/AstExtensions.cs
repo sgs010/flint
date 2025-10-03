@@ -43,6 +43,25 @@ namespace Flint.Vm
 			return OfCall(expressions, Match.Any.Instance, null);
 		}
 
+		public static IEnumerable<Cil.Ftn> OfFtn(this Ast expression)
+		{
+			var (captures, ok) = expression.Match(
+				new Match.Ftn(),
+				true);
+			if (ok == false)
+				yield break;
+
+			foreach (var cap in captures)
+				yield return (Cil.Ftn)cap.Value;
+		}
+
+		public static IEnumerable<Cil.Ftn> OfFtn(this IEnumerable<Ast> expressions)
+		{
+			foreach (var expr in expressions)
+				foreach (var ftn in expr.OfFtn())
+					yield return ftn;
+		}
+
 		public static Match.Call PropGet(this PropertyDefinition prop)
 		{
 			if (prop.GetMethod == null)

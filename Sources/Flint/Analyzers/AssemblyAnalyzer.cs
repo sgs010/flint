@@ -3,16 +3,41 @@ using System.Collections.Immutable;
 using Flint.Common;
 using Flint.Vm;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Flint.Analyzers
 {
+	#region CallDefinition
+	sealed class CallDefinition
+	{
+		public required MethodReference Method { get; init; }
+		public required SequencePoint SequencePoint { get; init; }
+
+		public override bool Equals(object obj)
+		{
+			if (obj is CallDefinition call)
+			{
+				return Method.Equals(call.Method);
+			}
+			return false;
+		}
+
+		public override int GetHashCode()
+		{
+			return Method.GetHashCode();
+		}
+	}
+	#endregion
+
 	#region AssemblyDefinition
 	sealed class AssemblyDefinition : Disposable
 	{
 		public required ModuleDefinition Module { get; init; }
 		public required FrozenSet<TypeDefinition> EntityTypes { get; init; }
-		public required FrozenDictionary<TypeDefinition, ImmutableArray<TypeDefinition>> InterfaceImplementations { get; init; }
+		public required FrozenDictionary<TypeReference, ImmutableArray<TypeDefinition>> InterfaceImplementations { get; init; }
 		public required FrozenDictionary<MethodDefinition, ImmutableArray<Ast>> MethodExpressions { get; init; }
+		public required FrozenDictionary<MethodReference, ImmutableArray<CallDefinition>> MethodInnerCalls { get; init; }
+		public required FrozenDictionary<MethodReference, ImmutableArray<CallDefinition>> MethodOuterCalls { get; init; }
 
 		protected override void BaseDispose(bool disposing)
 		{
@@ -32,14 +57,21 @@ namespace Flint.Analyzers
 		{
 			var module = ModuleDefinition.ReadModule(path, new ReaderParameters { ReadSymbols = true });
 			var entityMap = new HashSet<TypeDefinition>();
-			var interfaceMap = new Dictionary<TypeDefinition, List<TypeDefinition>>();
-			var methodMap = new Dictionary<MethodDefinition, List<Ast>>();
+			var interfaceMap = new Dictionary<TypeReference, List<TypeDefinition>>();
+			var methodMap = new Dictionary<MethodDefinition, ImmutableArray<Ast>>();
 
 			foreach (var t in module.Types)
 			{
-				TryPopulateEntities(t, entityMap);
-				TryPopulateInterfaces(t, interfaceMap);
-				TryPopulateMethods(t, methodMap);
+				PopulateEntities(t, entityMap);
+				PopulateInterfaces(t, interfaceMap);
+				PopulateMethods(t, methodMap);
+			}
+
+			var innerCallMap = new Dictionary<MethodReference, List<CallDefinition>>();
+			var outerCallMap = new Dictionary<MethodReference, List<CallDefinition>>();
+			foreach (var m in methodMap)
+			{
+				PopulateCalls(m.Key, m.Value, innerCallMap, outerCallMap);
 			}
 
 			return new AssemblyDefinition
@@ -47,13 +79,15 @@ namespace Flint.Analyzers
 				Module = module,
 				EntityTypes = entityMap.ToFrozenSet(),
 				InterfaceImplementations = interfaceMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray()),
-				MethodExpressions = methodMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray())
+				MethodExpressions = methodMap.ToFrozenDictionary(),
+				MethodInnerCalls = innerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray()),
+				MethodOuterCalls = outerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray())
 			};
 		}
 		#endregion
 
 		#region Implementation
-		private static void TryPopulateEntities(TypeDefinition type, HashSet<TypeDefinition> entityMap)
+		private static void PopulateEntities(TypeDefinition type, HashSet<TypeDefinition> entityMap)
 		{
 			if (type.BaseType == null)
 				return;
@@ -69,14 +103,14 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void TryPopulateInterfaces(TypeDefinition type, Dictionary<TypeDefinition, List<TypeDefinition>> interfaceMap)
+		private static void PopulateInterfaces(TypeDefinition type, Dictionary<TypeReference, List<TypeDefinition>> interfaceMap)
 		{
 			if (type.IsInterface)
 				return;
 
 			foreach (var intr in type.Interfaces)
 			{
-				var interfaceType = intr.InterfaceType.Resolve();
+				var interfaceType = intr.InterfaceType;
 				if (interfaceMap.TryGetValue(interfaceType, out var implementations) == false)
 				{
 					implementations = [];
@@ -86,7 +120,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void TryPopulateMethods(TypeDefinition type, Dictionary<MethodDefinition, List<Ast>> methodMap)
+		private static void PopulateMethods(TypeDefinition type, Dictionary<MethodDefinition, ImmutableArray<Ast>> methodMap)
 		{
 			if (type.IsInterface)
 				return; // do not process interfaces
@@ -100,6 +134,24 @@ namespace Flint.Analyzers
 
 				var expressions = MethodAnalyzer.EvalRaw(method);
 				methodMap.Add(method, expressions);
+			}
+		}
+
+		private static void PopulateCalls(MethodDefinition method, ImmutableArray<Ast> expressions, Dictionary<MethodReference, List<CallDefinition>> innerCallMap, Dictionary<MethodReference, List<CallDefinition>> outerCallMap)
+		{
+			var innerCalls = new List<CallDefinition>();
+			innerCallMap.Add(method, innerCalls);
+
+			foreach (var call in expressions.OfCall())
+			{
+				innerCalls.Add(new CallDefinition { Method = call.Method, SequencePoint = call.SequencePoint });
+
+				if (outerCallMap.TryGetValue(call.Method, out var outerCalls) == false)
+				{
+					outerCalls = [];
+					outerCallMap.Add(call.Method, outerCalls);
+				}
+				outerCalls.Add(new CallDefinition { Method = method, SequencePoint = call.SequencePoint });
 			}
 		}
 		#endregion

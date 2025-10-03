@@ -1,11 +1,10 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Frozen;
+using System.Collections.Immutable;
 using System.Text;
 using Flint.Common;
 using Flint.Vm;
-using Flint.Vm.Cil;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Match = Flint.Vm.Match;
 
 namespace Flint.Analyzers
 {
@@ -24,34 +23,42 @@ namespace Flint.Analyzers
 			}
 		}
 
-		public static List<Ast> EvalRaw(MethodDefinition method)
+		public static HashSet<CallDefinition> GetCalls(AssemblyDefinition asm, MethodReference root, string methodFullName)
+		{
+			// get all methods in call chains between root and destination methods
+
+			var method = asm.MethodOuterCalls.Keys.Where(x => x.HasFullName(methodFullName)).FirstOrDefault();
+			if (method == null)
+				return []; // no method found with the given name
+
+			var callsFromRoot = new HashSet<CallDefinition>();
+			CollectCalls(asm.MethodInnerCalls, asm.InterfaceImplementations, root, callsFromRoot);
+			if (callsFromRoot.Count == 0)
+				return [];
+
+			var callsToMethod = new HashSet<CallDefinition>();
+			CollectCalls(asm.MethodOuterCalls, asm.InterfaceImplementations, method, callsToMethod);
+			if (callsToMethod.Count == 0)
+				return [];
+
+			callsFromRoot.IntersectWith(callsToMethod);
+			return callsFromRoot;
+		}
+
+		public static ImmutableArray<Ast> EvalRaw(MethodDefinition method)
 		{
 			var actualMethod = method.UnwrapAsyncMethod();
 
 			if (actualMethod.HasBody == false)
 				return []; // this is an abstract method, nothing to evaluate
 
-			// eval method body
-			var expressions = CilMachine.Run(actualMethod);
+			// eval body
+			var methodExpressions = CilMachine.Run(actualMethod);
 
 			// eval lambdas
-			var last = expressions.Count;
-			for (var i = 0; i < last; ++i)
-			{
-				var expr = expressions[i];
-				var (captures, ok) = expr.Match(
-					new Match.Ftn(),
-					true);
-				if (ok == false)
-					continue;
+			var lambdaExpressions = methodExpressions.OfFtn().Select(x => EvalRaw(x.MethodImpl)).ToList();
 
-				foreach (var ftn in captures.Values.Cast<Ftn>())
-				{
-					var lambdaExpressions = EvalRaw(ftn.MethodImpl);
-					expressions.AddRange(lambdaExpressions);
-				}
-			}
-			return expressions;
+			return methodExpressions.Concat(lambdaExpressions);
 		}
 
 		public static ImmutableArray<Ast> Eval(AssemblyDefinition asm, MethodDefinition method)
@@ -61,30 +68,22 @@ namespace Flint.Analyzers
 			return [];
 		}
 
-		public static List<Ast> EvalRecursive(AssemblyDefinition asm, MethodDefinition method)
-		{
-			var methodMap = new Dictionary<MethodDefinition, List<Ast>>();
-			EvalRecursive(asm, method, methodMap);
-			return methodMap.Values.SelectMany(x => x).ToList();
-		}
+		//public static List<Ast> EvalRecursive(AssemblyDefinition asm, MethodDefinition method)
+		//{
+		//	var methodMap = new Dictionary<MethodDefinition, List<Ast>>();
+		//	EvalRecursive(asm, method, methodMap);
+		//	return methodMap.Values.SelectMany(x => x).ToList();
+		//}
 
 		public static void CollectLambdaExpressions(IEnumerable<Ast> methodExpressions, List<Ast> lambdaExpressions)
 		{
-			foreach (var expr in methodExpressions)
+			// Ftn is ldftn IL instruction, lambdas are translated into this
+			foreach (var ftn in methodExpressions.OfFtn())
 			{
-				var (captures, ok) = expr.Match(
-					new Match.Ftn(), // Ftn is ldftn IL instruction, lambdas are translated into this
-					true);
-				if (ok == false)
-					continue;
-
-				foreach (var ftn in captures.Values.Cast<Ftn>())
-				{
-					var lambdaMethod = ftn.MethodImpl.UnwrapAsyncMethod();
-					var lambda = CilMachine.Run(lambdaMethod);
-					lambdaExpressions.AddRange(lambda);
-					CollectLambdaExpressions(lambda, lambdaExpressions);
-				}
+				var lambdaMethod = ftn.MethodImpl.UnwrapAsyncMethod();
+				var lambdaBody = CilMachine.Run(lambdaMethod);
+				lambdaExpressions.AddRange(lambdaBody);
+				CollectLambdaExpressions(lambdaBody, lambdaExpressions);
 			}
 		}
 
@@ -105,47 +104,80 @@ namespace Flint.Analyzers
 		#endregion
 
 		#region Implementation
-		private static void EvalRecursive(AssemblyDefinition asm, MethodDefinition method, Dictionary<MethodDefinition, List<Ast>> methodMap)
+		private static void CollectCalls(
+			FrozenDictionary<MethodReference, ImmutableArray<CallDefinition>> callMap,
+			FrozenDictionary<TypeReference, ImmutableArray<TypeDefinition>> interfaceMap,
+			MethodReference method,
+			HashSet<CallDefinition> calls)
 		{
-			if (methodMap.ContainsKey(method))
-				return; // already evaluated
+			if (callMap.TryGetValue(method, out var refs) == false)
+				return;
 
-			List<Ast> methodExpressions = [];
-			if (method.HasBody)
+			foreach (var r in refs)
 			{
-				// eval method
-				var expr = Eval(asm, method);
-				methodExpressions.AddRange(expr);
-			}
-			else if (method.DeclaringType.IsInterface)
-			{
-				// try to eval interface implementations
-				if (asm.InterfaceImplementations.TryGetValue(method.DeclaringType, out var implTypes))
+				if (calls.Contains(r))
+					continue;
+
+				if (interfaceMap.TryGetValue(r.Method.DeclaringType, out var implTypes))
 				{
-					var implMethods = implTypes.SelectMany(x => x.Methods.Where(m => m.SignatureEquals(method)));
+					// this is an interface method, substitute it with implementations
+					var implMethods = implTypes.SelectMany(x => x.Methods.Where(m => m.SignatureEquals(r.Method)));
 					foreach (var impl in implMethods)
 					{
-						var expr = Eval(asm, impl);
-						methodExpressions.AddRange(expr);
+						calls.Add(new CallDefinition { Method = impl, SequencePoint = r.SequencePoint });
+						CollectCalls(callMap, interfaceMap, impl, calls);
 					}
 				}
-			}
-			if (methodExpressions.Count == 0)
-				return; // nothing to evaluate
-
-			methodMap.Add(method, methodExpressions);
-			foreach (var call in methodExpressions.OfCall())
-			{
-				if (call.Method.Module != asm.Module)
-					continue; // do not evaluate external modules
-
-				var callMethod = call.MethodImpl;
-				if (callMethod.IsCompilerGenerated())
-					continue; // do not evaluate get/set autogenerated methods
-
-				EvalRecursive(asm, callMethod, methodMap);
+				else
+				{
+					// this is a method call
+					calls.Add(r);
+					CollectCalls(callMap, interfaceMap, r.Method, calls);
+				}
 			}
 		}
+
+		//private static void EvalRecursive(AssemblyDefinition asm, MethodDefinition method, Dictionary<MethodDefinition, List<Ast>> methodMap)
+		//{
+		//	if (methodMap.ContainsKey(method))
+		//		return; // already evaluated
+
+		//	List<Ast> methodExpressions = [];
+		//	if (method.HasBody)
+		//	{
+		//		// eval method
+		//		var expr = Eval(asm, method);
+		//		methodExpressions.AddRange(expr);
+		//	}
+		//	else if (method.DeclaringType.IsInterface)
+		//	{
+		//		// try to eval interface implementations
+		//		if (asm.InterfaceImplementations.TryGetValue(method.DeclaringType, out var implTypes))
+		//		{
+		//			var implMethods = implTypes.SelectMany(x => x.Methods.Where(m => m.SignatureEquals(method)));
+		//			foreach (var impl in implMethods)
+		//			{
+		//				var expr = Eval(asm, impl);
+		//				methodExpressions.AddRange(expr);
+		//			}
+		//		}
+		//	}
+		//	if (methodExpressions.Count == 0)
+		//		return; // nothing to evaluate
+
+		//	methodMap.Add(method, methodExpressions);
+		//	foreach (var call in methodExpressions.OfCall())
+		//	{
+		//		if (call.Method.Module != asm.Module)
+		//			continue; // do not evaluate external modules
+
+		//		var callMethod = call.MethodImpl;
+		//		if (callMethod.IsCompilerGenerated())
+		//			continue; // do not evaluate get/set autogenerated methods
+
+		//		EvalRecursive(asm, callMethod, methodMap);
+		//	}
+		//}
 		#endregion
 	}
 }
