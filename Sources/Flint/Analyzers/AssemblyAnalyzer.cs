@@ -2,8 +2,10 @@
 using System.Collections.Immutable;
 using Flint.Common;
 using Flint.Vm;
+using Flint.Vm.Cil;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Cil = Flint.Vm.Cil;
 
 namespace Flint.Analyzers
 {
@@ -69,6 +71,22 @@ namespace Flint.Analyzers
 		#endregion
 
 		#region Implementation
+		sealed class CallCmp : IEqualityComparer<Cil.Call>
+		{
+			public static CallCmp Instance = new();
+
+			public bool Equals(Call x, Call y)
+			{
+				return ReflectionExtensions.AreEqual(x.Method, y.Method)
+					&& x.SequencePoint.Equals(y.SequencePoint);
+			}
+
+			public int GetHashCode(Call obj)
+			{
+				return obj.GetHashCode();
+			}
+		}
+
 		private static void PopulateEntities(TypeDefinition type, HashSet<TypeDefinition> entityMap)
 		{
 			if (type.BaseType == null)
@@ -124,7 +142,7 @@ namespace Flint.Analyzers
 			var innerCalls = new List<CallInfo>();
 			innerCallMap.Add(method, innerCalls);
 
-			foreach (var call in expressions.OfCall().Distinct())
+			foreach (var call in expressions.OfCall().Distinct(CallCmp.Instance))
 			{
 				innerCalls.Add(new CallInfo(call.Method, call.SequencePoint));
 

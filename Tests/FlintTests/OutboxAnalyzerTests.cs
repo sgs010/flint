@@ -52,5 +52,17 @@ namespace FlintTests
 
 			ctx.Output.Should().BeEmpty();
 		}
+
+		[TestMethod]
+		public void Services()
+		{
+			var ctx = new AnalyzerContextMock();
+
+			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.Services));
+
+			ctx.Output.Should().BeEquivalentTo([
+				"consider using Outbox pattern in method Samples.OutboxSamples.Services line 64"
+			]);
+		}
 	}
 }

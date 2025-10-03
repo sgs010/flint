@@ -52,7 +52,7 @@ namespace Flint.Common
 		public static bool SignatureEquals(this MethodReference left, MethodReference right)
 		{
 			return left.Name.Equals(right.Name)
-				&& left.ReturnType.Equals(right.ReturnType)
+				&& AreEqual(left.ReturnType, right.ReturnType)
 				&& left.Parameters.SequenceEqual(right.Parameters, ParameterTypeEqualityComparer.Instance);
 		}
 
@@ -115,6 +115,11 @@ namespace Flint.Common
 			return method.GetFullName().Equals(name, StringComparison.Ordinal);
 		}
 
+		public static bool AreEqual(TypeReference x, TypeReference y)
+		{
+			return x.MetadataToken.Equals(y.MetadataToken);
+		}
+
 		public static bool AreEqual(MethodReference x, MethodReference y)
 		{
 			return x.MetadataToken.Equals(y.MetadataToken);
@@ -128,7 +133,7 @@ namespace Flint.Common
 
 			public bool Equals(ParameterDefinition x, ParameterDefinition y)
 			{
-				return x.ParameterType.Equals(y.ParameterType);
+				return AreEqual(x.ParameterType, y.ParameterType);
 			}
 
 			public int GetHashCode(ParameterDefinition obj)

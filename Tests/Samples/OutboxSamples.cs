@@ -49,5 +49,22 @@
 				return 200;
 			});
 		}
+
+		public static void Services()
+		{
+			// should advise to use Outbox pattern on second event
+
+			var app = new App();
+			app.MapPost("/posts/{blogId}/{text}", async (int blogId, string text, IBlogService blogs, IEventService events) =>
+			{
+				var p1 = await blogs.AddPostWithOutbox(blogId, text);
+				await events.FirePostAdded(p1);
+
+				var p2 = await blogs.AddPost(blogId, text);
+				await events.FirePostAdded(p2);
+
+				return 200;
+			});
+		}
 	}
 }
