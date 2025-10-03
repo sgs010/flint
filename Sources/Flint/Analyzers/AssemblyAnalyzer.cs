@@ -7,26 +7,8 @@ using Mono.Cecil.Cil;
 
 namespace Flint.Analyzers
 {
-	#region CallDefinition
-	sealed class CallDefinition
-	{
-		public required MethodReference Method { get; init; }
-		public required SequencePoint SequencePoint { get; init; }
-
-		public override bool Equals(object obj)
-		{
-			if (obj is CallDefinition call)
-			{
-				return Method.Equals(call.Method);
-			}
-			return false;
-		}
-
-		public override int GetHashCode()
-		{
-			return Method.GetHashCode();
-		}
-	}
+	#region CallInfo
+	record CallInfo(MethodReference Method, SequencePoint SequencePoint);
 	#endregion
 
 	#region AssemblyDefinition
@@ -36,8 +18,8 @@ namespace Flint.Analyzers
 		public required FrozenSet<TypeDefinition> EntityTypes { get; init; }
 		public required FrozenDictionary<TypeReference, ImmutableArray<TypeDefinition>> InterfaceImplementations { get; init; }
 		public required FrozenDictionary<MethodDefinition, ImmutableArray<Ast>> MethodExpressions { get; init; }
-		public required FrozenDictionary<MethodReference, ImmutableArray<CallDefinition>> MethodInnerCalls { get; init; }
-		public required FrozenDictionary<MethodReference, ImmutableArray<CallDefinition>> MethodOuterCalls { get; init; }
+		public required FrozenDictionary<MethodReference, ImmutableArray<CallInfo>> MethodInnerCalls { get; init; }
+		public required FrozenDictionary<MethodReference, ImmutableArray<CallInfo>> MethodOuterCalls { get; init; }
 
 		protected override void BaseDispose(bool disposing)
 		{
@@ -67,8 +49,8 @@ namespace Flint.Analyzers
 				PopulateMethods(t, methodMap);
 			}
 
-			var innerCallMap = new Dictionary<MethodReference, List<CallDefinition>>(MethodReferenceEqualityComparer.Instance);
-			var outerCallMap = new Dictionary<MethodReference, List<CallDefinition>>(MethodReferenceEqualityComparer.Instance);
+			var innerCallMap = new Dictionary<MethodReference, List<CallInfo>>(MethodReferenceEqualityComparer.Instance);
+			var outerCallMap = new Dictionary<MethodReference, List<CallInfo>>(MethodReferenceEqualityComparer.Instance);
 			foreach (var m in methodMap)
 			{
 				PopulateCalls(m.Key, m.Value, innerCallMap, outerCallMap);
@@ -137,21 +119,21 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void PopulateCalls(MethodDefinition method, ImmutableArray<Ast> expressions, Dictionary<MethodReference, List<CallDefinition>> innerCallMap, Dictionary<MethodReference, List<CallDefinition>> outerCallMap)
+		private static void PopulateCalls(MethodDefinition method, ImmutableArray<Ast> expressions, Dictionary<MethodReference, List<CallInfo>> innerCallMap, Dictionary<MethodReference, List<CallInfo>> outerCallMap)
 		{
-			var innerCalls = new List<CallDefinition>();
+			var innerCalls = new List<CallInfo>();
 			innerCallMap.Add(method, innerCalls);
 
-			foreach (var call in expressions.OfCall())
+			foreach (var call in expressions.OfCall().Distinct())
 			{
-				innerCalls.Add(new CallDefinition { Method = call.Method, SequencePoint = call.SequencePoint });
+				innerCalls.Add(new CallInfo(call.Method, call.SequencePoint));
 
 				if (outerCallMap.TryGetValue(call.Method, out var outerCalls) == false)
 				{
 					outerCalls = [];
 					outerCallMap.Add(call.Method, outerCalls);
 				}
-				outerCalls.Add(new CallDefinition { Method = method, SequencePoint = call.SequencePoint });
+				outerCalls.Add(new CallInfo(method, call.SequencePoint));
 			}
 		}
 		#endregion

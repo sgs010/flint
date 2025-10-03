@@ -27,17 +27,17 @@ namespace Flint.Analyzers
 			// 3. look for adding an entity with a word "Outbox" in the name
 			// if 1,2 are true and 3 is false - suggest Outbox pattern
 
-			var saveChangesAsync = MethodAnalyzer.GetCalls(asm, method, "Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync");
+			var saveChangesAsync = MethodAnalyzer.GetCallChains(asm, method, "Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync");
 			if (saveChangesAsync.Count == 0)
 				return; // SaveChangesAsync is not found
 
-			var sendMessageAsync = MethodAnalyzer.GetCalls(asm, method, "Azure.Messaging.ServiceBus.ServiceBusSender.SendMessageAsync");
+			var sendMessageAsync = MethodAnalyzer.GetCallChains(asm, method, "Azure.Messaging.ServiceBus.ServiceBusSender.SendMessageAsync");
 			if (sendMessageAsync.Count == 0)
 				return; // SendMessageAsync is not found
 
 			foreach (var outbox in asm.EntityTypes.Where(x => x.Name.Contains("Outbox")))
 			{
-				var add = MethodAnalyzer.GetCalls(asm, method, $"Microsoft.EntityFrameworkCore.DbSet`1<{outbox.FullName}>.Add");
+				var add = MethodAnalyzer.GetCallChains(asm, method, $"Microsoft.EntityFrameworkCore.DbSet`1<{outbox.FullName}>.Add");
 				if (add.Count > 0)
 					return; // outbox is used
 			}
@@ -45,7 +45,7 @@ namespace Flint.Analyzers
 			// report issue
 			var sb = new StringBuilder();
 			sb.Append("consider using Outbox pattern in method ");
-			MethodAnalyzer.PrettyPrintMethod(sb, method, sendMessageAsync.First().SequencePoint);
+			MethodAnalyzer.PrettyPrintMethod(sb, method, null);
 			ctx.Log(sb.ToString());
 		}
 

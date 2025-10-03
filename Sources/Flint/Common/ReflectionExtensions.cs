@@ -7,24 +7,14 @@ namespace Flint.Common
 	{
 		public static MethodReferenceEqualityComparer Instance = new();
 
-		public static bool Equals(MethodReference x, MethodReference y)
+		public bool Equals(MethodReference x, MethodReference y)
 		{
-			return x.MetadataToken.Equals(y.MetadataToken);
+			return ReflectionExtensions.AreEqual(x, y);
 		}
 
-		public static int GetHashCode(MethodReference obj)
+		public int GetHashCode(MethodReference obj)
 		{
-			return obj.MetadataToken.GetHashCode();
-		}
-
-		bool IEqualityComparer<MethodReference>.Equals(MethodReference x, MethodReference y)
-		{
-			return MethodReferenceEqualityComparer.Equals(x, y);
-		}
-
-		int IEqualityComparer<MethodReference>.GetHashCode(MethodReference obj)
-		{
-			return MethodReferenceEqualityComparer.GetHashCode(obj);
+			return HashCode.Combine(obj);
 		}
 	}
 	#endregion
@@ -123,6 +113,11 @@ namespace Flint.Common
 		public static bool HasFullName(this MethodReference method, string name)
 		{
 			return method.GetFullName().Equals(name, StringComparison.Ordinal);
+		}
+
+		public static bool AreEqual(MethodReference x, MethodReference y)
+		{
+			return x.MetadataToken.Equals(y.MetadataToken);
 		}
 		#endregion
 

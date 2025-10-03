@@ -1,8 +1,10 @@
 ﻿using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 using Flint.Common;
 using Flint.Vm;
+using Flint.Vm.Cil;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -23,27 +25,52 @@ namespace Flint.Analyzers
 			}
 		}
 
-		public static HashSet<CallDefinition> GetCalls(AssemblyDefinition asm, MethodReference root, string methodFullName)
+		public static MethodReference GetMethod(AssemblyDefinition asm, string methodFullName)
 		{
-			// get all methods in call chains between root and destination methods
+			return asm.MethodOuterCalls.Keys.Where(x => x.HasFullName(methodFullName)).FirstOrDefault();
+		}
 
-			var method = asm.MethodOuterCalls.Keys.Where(x => x.HasFullName(methodFullName)).FirstOrDefault();
-			if (method == null)
+		public static List<List<CallInfo>> GetCallChains(AssemblyDefinition asm, MethodReference start, string methodFullName)
+		{
+			var end = GetMethod(asm, methodFullName);
+			if (end == null)
 				return []; // no method found with the given name
 
-			var callsFromRoot = new HashSet<CallDefinition>(CallComparer.Instance);
-			CollectCalls(asm.MethodInnerCalls, asm.InterfaceImplementations, root, callsFromRoot);
-			if (callsFromRoot.Count == 0)
-				return [];
-
-			var callsToMethod = new HashSet<CallDefinition>(CallComparer.Instance);
-			CollectCalls(asm.MethodOuterCalls, asm.InterfaceImplementations, method, callsToMethod);
-			if (callsToMethod.Count == 0)
-				return [];
-
-			callsFromRoot.IntersectWith(callsToMethod);
-			return callsFromRoot;
+			return GetCallChains(asm, start, end);
 		}
+
+		public static List<List<CallInfo>> GetCallChains(AssemblyDefinition asm, MethodReference start, MethodReference end)
+		{
+			List<List<CallInfo>> chains = [];
+
+			var root = new CallInfo(start, null);
+			var visitedMethods = new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance);
+			PopulateCallChains(asm, end, 0, root, null, visitedMethods, chains);
+
+			return chains;
+		}
+
+		//public static HashSet<CallDefinition> GetCalls(AssemblyDefinition asm, MethodReference root, string methodFullName)
+		//{
+		//	// get all methods in call chains between root and destination methods
+
+		//	var method = asm.MethodOuterCalls.Keys.Where(x => x.HasFullName(methodFullName)).FirstOrDefault();
+		//	if (method == null)
+		//		return []; // no method found with the given name
+
+		//	var callsFromRoot = new HashSet<CallDefinition>(CallComparer.Instance);
+		//	CollectCalls(asm.MethodInnerCalls, asm.InterfaceImplementations, root, callsFromRoot);
+		//	if (callsFromRoot.Count == 0)
+		//		return [];
+
+		//	var callsToMethod = new HashSet<CallDefinition>(CallComparer.Instance);
+		//	CollectCalls(asm.MethodOuterCalls, asm.InterfaceImplementations, method, callsToMethod);
+		//	if (callsToMethod.Count == 0)
+		//		return [];
+
+		//	callsFromRoot.IntersectWith(callsToMethod);
+		//	return callsFromRoot;
+		//}
 
 		public static ImmutableArray<Ast> EvalRaw(MethodDefinition method)
 		{
@@ -97,50 +124,93 @@ namespace Flint.Analyzers
 		#endregion
 
 		#region Implementation
-		sealed class CallComparer : IEqualityComparer<CallDefinition>
+		//sealed class CallComparer : IEqualityComparer<CallDefinition>
+		//{
+		//	public static CallComparer Instance = new();
+
+		//	public bool Equals(CallDefinition x, CallDefinition y)
+		//	{
+		//		return MethodReferenceEqualityComparer.Equals(x.Method, y.Method);
+		//	}
+
+		//	public int GetHashCode(CallDefinition obj)
+		//	{
+		//		return MethodReferenceEqualityComparer.GetHashCode(obj.Method);
+		//	}
+		//}
+
+		//private static void CollectCalls(
+		//	FrozenDictionary<MethodReference, ImmutableArray<CallDefinition>> callMap,
+		//	FrozenDictionary<TypeReference, ImmutableArray<TypeDefinition>> interfaceMap,
+		//	MethodReference method,
+		//	HashSet<CallDefinition> calls)
+		//{
+		//	if (callMap.TryGetValue(method, out var refs) == false)
+		//		return;
+
+		//	foreach (var r in refs)
+		//	{
+		//		if (calls.Contains(r))
+		//			continue;
+
+		//		if (interfaceMap.TryGetValue(r.Method.DeclaringType, out var implTypes))
+		//		{
+		//			// this is an interface method, substitute it with implementations
+		//			var implMethods = implTypes.SelectMany(x => x.Methods.Where(m => m.SignatureEquals(r.Method)));
+		//			foreach (var impl in implMethods)
+		//			{
+		//				calls.Add(new CallDefinition { Method = impl, SequencePoint = r.SequencePoint });
+		//				CollectCalls(callMap, interfaceMap, impl, calls);
+		//			}
+		//		}
+		//		else
+		//		{
+		//			// this is a method call
+		//			calls.Add(r);
+		//			CollectCalls(callMap, interfaceMap, r.Method, calls);
+		//		}
+		//	}
+		//}
+
+		record CallChainNode(CallChainNode Parent, CallInfo Call);
+
+		private static void PopulateCallChains(AssemblyDefinition asm, MethodReference target, int level, CallInfo call, CallChainNode parent, HashSet<MethodReference> visitedMethods, List<List<CallInfo>> chains)
 		{
-			public static CallComparer Instance = new();
-
-			public bool Equals(CallDefinition x, CallDefinition y)
+			if (ReflectionExtensions.AreEqual(call.Method, target))
 			{
-				return MethodReferenceEqualityComparer.Equals(x.Method, y.Method);
-			}
-
-			public int GetHashCode(CallDefinition obj)
-			{
-				return MethodReferenceEqualityComparer.GetHashCode(obj.Method);
-			}
-		}
-
-		private static void CollectCalls(
-			FrozenDictionary<MethodReference, ImmutableArray<CallDefinition>> callMap,
-			FrozenDictionary<TypeReference, ImmutableArray<TypeDefinition>> interfaceMap,
-			MethodReference method,
-			HashSet<CallDefinition> calls)
-		{
-			if (callMap.TryGetValue(method, out var refs) == false)
-				return;
-
-			foreach (var r in refs)
-			{
-				if (calls.Contains(r))
-					continue;
-
-				if (interfaceMap.TryGetValue(r.Method.DeclaringType, out var implTypes))
+				var chain = new List<CallInfo>(level + 1);
+				for (var x = parent; x != null; x = x.Parent)
 				{
-					// this is an interface method, substitute it with implementations
-					var implMethods = implTypes.SelectMany(x => x.Methods.Where(m => m.SignatureEquals(r.Method)));
-					foreach (var impl in implMethods)
-					{
-						calls.Add(new CallDefinition { Method = impl, SequencePoint = r.SequencePoint });
-						CollectCalls(callMap, interfaceMap, impl, calls);
-					}
+					chain.Add(x.Call);
 				}
-				else
+				chain.Reverse();
+				chains.Add(chain);
+			}
+			else
+			{
+				if (asm.MethodInnerCalls.TryGetValue(call.Method, out var innerCalls) == false)
+					return;
+
+				foreach (var innerCall in innerCalls)
 				{
-					// this is a method call
-					calls.Add(r);
-					CollectCalls(callMap, interfaceMap, r.Method, calls);
+					if (visitedMethods.Contains(innerCall.Method))
+						continue;
+
+					if (asm.InterfaceImplementations.TryGetValue(innerCall.Method.DeclaringType, out var implTypes))
+					{
+						// this is an interface method, substitute it with implementations
+						var implMethods = implTypes.SelectMany(x => x.Methods.Where(m => m.SignatureEquals(innerCall.Method)));
+						foreach (var impl in implMethods)
+						{
+							var implCall = new CallInfo(impl, innerCall.SequencePoint);
+							PopulateCallChains(asm, target, level + 1, implCall, new CallChainNode(parent, implCall), visitedMethods, chains);
+						}
+					}
+					else
+					{
+						// this is a method call
+						PopulateCallChains(asm, target, level + 1, innerCall, new CallChainNode(parent, innerCall), visitedMethods, chains);
+					}
 				}
 			}
 		}
