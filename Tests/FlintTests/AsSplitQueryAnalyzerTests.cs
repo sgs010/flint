@@ -1,5 +1,4 @@
 ﻿using Flint.Analyzers;
-using FluentAssertions;
 
 namespace FlintTests
 {
@@ -28,7 +27,7 @@ namespace FlintTests
 
 			AsSplitQueryAnalyzer.Run(ctx, ASM, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.MultipleChains));
 
-			ctx.Output.Should().BeEquivalentTo([
+			ctx.Output.AssertSame([
 				"consider adding AsSplitQuery() in method Samples.AsSplitQuerySamples.MultipleChains line 12"
 			]);
 		}
@@ -40,7 +39,7 @@ namespace FlintTests
 
 			AsSplitQueryAnalyzer.Run(ctx, ASM, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.MultipleChainsWithSplit));
 
-			ctx.Output.Should().BeEmpty();
+			ctx.Output.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -50,7 +49,7 @@ namespace FlintTests
 
 			AsSplitQueryAnalyzer.Run(ctx, ASM, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.SingleChain));
 
-			ctx.Output.Should().BeEmpty();
+			ctx.Output.AssertEmpty();
 		}
 	}
 }

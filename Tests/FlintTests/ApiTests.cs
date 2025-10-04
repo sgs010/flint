@@ -1,6 +1,4 @@
-﻿using FluentAssertions;
-
-namespace FlintTests
+﻿namespace FlintTests
 {
 	[TestClass]
 	public class ApiTests
@@ -29,7 +27,8 @@ namespace FlintTests
 			Flint.Api.Run("WebApp.dll");
 
 			var output = _mockOut.ToString().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
-			output.Should().BeEquivalentTo([
+
+			output.AssertSame([
 				"consider using projection { Id, Name, User.FirstName, User.LastName } in method WebApp.Program.Main line 19",
 				"add Include(t => t.User) in method WebApp.Program.Main line 19",
 				"add AsNoTracking() in method WebApp.Program.Main line 19",

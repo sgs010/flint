@@ -1,5 +1,4 @@
 ﻿using Flint.Analyzers;
-using FluentAssertions;
 
 namespace FlintTests
 {
@@ -28,7 +27,7 @@ namespace FlintTests
 
 			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.NoOutbox));
 
-			ctx.Output.Should().BeEquivalentTo([
+			ctx.Output.AssertSame([
 				"consider using Outbox pattern in method Samples.OutboxSamples.NoOutbox line 18"
 			]);
 		}
@@ -40,7 +39,7 @@ namespace FlintTests
 
 			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.DelayedOutbox));
 
-			ctx.Output.Should().BeEmpty();
+			ctx.Output.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -50,7 +49,7 @@ namespace FlintTests
 
 			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.ImmediateOutbox));
 
-			ctx.Output.Should().BeEmpty();
+			ctx.Output.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -60,7 +59,7 @@ namespace FlintTests
 
 			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.Services));
 
-			ctx.Output.Should().BeEquivalentTo([
+			ctx.Output.AssertSame([
 				"consider using Outbox pattern in method Samples.OutboxSamples.Services line 63"
 			]);
 		}
@@ -72,7 +71,7 @@ namespace FlintTests
 
 			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.ProcessOutbox));
 
-			ctx.Output.Should().BeEmpty();
+			ctx.Output.AssertEmpty();
 		}
 	}
 }
