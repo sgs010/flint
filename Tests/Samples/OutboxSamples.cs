@@ -1,4 +1,6 @@
-﻿namespace Samples
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace Samples
 {
 	public static class OutboxSamples
 	{
@@ -52,19 +54,28 @@
 
 		public static void Services()
 		{
-			// should advise to use Outbox pattern on second event
+			// should advise to use Outbox pattern
 
 			var app = new App();
 			app.MapPost("/posts/{blogId}/{text}", async (int blogId, string text, IBlogService blogs, IEventService events) =>
 			{
-				var p1 = await blogs.AddPostWithOutbox(blogId, text);
-				await events.FirePostAdded(p1);
-
-				var p2 = await blogs.AddPost(blogId, text);
-				await events.FirePostAdded(p2);
-
+				var postId = await blogs.AddPost(blogId, text);
+				await events.FirePostAdded(postId);
 				return 200;
 			});
+		}
+
+		public static async Task ProcessOutbox(IRepository repo, IEventBus bus)
+		{
+			// should not advise Outbox
+
+			var messages = await repo.Outbox.Where(m => m.IsProcessed == false).Take(10).ToListAsync();
+			foreach (var msg in messages)
+			{
+				await bus.PublishAsync(msg.Message);
+				msg.IsProcessed = true;
+			}
+			await repo.SaveChangesAsync();
 		}
 	}
 }

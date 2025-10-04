@@ -52,54 +52,42 @@ namespace Flint.Vm
 
 		private static void Capture(Ast root, IDictionary<string, Ast> captures, Ast pattern)
 		{
-			var patternNodes = Traverse(pattern, -1);
-			var rootNodes = Traverse(root, patternNodes.Count);
+			var patternNodes = BFS(pattern, -1);
+			var rootNodes = BFS(root, patternNodes.Count);
 			for (var i = 0; i < patternNodes.Count; ++i)
 			{
 				var p = patternNodes[i];
 				var r = rootNodes[i];
-				p.Capture(r, captures);
+				if (p != null)
+					p.Capture(r, captures);
 			}
 		}
 
-		private static List<Ast> Traverse(Ast root, int maxCount)
+		private static List<Ast> BFS(Ast root, int maxCount)
 		{
 			var nodes = new List<Ast>(maxCount > 0 ? maxCount : 0);
-			Traverse(root, nodes, maxCount);
+			BFS(root, nodes, maxCount);
 			return nodes;
 		}
 
-		private static void Traverse(Ast root, List<Ast> nodes, int maxCount)
+		private static void BFS(Ast root, List<Ast> nodes, int maxCount)
 		{
-			if (root == null)
-				return;
-			if (maxCount == 0)
+			if (maxCount >= 0 && nodes.Count >= maxCount)
 				return;
 
 			nodes.Add(root);
-			--maxCount;
-			if (maxCount == 0)
+			if (maxCount >= 0 && nodes.Count >= maxCount)
+				return;
+
+			if (root == null)
 				return;
 
 			foreach (var child in root.GetChildren())
 			{
-				Traverse(child, nodes, maxCount);
-				--maxCount;
-				if (maxCount == 0)
+				BFS(child, nodes, maxCount);
+				if (maxCount >= 0 && nodes.Count >= maxCount)
 					return;
 			}
 		}
 	}
-
-	//static class AstExtensions
-	//{
-	//	public static void Capture(this Ast[] col, Ast[] other, IDictionary<string, Ast> captures)
-	//	{
-	//		if (col.Length != other.Length)
-	//			throw new InvalidOperationException();
-
-	//		for (var i = 0; i < col.Length; ++i)
-	//			col[i].Capture(other[i], captures);
-	//	}
-	//}
 }

@@ -29,7 +29,7 @@ namespace FlintTests
 			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.NoOutbox));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using Outbox pattern in method Samples.OutboxSamples.NoOutbox line 16"
+				"consider using Outbox pattern in method Samples.OutboxSamples.NoOutbox line 18"
 			]);
 		}
 
@@ -61,8 +61,18 @@ namespace FlintTests
 			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.Services));
 
 			ctx.Output.Should().BeEquivalentTo([
-				"consider using Outbox pattern in method Samples.OutboxSamples.Services line 64"
+				"consider using Outbox pattern in method Samples.OutboxSamples.Services line 63"
 			]);
+		}
+
+		[TestMethod]
+		public void ProcessOutbox()
+		{
+			var ctx = new AnalyzerContextMock();
+
+			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.ProcessOutbox));
+
+			ctx.Output.Should().BeEmpty();
 		}
 	}
 }

@@ -33,20 +33,20 @@ namespace Flint.Analyzers
 		public static List<List<CallInfo>> GetCallChains(AssemblyDefinition asm, MethodReference start, string methodFullName)
 		{
 			var end = GetMethod(asm, methodFullName);
-			if (end == null)
-				return []; // no method found with the given name
-
 			return GetCallChains(asm, start, end);
 		}
 
 		public static List<List<CallInfo>> GetCallChains(AssemblyDefinition asm, MethodReference start, MethodReference end)
 		{
-			List<List<CallInfo>> chains = [];
+			if (start == null)
+				return [];
+			if (end == null)
+				return [];
 
+			List<List<CallInfo>> chains = [];
 			var root = new CallInfo(start, null);
 			var visitedMethods = new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance);
 			PopulateCallChains(asm, end, 0, root, null, visitedMethods, chains);
-
 			return chains;
 		}
 

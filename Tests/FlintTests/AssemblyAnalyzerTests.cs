@@ -30,6 +30,14 @@ namespace FlintTests
 		}
 
 		[TestMethod]
+		public void EntityCollections()
+		{
+			ASM.EntityCollections.Should().Contain(x => x.Name == "Users");
+			ASM.EntityCollections.Should().Contain(x => x.Name == "Orders");
+			ASM.EntityCollections.Should().Contain(x => x.Name == "Products");
+		}
+
+		[TestMethod]
 		public void InterfaceImplementations()
 		{
 			ASM.InterfaceImplementations

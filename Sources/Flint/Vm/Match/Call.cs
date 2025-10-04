@@ -16,8 +16,7 @@ namespace Flint.Vm.Match
 
 		public override IEnumerable<Ast> GetChildren()
 		{
-			if (Instance != null)
-				yield return Instance;
+			yield return Instance;
 			foreach (var arg in Args)
 				yield return arg;
 		}

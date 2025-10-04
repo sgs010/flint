@@ -18,6 +18,7 @@ namespace Flint.Analyzers
 	{
 		public required ModuleDefinition Module { get; init; }
 		public required FrozenSet<TypeDefinition> EntityTypes { get; init; }
+		public required FrozenSet<PropertyDefinition> EntityCollections { get; init; }
 		public required FrozenDictionary<TypeReference, ImmutableArray<TypeDefinition>> InterfaceImplementations { get; init; }
 		public required FrozenDictionary<MethodDefinition, ImmutableArray<Ast>> MethodExpressions { get; init; }
 		public required FrozenDictionary<MethodReference, ImmutableArray<CallInfo>> MethodInnerCalls { get; init; }
@@ -41,12 +42,13 @@ namespace Flint.Analyzers
 		{
 			var module = ModuleDefinition.ReadModule(path, new ReaderParameters { ReadSymbols = true });
 			var entityMap = new HashSet<TypeDefinition>();
+			var entityPropMap = new HashSet<PropertyDefinition>();
 			var interfaceMap = new Dictionary<TypeReference, List<TypeDefinition>>();
 			var methodMap = new Dictionary<MethodDefinition, ImmutableArray<Ast>>(MethodReferenceEqualityComparer.Instance);
 
 			foreach (var t in module.Types)
 			{
-				PopulateEntities(t, entityMap);
+				PopulateEntities(t, entityMap, entityPropMap);
 				PopulateInterfaces(t, interfaceMap);
 				PopulateMethods(t, methodMap);
 			}
@@ -62,6 +64,7 @@ namespace Flint.Analyzers
 			{
 				Module = module,
 				EntityTypes = entityMap.ToFrozenSet(),
+				EntityCollections = entityPropMap.ToFrozenSet(),
 				InterfaceImplementations = interfaceMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray()),
 				MethodExpressions = methodMap.ToFrozenDictionary(),
 				MethodInnerCalls = innerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray()),
@@ -87,7 +90,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void PopulateEntities(TypeDefinition type, HashSet<TypeDefinition> entityMap)
+		private static void PopulateEntities(TypeDefinition type, HashSet<TypeDefinition> entityMap, HashSet<PropertyDefinition> entityPropMap)
 		{
 			if (type.BaseType == null)
 				return;
@@ -98,8 +101,11 @@ namespace Flint.Analyzers
 
 			foreach (var prop in type.Properties)
 			{
-				if (prop.PropertyType.IsDbSet(out var entityType))
-					entityMap.Add(entityType);
+				if (prop.PropertyType.IsDbSet(out var entityType) == false)
+					continue;
+
+				entityMap.Add(entityType);
+				entityPropMap.Add(prop);
 			}
 		}
 
