@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 namespace FlintTests
 {
@@ -38,6 +39,20 @@ namespace FlintTests
 				Assert.Fail("Collection does not contain a required items.");
 		}
 
+		public static void AssertContains<K, V>(this IReadOnlyDictionary<K, V> col, K key, V value)
+		{
+			if (col.TryGetValue(key, out var v) == false)
+				Assert.Fail($"Dictionary does not contain a key \"{key}\".");
+			AssertEquals(v, value);
+		}
+
+		public static void AssertContains<K, V>(this IReadOnlyDictionary<K, V[]> col, K key, V[] value)
+		{
+			if (col.TryGetValue(key, out var v) == false)
+				Assert.Fail($"Dictionary does not contain a key \"{key}\".");
+			AssertEquals(v, value);
+		}
+
 		public static void AssertCount<T>(this IReadOnlyCollection<T> col, int count)
 		{
 			if (col.Count != count)
@@ -56,6 +71,12 @@ namespace FlintTests
 			sb.AppendLine("=== Actual:");
 			sb.AppendLine(actual.ToString());
 			Assert.Fail(sb.ToString());
+		}
+
+		public static void AssertEquals<T>(this T[] actual, T[] expected)
+		{
+			if (actual.SequenceEqual(expected) == false)
+				Assert.Fail("Two arrays are not equal.");
 		}
 		#endregion
 

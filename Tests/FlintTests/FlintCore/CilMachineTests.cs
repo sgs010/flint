@@ -3,7 +3,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Cil = Flint.Vm.Cil;
 
-namespace FlintTests
+namespace FlintTests.FlintCore
 {
 	[TestClass]
 	public class CilMachineTests
@@ -39,13 +39,13 @@ namespace FlintTests
 		static CilMachineTests()
 		{
 			using var tests = ModuleDefinition.ReadModule("FlintTests.dll");
-			var @this = tests.GetTypes().Where(t => t.FullName == "FlintTests.CilMachineTests").First();
+			var @this = tests.GetTypes().Where(t => t.Name == nameof(CilMachineTests)).First();
 
 			IntFieldT = @this.Fields.Where(f => f.Name == nameof(IntField)).First();
 			StringFieldT = @this.Fields.Where(f => f.Name == nameof(StringField)).First();
 			IntT = IntFieldT.FieldType.Resolve();
 			StringT = StringFieldT.FieldType.Resolve();
-			ClassT = tests.GetTypes().Where(t => t.FullName == "FlintTests.CilMachineTests/Class").First();
+			ClassT = tests.GetTypes().Where(t => t.Name == nameof(Class)).First();
 			ConstructorT = ClassT.Methods.Where(m => m.Name == ".ctor").First();
 			StaticMethodT = ClassT.Methods.Where(m => m.Name == nameof(Class.StaticMethod)).First();
 			InstanceMethodT = ClassT.Methods.Where(m => m.Name == nameof(Class.InstanceMethod)).First();

@@ -1,14 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <BaseOutputPath>..\..\Solution\bin</BaseOutputPath>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <RootNamespace>Flint</RootNamespace>
-    <AssemblyName>FlintCLI</AssemblyName>
+    <AssemblyVersion>1</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

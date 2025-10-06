@@ -1,6 +1,6 @@
 ﻿using Flint.Analyzers;
 
-namespace FlintTests
+namespace FlintTests.FlintCore
 {
 	[TestClass]
 	public class AssemblyAnalyzerTests

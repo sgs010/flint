@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Sources\FlintAPI\FlintAPI.csproj" />
     <ProjectReference Include="..\..\Sources\Flint\Flint.csproj" />
     <ProjectReference Include="..\Samples\Samples.csproj" />
     <ProjectReference Include="..\WebApp\WebApp.csproj" />

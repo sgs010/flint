@@ -6,3 +6,5 @@ Tests/Samples/obj
 Tests/FlintTests/obj
 Tests/WebApp/obj
 Sources/FlintCLI/obj
+Sources/FlintAPI/obj
+Tests/FlintAPITests/obj
