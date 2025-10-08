@@ -23,7 +23,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void MultipleChains()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			AsSplitQueryAnalyzer.Run(ctx, ASM, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.MultipleChains));
 
@@ -35,7 +35,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void MultipleChainsWithSplit()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			AsSplitQueryAnalyzer.Run(ctx, ASM, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.MultipleChainsWithSplit));
 
@@ -45,7 +45,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void SingleChain()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			AsSplitQueryAnalyzer.Run(ctx, ASM, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.SingleChain));
 

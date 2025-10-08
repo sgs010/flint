@@ -23,7 +23,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void NoOutbox()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.NoOutbox));
 
@@ -35,7 +35,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void DelayedOutbox()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.DelayedOutbox));
 
@@ -45,7 +45,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ImmediateOutbox()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.ImmediateOutbox));
 
@@ -55,7 +55,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void Services()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.Services));
 
@@ -67,7 +67,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ProcessOutbox()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			OutboxAnalyzer.Run(ctx, ASM, nameof(Samples.OutboxSamples), nameof(Samples.OutboxSamples.ProcessOutbox));
 

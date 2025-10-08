@@ -23,7 +23,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ReadWholeObject()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadWholeObject));
 
@@ -33,7 +33,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ReadAllProperties()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadAllProperties));
 
@@ -43,7 +43,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ReadSomeProperties()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadSomeProperties));
 
@@ -55,7 +55,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void MultipleQueries()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.MultipleQueries));
 
@@ -68,7 +68,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ComplexProjection()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ComplexProjection));
 
@@ -80,7 +80,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ReadAllChainedProperties()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadAllChainedProperties));
 
@@ -90,7 +90,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void SimpleCRUD()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.SimpleCRUD));
 
@@ -102,7 +102,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ToListAsync()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ToListAsync));
 
@@ -114,7 +114,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ToArrayAsync()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ToArrayAsync));
 
@@ -126,7 +126,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ToHashSetAsync()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ToHashSetAsync));
 
@@ -138,7 +138,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ToDictionaryAsync()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ToDictionaryAsync));
 
@@ -150,7 +150,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void FirstAsync()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.FirstAsync));
 
@@ -162,7 +162,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void FirstOrDefaultAsync()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.FirstOrDefaultAsync));
 
@@ -174,7 +174,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void LastAsync()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.LastAsync));
 
@@ -186,7 +186,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void LastOrDefaultAsync()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.LastOrDefaultAsync));
 
@@ -198,7 +198,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void SingleAsync()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.SingleAsync));
 
@@ -210,7 +210,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void SingleOrDefaultAsync()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.SingleOrDefaultAsync));
 
@@ -222,7 +222,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void AsAsyncEnumerable()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.AsAsyncEnumerable));
 
@@ -234,7 +234,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ReadForUpdate_ChangeProperty()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadForUpdate_ChangeProperty));
 
@@ -244,7 +244,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ReadForUpdate_ChangeNestedProperty()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadForUpdate_ChangeNestedProperty));
 
@@ -254,7 +254,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ReadForUpdate_CollectionAdd()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadForUpdate_CollectionAdd));
 
@@ -264,7 +264,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ReadForUpdate_CollectionRemove()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadForUpdate_CollectionRemove));
 
@@ -274,7 +274,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ReadForUpdate_CollectionIterate()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadForUpdate_CollectionIterate));
 
@@ -284,7 +284,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void LambdaRead()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.LambdaRead));
 
@@ -296,7 +296,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void LambdaWrite()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.LambdaWrite));
 

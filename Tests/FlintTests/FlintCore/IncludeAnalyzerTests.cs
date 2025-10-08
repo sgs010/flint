@@ -23,7 +23,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void Lambda_NestedEntity()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			IncludeAnalyzer.Run(ctx, ASM, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.Lambda_NestedEntity));
 
@@ -35,7 +35,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void Lambda_NoNestedEntities()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			IncludeAnalyzer.Run(ctx, ASM, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.Lambda_NoNestedEntities));
 
@@ -45,7 +45,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ChainedEntities_NoInclude()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			IncludeAnalyzer.Run(ctx, ASM, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.ChainedEntities_NoInclude));
 
@@ -57,7 +57,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ChainedEntities_FullInclude()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			IncludeAnalyzer.Run(ctx, ASM, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.ChainedEntities_FullInclude));
 
@@ -67,7 +67,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void ChainedEntities_PartialInclude()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			IncludeAnalyzer.Run(ctx, ASM, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.ChainedEntities_PartialInclude));
 
@@ -79,7 +79,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void MultipleChains()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			IncludeAnalyzer.Run(ctx, ASM, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.MultipleChains));
 

@@ -23,7 +23,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void Read_NoAsNoTracking()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			AsNoTrackingAnalyzer.Run(ctx, ASM, nameof(Samples.AsNoTrackingSamples), nameof(Samples.AsNoTrackingSamples.Read_NoAsNoTracking));
 
@@ -35,7 +35,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void Read_HasAsNoTracking()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			AsNoTrackingAnalyzer.Run(ctx, ASM, nameof(Samples.AsNoTrackingSamples), nameof(Samples.AsNoTrackingSamples.Read_HasAsNoTracking));
 
@@ -45,7 +45,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void Update()
 		{
-			var ctx = new AnalyzerContextMock();
+			var ctx = new AnalyzerContext();
 
 			AsNoTrackingAnalyzer.Run(ctx, ASM, nameof(Samples.AsNoTrackingSamples), nameof(Samples.AsNoTrackingSamples.Update));
 

@@ -1,4 +1,5 @@
 ﻿using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Flint.Common
 {
@@ -123,6 +124,15 @@ namespace Flint.Common
 		public static bool AreEqual(MethodReference x, MethodReference y)
 		{
 			return x.MetadataToken.Equals(y.MetadataToken);
+		}
+
+		public static bool AreEqual(SequencePoint x, SequencePoint y)
+		{
+			if (x == null && y == null)
+				return true;
+			if (x != null && y != null)
+				return x.Equals(y);
+			return false;
 		}
 		#endregion
 

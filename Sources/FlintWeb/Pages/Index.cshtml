@@ -1,0 +1,46 @@
+﻿@page
+@model IndexModel
+@{
+	ViewData["Title"] = "Home page";
+}
+
+@section Scripts {
+	<partial name="_ValidationScriptsPartial" />
+}
+
+<div class="text-center">
+
+	<h2>Upload DLL to check.</h2>
+	<p>You can also upload a related PDB file to get line numbers in output.</p>
+
+	<form method="post" enctype="multipart/form-data" asp-antiforgery="true">
+		<div>
+			<label>Select DLL file:</label>
+			<input type="file" asp-for="DllFile" />
+			<span asp-validation-for="DllFile" class="text-danger"></span>
+		</div>
+		<div>
+			<label>Select PDB file (optional):</label>
+			<input type="file" asp-for="PdbFile" />
+			<span asp-validation-for="PdbFile" class="text-danger"></span>
+		</div>
+		<button type="submit">Upload</button>
+	</form>
+
+	@if (Model.ShowResult)
+	{
+		<div>
+			<p>Finished in @Model.ElapsedMilliseconds ms. Found @Model.Result.Length issues.</p>
+			@if (Model.Result.Length > 0)
+			{
+				<ol>
+					@foreach (var issue in Model.Result)
+					{
+						<li><code>@issue</code></li>
+					}
+				</ol>
+			}
+		</div>
+	}
+
+</div>

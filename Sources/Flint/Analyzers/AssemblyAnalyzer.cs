@@ -40,7 +40,34 @@ namespace Flint.Analyzers
 		#region Interface
 		public static AssemblyDefinition Load(string path)
 		{
-			var module = ModuleDefinition.ReadModule(path, new ReaderParameters { ReadSymbols = true });
+			Stream dllStream = null, pdbStream = null;
+			try
+			{
+				dllStream = File.OpenRead(path);
+
+				var pdbPath = Path.ChangeExtension(path, ".pdb");
+				if (File.Exists(pdbPath))
+					pdbStream = File.OpenRead(pdbPath);
+
+				return Load(dllStream, pdbStream);
+			}
+			finally
+			{
+				dllStream?.Dispose();
+				pdbStream?.Dispose();
+			}
+		}
+
+		public static AssemblyDefinition Load(Stream dllStream, Stream pdbStream)
+		{
+			var parameters = new ReaderParameters { AssemblyResolver = new AssemblyResolver() };
+			if (pdbStream != null)
+			{
+				parameters.ReadSymbols = true;
+				parameters.SymbolStream = pdbStream;
+			}
+			var module = ModuleDefinition.ReadModule(dllStream, parameters);
+
 			var entityMap = new HashSet<TypeDefinition>();
 			var entityPropMap = new HashSet<PropertyDefinition>();
 			var interfaceMap = new Dictionary<TypeReference, List<TypeDefinition>>();
@@ -74,6 +101,21 @@ namespace Flint.Analyzers
 		#endregion
 
 		#region Implementation
+		sealed class AssemblyResolver : DefaultAssemblyResolver
+		{
+			public override Mono.Cecil.AssemblyDefinition Resolve(AssemblyNameReference name)
+			{
+				try
+				{
+					return base.Resolve(name);
+				}
+				catch (Mono.Cecil.AssemblyResolutionException)
+				{
+					return null;
+				}
+			}
+		}
+
 		sealed class CallCmp : IEqualityComparer<Cil.Call>
 		{
 			public static CallCmp Instance = new();
@@ -81,7 +123,7 @@ namespace Flint.Analyzers
 			public bool Equals(Call x, Call y)
 			{
 				return ReflectionExtensions.AreEqual(x.Method, y.Method)
-					&& x.SequencePoint.Equals(y.SequencePoint);
+					&& ReflectionExtensions.AreEqual(x.SequencePoint, y.SequencePoint);
 			}
 
 			public int GetHashCode(Call obj)

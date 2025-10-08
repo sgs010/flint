@@ -18,7 +18,9 @@
 			try
 			{
 				var parameters = ParseInputParameters(args);
-				Api.Run(parameters.Input);
+				var result = Api.Analyze(parameters.Input);
+				foreach (var item in result)
+					Console.WriteLine(item);
 				return 0;
 			}
 			catch (Exception ex)
