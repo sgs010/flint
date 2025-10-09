@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 namespace FlintTests
@@ -33,10 +34,16 @@ namespace FlintTests
 			Assert.Fail(sb.ToString());
 		}
 
+		public static void AssertContains<T>(this IReadOnlyCollection<T> col, T expected)
+		{
+			if (col.Any(actual => actual.Equals(expected)) == false)
+				Assert.Fail("Collection does not contain a required item.");
+		}
+
 		public static void AssertContains<T>(this IReadOnlyCollection<T> col, Func<T, bool> predicate)
 		{
 			if (col.Any(predicate) == false)
-				Assert.Fail("Collection does not contain a required items.");
+				Assert.Fail("Collection does not contain a required item.");
 		}
 
 		public static void AssertContains<K, V>(this IReadOnlyDictionary<K, V> col, K key, V value)

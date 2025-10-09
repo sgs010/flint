@@ -3,6 +3,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Cil = Flint.Vm.Cil;
 
+#pragma warning disable CS0618
 namespace FlintTests.FlintCore
 {
 	[TestClass]
@@ -153,27 +154,61 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void Beq()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Beq, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Beq, Instruction.Create(OpCodes.Nop));
+			ctx.Stack.Push(new Cil.Int32(SP, 1)); // left
+			ctx.Stack.Push(new Cil.Int32(SP, 2)); // right
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Beq(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Beq(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Beq_S()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Beq_S, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Beq_S, Instruction.Create(OpCodes.Nop));
+			ctx.Stack.Push(new Cil.Int32(SP, 1)); // left
+			ctx.Stack.Push(new Cil.Int32(SP, 2)); // right
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Beq(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Beq(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
@@ -2559,22 +2594,9 @@ namespace FlintTests.FlintCore
 		}
 
 		[TestMethod]
-		public void Starg_InstanceMethod()
+		public void Starg()
 		{
 			var ctx = new CilMachine.RoutineContext(InstanceMethodT, stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
-			var instruction = Instruction.Create(OpCodes.Starg, Arg(1));
-
-			CilMachine.Eval(ctx, instruction);
-
-			ctx.Stack.AssertEmpty();
-			ctx.Args[0].AssertEquals(new Cil.Int32(SP, 42));
-		}
-
-		[TestMethod]
-		public void Starg_StaticMethod()
-		{
-			var ctx = new CilMachine.RoutineContext(StaticMethodT, stackSize: 1);
 			ctx.Stack.Push(new Cil.Int32(SP, 42));
 			var instruction = Instruction.Create(OpCodes.Starg, Arg(0));
 
@@ -3113,3 +3135,4 @@ namespace FlintTests.FlintCore
 		}
 	}
 }
+#pragma warning restore CS0618

@@ -6,17 +6,69 @@ using Mono.Cecil.Cil;
 
 namespace Flint.Vm
 {
+	#region Condition
+	sealed class Condition
+	{
+		public readonly Ast Ast;
+		public readonly int Value;
+		public Condition(Ast ast, int value)
+		{
+			Ast = ast;
+			Value = value;
+		}
+
+		public override int GetHashCode()
+		{
+			return HashCode.Combine(typeof(Condition), Ast, Value);
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (obj is Condition cond)
+			{
+				return Ast.Equals(cond.Ast)
+					&& Value.Equals(cond.Value);
+			}
+			return false;
+		}
+	}
+	#endregion
+
+	#region Branch
+	sealed class Branch
+	{
+		public readonly ImmutableArray<Condition> Conditions;
+		public readonly ImmutableArray<Ast> Expressions;
+		public Branch(ImmutableArray<Condition> conditions, ImmutableArray<Ast> expressions)
+		{
+			Conditions = conditions;
+			Expressions = expressions;
+		}
+	}
+	#endregion
+
+	#region CilMachine
 	static class CilMachine
 	{
 		#region Interface
-		public static ImmutableArray<Ast> Run(MethodDefinition mtd)
+		public static ImmutableArray<Branch> Run(MethodDefinition mtd)
 		{
-			var ctx = new RoutineContext(mtd);
-			foreach (var instruction in ctx.Method.Body.Instructions)
+			var branches = new List<RoutineContext> { new RoutineContext(mtd) };
+			for (var i = 0; i < branches.Count; ++i)
 			{
-				Eval(ctx, instruction);
+				var ctx = branches[i];
+				var instruction = ctx.StartInstruction;
+				while (instruction != null)
+				{
+					Eval(ctx, branches, instruction, out var nextInstruction);
+					ctx.VisitedInstructions.Add(instruction);
+
+					if (ctx.VisitedInstructions.Contains(nextInstruction))
+						break;
+					instruction = nextInstruction;
+				}
 			}
-			return [.. ctx.Expressions];
+			return [.. branches.Select(x => new Branch([.. x.Conditions], [.. x.Expressions]))];
 		}
 		#endregion
 
@@ -76,19 +128,24 @@ namespace Flint.Vm
 		internal class RoutineContext
 		{
 			public readonly MethodDefinition Method;
+			public readonly Instruction StartInstruction;
+			public readonly ImmutableArray<Instruction> ExceptionHandlers;
+			public readonly ImmutableArray<SequencePoint> SequencePoints;
+
 			public readonly Ast[] Args;
 			public readonly Ast[] Vars;
 			public readonly Stack<Ast> Stack;
 			public readonly Dictionary<Ast, Ast> Heap = [];
 			public readonly Dictionary<ArrayIndex, Ast> Arrays = [];
 			public readonly Dictionary<ObjectField, Ast> Objects = [];
+			public readonly List<Condition> Conditions = [];
 			public readonly HashSet<Ast> Expressions = [];
-			public readonly Instruction[] ExceptionHandlers;
-			public readonly SequencePoint[] SequencePoints;
+			public readonly HashSet<Instruction> VisitedInstructions = [];
 
 			public RoutineContext(MethodDefinition method)
 			{
 				Method = method;
+				StartInstruction = Method.Body.Instructions.First();
 				Args = new Ast[method.Parameters.Count];
 				Vars = new Ast[method.Body.Variables.Count];
 				Stack = new Stack<Ast>(method.Body.MaxStackSize);
@@ -96,30 +153,56 @@ namespace Flint.Vm
 				ExceptionHandlers = method.Body.ExceptionHandlers
 					.Where(x => x.HandlerType == ExceptionHandlerType.Catch)
 					.Select(x => x.HandlerStart)
-					.ToArray();
+					.ToImmutableArray();
 
 				try
 				{
 					SequencePoints = method.DebugInformation.SequencePoints
 						.Where(x => x.IsHidden == false)
-						.ToArray();
+						.ToImmutableArray();
 				}
 				catch (System.Exception) { }
 			}
 
-			// use for tests only
+			[Obsolete("for tests only")]
 			internal RoutineContext(MethodDefinition method = null, int varCount = 0, int stackSize = 0, Instruction[] exceptionHandlers = null)
 			{
 				Method = method;
 				Args = new Ast[method?.Parameters.Count ?? 0];
 				Vars = new Ast[varCount];
 				Stack = new Stack<Ast>(stackSize);
-				ExceptionHandlers = exceptionHandlers ?? [];
+				ExceptionHandlers = [.. exceptionHandlers ?? []];
+			}
+
+			internal RoutineContext(RoutineContext src, Instruction start)
+			{
+				Method = src.Method;
+				StartInstruction = start;
+				ExceptionHandlers = src.ExceptionHandlers;
+				SequencePoints = src.SequencePoints;
+
+				Args = [.. src.Args];
+				Vars = [.. src.Vars];
+				Stack = new Stack<Ast>(src.Stack);
+				Heap = new Dictionary<Ast, Ast>(src.Heap);
+				Arrays = new Dictionary<ArrayIndex, Ast>(src.Arrays);
+				Objects = new Dictionary<ObjectField, Ast>(src.Objects);
+				Conditions = [.. src.Conditions];
+				Expressions = [.. src.Expressions];
+				VisitedInstructions = [.. src.VisitedInstructions];
 			}
 		}
 
+		[Obsolete("for tests only")]
 		internal static void Eval(RoutineContext ctx, Instruction instruction)
 		{
+			Eval(ctx, [], instruction, out var _);
+		}
+
+		internal static void Eval(RoutineContext ctx, List<RoutineContext> branches, Instruction instruction, out Instruction nextInstruction)
+		{
+			nextInstruction = instruction.Next;
+
 			if (ctx.ExceptionHandlers.Any(x => x.Offset == instruction.Offset))
 			{
 				// vm puts exceptions on stack
@@ -142,6 +225,8 @@ namespace Flint.Vm
 					break;
 				case Code.Beq:
 				case Code.Beq_S:
+					Branch(Beq.Create, ctx, branches, instruction, out nextInstruction);
+					break;
 				case Code.Bge:
 				case Code.Bge_S:
 				case Code.Bge_Un:
@@ -559,6 +644,24 @@ namespace Flint.Vm
 					break;
 				default: throw new NotImplementedException($"Unknown instruction {instruction.OpCode.Code}");
 			}
+		}
+
+		delegate Ast ConditionProvider(SequencePoint sp, Ast left, Ast right);
+
+		private static void Branch(ConditionProvider prov, RoutineContext ctx, List<RoutineContext> branches, Instruction instruction, out Instruction nextInstruction)
+		{
+			nextInstruction = (Instruction)instruction.Operand;
+
+			var sp = GetSequencePoint(ctx, instruction);
+			var right = ctx.Stack.Pop();
+			var left = ctx.Stack.Pop();
+			var condition = prov(sp, left, right);
+
+			var altBranch = new RoutineContext(ctx, instruction.Next);
+			branches.Add(altBranch);
+
+			ctx.Conditions.Add(new Condition(condition, 1));
+			altBranch.Conditions.Add(new Condition(condition, 0));
 		}
 
 		private static Ast[] PopArgs(RoutineContext ctx, MethodReference method)
@@ -1083,12 +1186,8 @@ namespace Flint.Vm
 
 		private static void Starg(RoutineContext ctx, int number)
 		{
-			if (ctx.Method.HasThis && number == 0)
-				throw new InvalidOperationException();
-
-			var argNum = ctx.Method.HasThis ? number - 1 : number;
 			var value = ctx.Stack.Pop();
-			ctx.Args[argNum] = value;
+			ctx.Args[number] = value;
 		}
 
 		private static void Stelem(RoutineContext ctx)
@@ -1163,4 +1262,5 @@ namespace Flint.Vm
 		}
 		#endregion
 	}
+	#endregion
 }

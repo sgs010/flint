@@ -22,5 +22,14 @@
 				"consider using Outbox pattern in method WebApp.Program.Main line 58",
 			]);
 		}
+
+		//[TestMethod]
+		//public void TestAnyDll()
+		//{
+		//	foreach (var path in Directory.GetFiles(".", "*.dll"))
+		//	{
+		//		Flint.Api.Analyze(path);
+		//	}
+		//}
 	}
 }
