@@ -231,36 +231,46 @@ namespace Flint.Vm
 				case Code.Bge_S:
 				case Code.Bge_Un:
 				case Code.Bge_Un_S:
+					Branch(Bge.Create, ctx, branches, instruction, out nextInstruction);
+					break;
 				case Code.Bgt:
 				case Code.Bgt_S:
 				case Code.Bgt_Un:
 				case Code.Bgt_Un_S:
+					Branch(Bgt.Create, ctx, branches, instruction, out nextInstruction);
+					break;
 				case Code.Ble:
 				case Code.Ble_S:
 				case Code.Ble_Un:
 				case Code.Ble_Un_S:
+					Branch(Ble.Create, ctx, branches, instruction, out nextInstruction);
+					break;
 				case Code.Blt:
 				case Code.Blt_S:
 				case Code.Blt_Un:
 				case Code.Blt_Un_S:
+					Branch(Blt.Create, ctx, branches, instruction, out nextInstruction);
+					break;
 				case Code.Bne_Un:
 				case Code.Bne_Un_S:
-					ctx.Stack.Pop();
-					ctx.Stack.Pop();
+					Branch(Bne.Create, ctx, branches, instruction, out nextInstruction);
 					break;
 				case Code.Box:
 					Box(ctx, instruction);
 					break;
 				case Code.Br:
 				case Code.Br_S:
+					nextInstruction = (Instruction)instruction.Operand;
 					break;
 				case Code.Break:
 					break;
 				case Code.Brfalse:
 				case Code.Brfalse_S:
+					Branch(Brfalse.Create, ctx, branches, instruction, out nextInstruction);
+					break;
 				case Code.Brtrue:
 				case Code.Brtrue_S:
-					ctx.Stack.Pop();
+					Branch(Brtrue.Create, ctx, branches, instruction, out nextInstruction);
 					break;
 				case Code.Call:
 				case Code.Callvirt:
@@ -646,9 +656,26 @@ namespace Flint.Vm
 			}
 		}
 
-		delegate Ast ConditionProvider(SequencePoint sp, Ast left, Ast right);
+		delegate Ast UnaryConditionProvider(SequencePoint sp, Ast value);
 
-		private static void Branch(ConditionProvider prov, RoutineContext ctx, List<RoutineContext> branches, Instruction instruction, out Instruction nextInstruction)
+		private static void Branch(UnaryConditionProvider prov, RoutineContext ctx, List<RoutineContext> branches, Instruction instruction, out Instruction nextInstruction)
+		{
+			nextInstruction = (Instruction)instruction.Operand;
+
+			var sp = GetSequencePoint(ctx, instruction);
+			var value = ctx.Stack.Pop();
+			var condition = prov(sp, value);
+
+			var altBranch = new RoutineContext(ctx, instruction.Next);
+			branches.Add(altBranch);
+
+			ctx.Conditions.Add(new Condition(condition, 1));
+			altBranch.Conditions.Add(new Condition(condition, 0));
+		}
+
+		delegate Ast BinaryConditionProvider(SequencePoint sp, Ast left, Ast right);
+
+		private static void Branch(BinaryConditionProvider prov, RoutineContext ctx, List<RoutineContext> branches, Instruction instruction, out Instruction nextInstruction)
 		{
 			nextInstruction = (Instruction)instruction.Operand;
 

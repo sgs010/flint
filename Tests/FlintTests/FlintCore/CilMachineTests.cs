@@ -214,235 +214,541 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void Bge()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Bge, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Bge, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bge(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bge(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Bge_S()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Bge_S, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Bge_S, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bge(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bge(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Bge_Un()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Bge_Un, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Bge_Un, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bge(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bge(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Bge_Un_S()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Bge_Un_S, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Bge_Un_S, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bge(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bge(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Bgt()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Bgt, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Bgt, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bgt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bgt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Bgt_S()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Bgt_S, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Bgt_S, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bgt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bgt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Bgt_Un()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Bgt_Un, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Bgt_Un, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bgt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bgt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
-		public void Bgt_Un_s()
+		public void Bgt_Un_S()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Bgt_Un_S, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Bgt_Un_S, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bgt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bgt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Ble()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Ble, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Ble, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Ble(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Ble(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Ble_S()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Ble_S, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Ble_S, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Ble(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Ble(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Ble_Un()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Ble_Un, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Ble_Un, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Ble(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Ble(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Ble_Un_S()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Ble_Un_S, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Ble_Un_S, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Ble(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Ble(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Blt()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Blt, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Blt, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Blt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Blt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Blt_S()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Blt_S, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Blt_S, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Blt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Blt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Blt_Un()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Blt_Un, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Blt_Un, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Blt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Blt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Blt_Un_S()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Blt_Un_S, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Blt_Un_S, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Blt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Blt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Bne_Un()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Bne_Un, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Bne_Un, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bne(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bne(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
 		public void Bne_Un_S()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Bne_Un_S, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 			ctx.Stack.Push(new Cil.Int32(SP, 1));
 			ctx.Stack.Push(new Cil.Int32(SP, 2));
-			var instruction = Instruction.Create(OpCodes.Bne_Un_S, Instruction.Create(OpCodes.Nop));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bne(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Bne(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					0));
 		}
 
 		[TestMethod]
@@ -461,23 +767,39 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void Br()
 		{
-			var ctx = new CilMachine.RoutineContext();
-			var instruction = Instruction.Create(OpCodes.Br, Instruction.Create(OpCodes.Nop));
+			var nop = Instruction.Create(OpCodes.Nop); // next instruction
+			var dup = Instruction.Create(OpCodes.Dup); // adjacent instruction
+			var instruction = Instruction.Create(OpCodes.Br, nop);
+			instruction.Next = dup;
 
-			CilMachine.Eval(ctx, instruction);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 
-			Assert.IsTrue(IsEmpty(ctx));
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
+
+			nextInstruction.AssertEquals(nop);
+			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertEmpty();
+			branches.AssertEmpty();
 		}
 
 		[TestMethod]
 		public void Br_S()
 		{
-			var ctx = new CilMachine.RoutineContext();
-			var instruction = Instruction.Create(OpCodes.Br_S, Instruction.Create(OpCodes.Nop));
+			var nop = Instruction.Create(OpCodes.Nop); // next instruction
+			var dup = Instruction.Create(OpCodes.Dup); // adjacent instruction
+			var instruction = Instruction.Create(OpCodes.Br_S, nop);
+			instruction.Next = dup;
 
-			CilMachine.Eval(ctx, instruction);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 
-			Assert.IsTrue(IsEmpty(ctx));
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
+
+			nextInstruction.AssertEquals(nop);
+			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertEmpty();
+			branches.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -494,49 +816,117 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void Brfalse()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Brfalse, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 0));
-			var instruction = Instruction.Create(OpCodes.Brfalse, Instruction.Create(OpCodes.Nop));
+			ctx.Stack.Push(new Cil.Int32(SP, 42));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Brfalse(null, new Cil.Int32(SP, 42)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Brfalse(null, new Cil.Int32(SP, 42)),
+					0));
 		}
 
 		[TestMethod]
 		public void Brfalse_S()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Brfalse_S, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 0));
-			var instruction = Instruction.Create(OpCodes.Brfalse_S, Instruction.Create(OpCodes.Nop));
+			ctx.Stack.Push(new Cil.Int32(SP, 42));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Brfalse(null, new Cil.Int32(SP, 42)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Brfalse(null, new Cil.Int32(SP, 42)),
+					0));
 		}
 
 		[TestMethod]
 		public void Brtrue()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Brtrue, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 0));
-			var instruction = Instruction.Create(OpCodes.Brtrue, Instruction.Create(OpCodes.Nop));
+			ctx.Stack.Push(new Cil.Int32(SP, 42));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Brtrue(null, new Cil.Int32(SP, 42)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Brtrue(null, new Cil.Int32(SP, 42)),
+					0));
 		}
 
 		[TestMethod]
 		public void Brtrue_S()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // true branch
+			var dup = Instruction.Create(OpCodes.Dup); // false branch
+			var instruction = Instruction.Create(OpCodes.Brtrue_S, nop);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 0));
-			var instruction = Instruction.Create(OpCodes.Brtrue_S, Instruction.Create(OpCodes.Nop));
+			ctx.Stack.Push(new Cil.Int32(SP, 42));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Brtrue(null, new Cil.Int32(SP, 42)),
+					1));
+
+			var altBranch = branches[0];
+			altBranch.StartInstruction.AssertEquals(dup);
+			altBranch.Conditions.AssertContains(
+				new Condition(
+					new Cil.Brtrue(null, new Cil.Int32(SP, 42)),
+					0));
 		}
 
 		[TestMethod]
