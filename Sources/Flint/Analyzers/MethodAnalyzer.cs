@@ -2,6 +2,7 @@
 using System.Text;
 using Flint.Common;
 using Flint.Vm;
+using Flint.Vm.Cil;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -22,15 +23,23 @@ namespace Flint.Analyzers
 			}
 		}
 
-		public static MethodReference GetMethod(AssemblyDefinition asm, string methodFullName)
-		{
-			return asm.MethodOuterCalls.Keys.Where(x => x.HasFullName(methodFullName)).FirstOrDefault();
-		}
-
 		public static List<List<CallInfo>> GetCallChains(AssemblyDefinition asm, MethodReference start, string methodFullName)
 		{
-			var end = GetMethod(asm, methodFullName);
-			return GetCallChains(asm, start, end);
+			if (start == null)
+				return [];
+
+			var end = asm.MethodOuterCalls.Keys.Where(x => x.HasFullName(methodFullName)).ToList();
+			if (end.Count == 0)
+				return [];
+
+			List<List<CallInfo>> chains = [];
+			var root = new CallInfo(start, null);
+			var visitedMethods = new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance);
+			foreach (var m in end)
+			{
+				PopulateCallChains(asm, m, 0, root, null, visitedMethods, chains);
+			}
+			return chains;
 		}
 
 		public static List<List<CallInfo>> GetCallChains(AssemblyDefinition asm, MethodReference start, MethodReference end)
@@ -130,6 +139,7 @@ namespace Flint.Analyzers
 				{
 					if (visitedMethods.Contains(innerCall.Method))
 						continue;
+					visitedMethods.Add(innerCall.Method);
 
 					if (asm.InterfaceImplementations.TryGetValue(innerCall.Method.DeclaringType, out var implTypes))
 					{

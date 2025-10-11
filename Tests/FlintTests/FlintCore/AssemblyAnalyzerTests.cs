@@ -1,4 +1,5 @@
-﻿using Flint.Analyzers;
+﻿using System.Reflection;
+using Flint.Analyzers;
 
 namespace FlintTests.FlintCore
 {
@@ -44,6 +45,32 @@ namespace FlintTests.FlintCore
 				.SelectMany(x => x.Value)
 				.Where(x => x.FullName == "Samples.Repository")
 				.AssertNotEmpty();
+		}
+
+		[TestMethod]
+		public void MethodInnerCalls()
+		{
+			// keys should be unique
+
+			var hasDuplicates = ASM.MethodInnerCalls.Keys
+				.GroupBy(x => x.MetadataToken)
+				.Where(x => x.Count() > 1)
+				.Any();
+
+			Assert.IsFalse(hasDuplicates);
+		}
+
+		[TestMethod]
+		public void MethodOuterCalls()
+		{
+			// keys should be unique
+
+			var hasDuplicates = ASM.MethodOuterCalls.Keys
+				.GroupBy(x => x.MetadataToken)
+				.Where(x => x.Count() > 1)
+				.Any();
+
+			Assert.IsFalse(hasDuplicates);
 		}
 	}
 }

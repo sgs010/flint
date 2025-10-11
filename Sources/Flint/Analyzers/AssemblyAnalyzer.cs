@@ -128,7 +128,7 @@ namespace Flint.Analyzers
 
 			public int GetHashCode(Call obj)
 			{
-				return obj.GetHashCode();
+				return HashCode.Combine(obj.Method, obj.SequencePoint);
 			}
 		}
 

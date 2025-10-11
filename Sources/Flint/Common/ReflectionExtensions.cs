@@ -10,12 +10,12 @@ namespace Flint.Common
 
 		public bool Equals(MethodReference x, MethodReference y)
 		{
-			return ReflectionExtensions.AreEqual(x, y);
+			return x.MetadataToken.Equals(y.MetadataToken);
 		}
 
 		public int GetHashCode(MethodReference obj)
 		{
-			return HashCode.Combine(obj);
+			return obj.MetadataToken.GetHashCode();
 		}
 	}
 	#endregion
@@ -143,12 +143,12 @@ namespace Flint.Common
 
 			public bool Equals(ParameterDefinition x, ParameterDefinition y)
 			{
-				return AreEqual(x.ParameterType, y.ParameterType);
+				return x.ParameterType.MetadataToken.Equals(y.ParameterType.MetadataToken);
 			}
 
 			public int GetHashCode(ParameterDefinition obj)
 			{
-				return obj.ParameterType.GetHashCode();
+				return obj.ParameterType.MetadataToken.GetHashCode();
 			}
 		}
 		#endregion
