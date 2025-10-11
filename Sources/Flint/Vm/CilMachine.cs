@@ -522,6 +522,7 @@ namespace Flint.Vm
 					break;
 				case Code.Leave:
 				case Code.Leave_S:
+					nextInstruction = (Instruction)instruction.Operand;
 					break;
 				case Code.Localloc:
 					Localloc(ctx, instruction);
@@ -568,6 +569,7 @@ namespace Flint.Vm
 					break;
 				case Code.Ret:
 				case Code.Rethrow:
+					nextInstruction = null;
 					break;
 				case Code.Shl:
 					Shl(ctx, instruction);
@@ -633,12 +635,13 @@ namespace Flint.Vm
 					Sub(ctx, instruction);
 					break;
 				case Code.Switch:
-					ctx.Stack.Pop();
+					Switch(ctx, branches, instruction, out nextInstruction);
 					break;
 				case Code.Tail:
 					break;
 				case Code.Throw:
 					ctx.Stack.Pop();
+					nextInstruction = null;
 					break;
 				case Code.Unaligned:
 					Unaligned(ctx, instruction);
@@ -667,10 +670,10 @@ namespace Flint.Vm
 			var condition = prov(sp, value);
 
 			var altBranch = new RoutineContext(ctx, instruction.Next);
+			altBranch.Conditions.Add(new Condition(condition, 0));
 			branches.Add(altBranch);
 
 			ctx.Conditions.Add(new Condition(condition, 1));
-			altBranch.Conditions.Add(new Condition(condition, 0));
 		}
 
 		delegate Ast BinaryConditionProvider(SequencePoint sp, Ast left, Ast right);
@@ -685,10 +688,28 @@ namespace Flint.Vm
 			var condition = prov(sp, left, right);
 
 			var altBranch = new RoutineContext(ctx, instruction.Next);
+			altBranch.Conditions.Add(new Condition(condition, 0));
 			branches.Add(altBranch);
 
 			ctx.Conditions.Add(new Condition(condition, 1));
-			altBranch.Conditions.Add(new Condition(condition, 0));
+		}
+
+		private static void Switch(RoutineContext ctx, List<RoutineContext> branches, Instruction instruction, out Instruction nextInstruction)
+		{
+			var sp = GetSequencePoint(ctx, instruction);
+			var value = ctx.Stack.Pop();
+			var condition = new Cil.Switch(sp, value);
+			
+			var tbl = (Instruction[])instruction.Operand;
+			for (var i = 1; i < tbl.Length; ++i)
+			{
+				var nthBranch = new RoutineContext(ctx, tbl[i]);
+				nthBranch.Conditions.Add(new Condition(condition, i));
+				branches.Add(nthBranch);
+			}
+
+			ctx.Conditions.Add(new Condition(condition, 0));
+			nextInstruction = tbl[0];
 		}
 
 		private static Ast[] PopArgs(RoutineContext ctx, MethodReference method)

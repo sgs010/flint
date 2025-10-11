@@ -1,12 +1,16 @@
-﻿using System;
-using System.Text;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
+﻿using System.Text;
 
 namespace FlintTests
 {
 	static class AssertExtensions
 	{
 		#region Interface
+		public static void AssertNull<T>(this T value) where T : class
+		{
+			if (value != null)
+				Assert.Fail("Value is not null.");
+		}
+
 		public static void AssertNotEmpty<T>(this IEnumerable<T> col)
 		{
 			if (col.Any() == false)

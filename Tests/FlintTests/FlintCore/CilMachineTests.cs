@@ -2661,23 +2661,39 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void Leave()
 		{
-			var ctx = new CilMachine.RoutineContext();
-			var instruction = Instruction.Create(OpCodes.Leave, Instruction.Create(OpCodes.Nop));
+			var nop = Instruction.Create(OpCodes.Nop); // next instruction
+			var dup = Instruction.Create(OpCodes.Dup); // adjacent instruction
+			var instruction = Instruction.Create(OpCodes.Leave, nop);
+			instruction.Next = dup;
 
-			CilMachine.Eval(ctx, instruction);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 
-			Assert.IsTrue(IsEmpty(ctx));
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
+
+			nextInstruction.AssertEquals(nop);
+			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertEmpty();
+			branches.AssertEmpty();
 		}
 
 		[TestMethod]
 		public void Leave_S()
 		{
-			var ctx = new CilMachine.RoutineContext();
-			var instruction = Instruction.Create(OpCodes.Leave_S, Instruction.Create(OpCodes.Nop));
+			var nop = Instruction.Create(OpCodes.Nop); // next instruction
+			var dup = Instruction.Create(OpCodes.Dup); // adjacent instruction
+			var instruction = Instruction.Create(OpCodes.Leave_S, nop);
+			instruction.Next = dup;
 
-			CilMachine.Eval(ctx, instruction);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 
-			Assert.IsTrue(IsEmpty(ctx));
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
+
+			nextInstruction.AssertEquals(nop);
+			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertEmpty();
+			branches.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -2910,23 +2926,37 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void Ret()
 		{
-			var ctx = new CilMachine.RoutineContext();
+			var dup = Instruction.Create(OpCodes.Dup); // adjacent instruction
 			var instruction = Instruction.Create(OpCodes.Ret);
+			instruction.Next = dup;
 
-			CilMachine.Eval(ctx, instruction);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 
-			Assert.IsTrue(IsEmpty(ctx));
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
+
+			nextInstruction.AssertNull();
+			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertEmpty();
+			branches.AssertEmpty();
 		}
 
 		[TestMethod]
 		public void Rethrow()
 		{
-			var ctx = new CilMachine.RoutineContext();
+			var dup = Instruction.Create(OpCodes.Dup); // adjacent instruction
 			var instruction = Instruction.Create(OpCodes.Rethrow);
+			instruction.Next = dup;
 
-			CilMachine.Eval(ctx, instruction);
+			var ctx = new CilMachine.RoutineContext(stackSize: 2);
 
-			Assert.IsTrue(IsEmpty(ctx));
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
+
+			nextInstruction.AssertNull();
+			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertEmpty();
+			branches.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -3429,13 +3459,44 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void Switch()
 		{
+			var nop = Instruction.Create(OpCodes.Nop); // 0 branch
+			var dup = Instruction.Create(OpCodes.Dup); // 1 branch
+			var ret = Instruction.Create(OpCodes.Ret); // 2 instruction
+			var pop = Instruction.Create(OpCodes.Pop); // adjacent instruction
+			var instruction = Instruction.Create(OpCodes.Switch, [nop, dup, ret]);
+			instruction.Next = pop;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 0));
-			var instruction = Instruction.Create(OpCodes.Switch, [Instruction.Create(OpCodes.Nop)]);
+			ctx.Stack.Push(new Cil.Int32(SP, 1));
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			branches.AssertCount(2);
+
+			// 0 branch
+			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertContains(
+				new Condition(
+					new Cil.Switch(null, new Cil.Int32(SP, 1)),
+					0));
+
+			// 1 branch
+			var branch1 = branches[0];
+			branch1.StartInstruction.AssertEquals(dup);
+			branch1.Conditions.AssertContains(
+				new Condition(
+					new Cil.Switch(null, new Cil.Int32(SP, 1)),
+					1));
+
+			// 2 branch
+			var branch2 = branches[1];
+			branch2.StartInstruction.AssertEquals(ret);
+			branch2.Conditions.AssertContains(
+				new Condition(
+					new Cil.Switch(null, new Cil.Int32(SP, 1)),
+					2));
 		}
 
 		[TestMethod]
@@ -3452,13 +3513,20 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void Throw()
 		{
+			var dup = Instruction.Create(OpCodes.Dup); // adjacent instruction
+			var instruction = Instruction.Create(OpCodes.Throw);
+			instruction.Next = dup;
+
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
 			ctx.Stack.Push(Cil.Exception.Instance);
-			var instruction = Instruction.Create(OpCodes.Throw);
 
-			CilMachine.Eval(ctx, instruction);
+			var branches = new List<CilMachine.RoutineContext>();
+			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
 
+			nextInstruction.AssertNull();
 			ctx.Stack.AssertEmpty();
+			ctx.Conditions.AssertEmpty();
+			branches.AssertEmpty();
 		}
 
 		[TestMethod]

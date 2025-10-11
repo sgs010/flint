@@ -80,8 +80,8 @@ namespace Flint.Analyzers
 				PopulateMethods(t, methodMap);
 			}
 
-			var innerCallMap = new Dictionary<MethodReference, List<CallInfo>>(MethodReferenceEqualityComparer.Instance);
-			var outerCallMap = new Dictionary<MethodReference, List<CallInfo>>(MethodReferenceEqualityComparer.Instance);
+			var innerCallMap = new Dictionary<MethodReference, HashSet<CallInfo>>(MethodReferenceEqualityComparer.Instance);
+			var outerCallMap = new Dictionary<MethodReference, HashSet<CallInfo>>(MethodReferenceEqualityComparer.Instance);
 			foreach (var m in methodMap)
 			{
 				PopulateCalls(m.Key, m.Value, innerCallMap, outerCallMap);
@@ -181,13 +181,13 @@ namespace Flint.Analyzers
 					continue; // do not process auto generated methods
 
 				var expressions = MethodAnalyzer.EvalRaw(method);
-				methodMap.Add(method, expressions);
+				methodMap.Add(method, [.. expressions.Distinct()]);
 			}
 		}
 
-		private static void PopulateCalls(MethodDefinition method, ImmutableArray<Ast> expressions, Dictionary<MethodReference, List<CallInfo>> innerCallMap, Dictionary<MethodReference, List<CallInfo>> outerCallMap)
+		private static void PopulateCalls(MethodDefinition method, ImmutableArray<Ast> expressions, Dictionary<MethodReference, HashSet<CallInfo>> innerCallMap, Dictionary<MethodReference, HashSet<CallInfo>> outerCallMap)
 		{
-			var innerCalls = new List<CallInfo>();
+			var innerCalls = new HashSet<CallInfo>();
 			innerCallMap.Add(method, innerCalls);
 
 			foreach (var call in expressions.OfCall().Distinct(CallCmp.Instance))
