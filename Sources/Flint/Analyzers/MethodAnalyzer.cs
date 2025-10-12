@@ -9,7 +9,7 @@ namespace Flint.Analyzers
 	internal class MethodAnalyzer
 	{
 		#region Interface
-		public static IEnumerable<MethodDefinition> GetMethods(AssemblyDefinition asm, string className = null, string methodName = null)
+		public static IEnumerable<MethodDefinition> GetMethods(AssemblyInfo asm, string className = null, string methodName = null)
 		{
 			foreach (var method in asm.MethodExpressions.Keys)
 			{
@@ -21,7 +21,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		public static List<List<CallInfo>> GetCallChains(AssemblyDefinition asm, MethodReference start, string methodFullName)
+		public static List<List<CallInfo>> GetCallChains(AssemblyInfo asm, MethodReference start, string methodFullName)
 		{
 			if (start == null)
 				return [];
@@ -40,7 +40,7 @@ namespace Flint.Analyzers
 			return chains;
 		}
 
-		public static List<List<CallInfo>> GetCallChains(AssemblyDefinition asm, MethodReference start, MethodReference end)
+		public static List<List<CallInfo>> GetCallChains(AssemblyInfo asm, MethodReference start, MethodReference end)
 		{
 			if (start == null)
 				return [];
@@ -75,7 +75,7 @@ namespace Flint.Analyzers
 			return [.. expressions];
 		}
 
-		public static ImmutableArray<Ast> Eval(AssemblyDefinition asm, MethodDefinition method)
+		public static ImmutableArray<Ast> Eval(AssemblyInfo asm, MethodDefinition method)
 		{
 			if (asm.MethodExpressions.TryGetValue(method, out var expr))
 				return expr;
@@ -116,7 +116,7 @@ namespace Flint.Analyzers
 		#region Implementation
 		record CallChainNode(CallChainNode Parent, CallInfo Call);
 
-		private static void PopulateCallChains(AssemblyDefinition asm, MethodReference target, int level, CallInfo call, CallChainNode parent, HashSet<MethodReference> visitedMethods, List<List<CallInfo>> chains)
+		private static void PopulateCallChains(AssemblyInfo asm, MethodReference target, int level, CallInfo call, CallChainNode parent, HashSet<MethodReference> visitedMethods, List<List<CallInfo>> chains)
 		{
 			if (ReflectionExtensions.AreEqual(call.Method, target))
 			{

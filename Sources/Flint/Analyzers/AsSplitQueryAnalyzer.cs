@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Flint.Vm;
 using Match = Flint.Vm.Match;
 
 namespace Flint.Analyzers
@@ -6,21 +7,21 @@ namespace Flint.Analyzers
 	internal class AsSplitQueryAnalyzer
 	{
 		#region Interface
-		public static void Run(IAnalyzerContext ctx, AssemblyDefinition asm, string className = null, string methodName = null)
+		public static void Run(IAnalyzerContext ctx, AssemblyInfo asm, string className = null, string methodName = null)
 		{
-			var entities = EntityAnalyzer.Analyze(asm, className, methodName);
-			foreach (var entity in entities)
+			var queries = QueryAnalyzer.Analyze(asm, className, methodName);
+			foreach (var query in queries)
 			{
-				if (entity.Properties.Length == 0)
+				if (query.Entity.Properties.Length == 0)
 					continue; // no properties accessed
 
 				// determine how many child entities are accessed
-				var childCount = entity.Properties.Count(x => x.Entity != null);
+				var childCount = query.Entity.Properties.Count(x => x.Entity != null);
 				if (childCount < 2)
 					continue; // advise AsSplitQuery for 2 or more child entities
 
 				// check if AsSplitQuery is already present
-				var (_, ok) = entity.Root.Match(
+				var ok = query.Roots.AnyMatch(
 					new Match.Call(null, "Microsoft.EntityFrameworkCore.RelationalQueryableExtensions.AsSplitQuery", Match.Any.Args),
 					true);
 				if (ok)
@@ -29,7 +30,7 @@ namespace Flint.Analyzers
 				// report issue
 				var sb = new StringBuilder();
 				sb.Append("consider adding AsSplitQuery() in method ");
-				MethodAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.CilPoint);
+				MethodAnalyzer.PrettyPrintMethod(sb, query.Method, query.CilPoint);
 				ctx.Log(sb.ToString());
 			}
 		}

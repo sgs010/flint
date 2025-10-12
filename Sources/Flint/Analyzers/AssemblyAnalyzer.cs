@@ -4,7 +4,6 @@ using Flint.Common;
 using Flint.Vm;
 using Flint.Vm.Cil;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Cil = Flint.Vm.Cil;
 
 namespace Flint.Analyzers
@@ -13,8 +12,8 @@ namespace Flint.Analyzers
 	record CallInfo(MethodReference Method, CilPoint CilPoint);
 	#endregion
 
-	#region AssemblyDefinition
-	sealed class AssemblyDefinition : Disposable
+	#region AssemblyInfo
+	sealed class AssemblyInfo : Disposable
 	{
 		public required ModuleDefinition Module { get; init; }
 		public required FrozenSet<TypeDefinition> EntityTypes { get; init; }
@@ -38,7 +37,7 @@ namespace Flint.Analyzers
 	internal class AssemblyAnalyzer
 	{
 		#region Interface
-		public static AssemblyDefinition Load(string path)
+		public static AssemblyInfo Load(string path)
 		{
 			Stream dllStream = null, pdbStream = null;
 			try
@@ -58,7 +57,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		public static AssemblyDefinition Load(Stream dllStream, Stream pdbStream)
+		public static AssemblyInfo Load(Stream dllStream, Stream pdbStream)
 		{
 			var parameters = new ReaderParameters { AssemblyResolver = new AssemblyResolver() };
 			if (pdbStream != null)
@@ -87,7 +86,7 @@ namespace Flint.Analyzers
 				PopulateCalls(m.Key, m.Value, innerCallMap, outerCallMap);
 			}
 
-			return new AssemblyDefinition
+			return new AssemblyInfo
 			{
 				Module = module,
 				EntityTypes = entityMap.ToFrozenSet(),

@@ -6,7 +6,7 @@ namespace FlintTests.FlintCore
 	[TestClass]
 	public class AssemblyAnalyzerTests
 	{
-		private static AssemblyDefinition ASM;
+		private static AssemblyInfo ASM;
 
 		[ClassInitialize]
 		public static void Setup(TestContext ctx)
@@ -71,6 +71,31 @@ namespace FlintTests.FlintCore
 				.Any();
 
 			Assert.IsFalse(hasDuplicates);
+		}
+
+		[TestMethod]
+		public void MethodExpressions_UniqueKeys()
+		{
+			// keys should be unique
+
+			var hasDuplicates = ASM.MethodExpressions.Keys
+				.GroupBy(x => x.MetadataToken)
+				.Where(x => x.Count() > 1)
+				.Any();
+
+			Assert.IsFalse(hasDuplicates);
+		}
+
+		[TestMethod]
+		public void MethodExpressions_UniqueExpressions()
+		{
+			// expressions should be unique
+
+			foreach (var expr in ASM.MethodExpressions.Values)
+			{
+				var distinctCount = expr.Distinct().Count();
+				distinctCount.AssertEquals(expr.Length);
+			}
 		}
 	}
 }

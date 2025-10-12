@@ -6,7 +6,7 @@ namespace Flint.Analyzers
 	internal class OutboxAnalyzer
 	{
 		#region Interface
-		public static void Run(IAnalyzerContext ctx, AssemblyDefinition asm, string className = null, string methodName = null)
+		public static void Run(IAnalyzerContext ctx, AssemblyInfo asm, string className = null, string methodName = null)
 		{
 			foreach (var method in MethodAnalyzer.GetMethods(asm, className, methodName))
 			{
@@ -16,7 +16,7 @@ namespace Flint.Analyzers
 		#endregion
 
 		#region Implementation
-		private static void Analyze(IAnalyzerContext ctx, AssemblyDefinition asm, MethodDefinition method)
+		private static void Analyze(IAnalyzerContext ctx, AssemblyInfo asm, MethodDefinition method)
 		{
 			// general idea:
 			// 1. look for direct or nested call of Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync

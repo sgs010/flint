@@ -4,6 +4,17 @@ namespace Flint.Vm
 {
 	static class AstExtensions
 	{
+		public static bool AnyMatch(this IEnumerable<Ast> expressions, Ast pattern, bool recursive = false)
+		{
+			foreach (var expr in expressions)
+			{
+				var (_, ok) = expr.Match(pattern, recursive);
+				if (ok)
+					return true;
+			}
+			return false;
+		}
+
 		public static IEnumerable<Cil.Call> OfCall(this Ast expression, Ast instance, string methodName)
 		{
 			var (captures, ok) = expression.Match(

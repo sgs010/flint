@@ -5,7 +5,7 @@ namespace FlintTests.FlintCore
 	[TestClass]
 	public class AsSplitQueryAnalyzerTests
 	{
-		private static AssemblyDefinition ASM;
+		private static AssemblyInfo ASM;
 
 		[ClassInitialize]
 		public static void Setup(TestContext ctx)

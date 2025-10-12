@@ -5,7 +5,7 @@ namespace FlintTests.FlintCore
 	[TestClass]
 	public class AsNoTrackingAnalyzerTests
 	{
-		private static AssemblyDefinition ASM;
+		private static AssemblyInfo ASM;
 
 		[ClassInitialize]
 		public static void Setup(TestContext ctx)

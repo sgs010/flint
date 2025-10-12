@@ -23,22 +23,22 @@ namespace Flint
 		#endregion
 
 		#region Implementation
-		private static ImmutableArray<string> Analyze(AssemblyDefinition asm)
+		private static ImmutableArray<string> Analyze(AssemblyInfo asm)
 		{
 			var ctx = new AnalyzerContext();
 
-			//Parallel.Invoke(
-			//	() => ProjectionAnalyzer.Run(ctx, asm),
-			//	() => IncludeAnalyzer.Run(ctx, asm),
-			//	() => AsNoTrackingAnalyzer.Run(ctx, asm),
-			//	() => AsSplitQueryAnalyzer.Run(ctx, asm),
-			//	() => OutboxAnalyzer.Run(ctx, asm));
+			Parallel.Invoke(
+				() => ProjectionAnalyzer.Run(ctx, asm),
+				() => IncludeAnalyzer.Run(ctx, asm),
+				() => AsNoTrackingAnalyzer.Run(ctx, asm),
+				() => AsSplitQueryAnalyzer.Run(ctx, asm),
+				() => OutboxAnalyzer.Run(ctx, asm));
 
-			ProjectionAnalyzer.Run(ctx, asm);
-			IncludeAnalyzer.Run(ctx, asm);
-			AsNoTrackingAnalyzer.Run(ctx, asm);
-			AsSplitQueryAnalyzer.Run(ctx, asm);
-			OutboxAnalyzer.Run(ctx, asm);
+			//ProjectionAnalyzer.Run(ctx, asm);
+			//IncludeAnalyzer.Run(ctx, asm);
+			//AsNoTrackingAnalyzer.Run(ctx, asm);
+			//AsSplitQueryAnalyzer.Run(ctx, asm);
+			//OutboxAnalyzer.Run(ctx, asm);
 
 			return [.. ctx.Output];
 		}

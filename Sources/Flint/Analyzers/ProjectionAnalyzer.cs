@@ -6,31 +6,31 @@ namespace Flint.Analyzers
 	internal class ProjectionAnalyzer
 	{
 		#region Interface
-		public static void Run(IAnalyzerContext ctx, AssemblyDefinition asm, string className = null, string methodName = null)
+		public static void Run(IAnalyzerContext ctx, AssemblyInfo asm, string className = null, string methodName = null)
 		{
-			var entities = EntityAnalyzer.Analyze(asm, className, methodName);
-			foreach (var entity in entities)
+			var queries = QueryAnalyzer.Analyze(asm, className, methodName);
+			foreach (var query in queries)
 			{
-				if (entity.Properties.Length == 0)
+				if (query.Entity.Properties.Length == 0)
 					continue; // no properties accessed
-				if (AllProperiesAreAccessed(entity))
+				if (AllProperiesAreAccessed(query.Entity))
 					continue; // do not advise a projection if all properties are accessed
-				if (EntityAnalyzer.SomePropertiesAreChanged(entity))
+				if (QueryAnalyzer.SomePropertiesAreChanged(query.Entity))
 					continue; // do not advise a projection if entity is changed
 
 				// report issue
 				var sb = new StringBuilder();
 				sb.Append("consider using projection { ");
-				PrettyPrintEntity(sb, entity, null);
+				PrettyPrintEntity(sb, query.Entity, null);
 				sb.Append(" } in method ");
-				MethodAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.CilPoint);
+				MethodAnalyzer.PrettyPrintMethod(sb, query.Method, query.CilPoint);
 				ctx.Log(sb.ToString());
 			}
 		}
 		#endregion
 
 		#region Implementation
-		private static bool AllProperiesAreAccessed(EntityDefinition entity)
+		private static bool AllProperiesAreAccessed(EntityInfo entity)
 		{
 			if (entity.Type.Properties.Count != entity.Properties.Length)
 				return false;
@@ -43,7 +43,7 @@ namespace Flint.Analyzers
 			return true;
 		}
 
-		private static void PrettyPrintEntity(StringBuilder sb, EntityDefinition entity, string prefix)
+		private static void PrettyPrintEntity(StringBuilder sb, EntityInfo entity, string prefix)
 		{
 			var needSeparator = false;
 			foreach (var prop in entity.Properties)
