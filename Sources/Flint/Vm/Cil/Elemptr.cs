@@ -1,12 +1,10 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class Elemptr : Ast
 	{
 		public readonly Ast Array;
 		public readonly Ast Index;
-		public Elemptr(SequencePoint sp, Ast array, Ast index) : base(sp)
+		public Elemptr(CilPoint pt, Ast array, Ast index) : base(pt)
 		{
 			Array = array;
 			Index = index;

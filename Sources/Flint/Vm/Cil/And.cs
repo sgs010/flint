@@ -1,12 +1,10 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class And : Ast
 	{
 		public readonly Ast Left;
 		public readonly Ast Right;
-		public And(SequencePoint sp, Ast left, Ast right) : base(sp)
+		public And(CilPoint pt, Ast left, Ast right) : base(pt)
 		{
 			Left = left;
 			Right = right;

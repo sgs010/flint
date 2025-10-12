@@ -1,11 +1,9 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class Box : Ast
 	{
 		public readonly Ast Value;
-		public Box(SequencePoint sp, Ast value) : base(sp)
+		public Box(CilPoint pt, Ast value) : base(pt)
 		{
 			Value = value;
 		}

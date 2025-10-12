@@ -1,11 +1,9 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class Int32 : Ast
 	{
 		public readonly int Value;
-		public Int32(SequencePoint sp, int value) : base(sp)
+		public Int32(CilPoint pt, int value) : base(pt)
 		{
 			Value = value;
 		}

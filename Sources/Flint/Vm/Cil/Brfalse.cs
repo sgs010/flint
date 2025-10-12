@@ -1,18 +1,16 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class Brfalse : Ast
 	{
 		public readonly Ast Value;
-		public Brfalse(SequencePoint sp, Ast val) : base(sp)
+		public Brfalse(CilPoint pt, Ast val) : base(pt)
 		{
 			Value = val;
 		}
 
-		public static Brfalse Create(SequencePoint sp, Ast val)
+		public static Brfalse Create(CilPoint pt, Ast val)
 		{
-			return new Brfalse(sp, val);
+			return new Brfalse(pt, val);
 		}
 
 		public override IEnumerable<Ast> GetChildren()

@@ -1,11 +1,9 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class Not : Ast
 	{
 		public readonly Ast Value;
-		public Not(SequencePoint sp, Ast value) : base(sp)
+		public Not(CilPoint pt, Ast value) : base(pt)
 		{
 			Value = value;
 		}

@@ -1,13 +1,11 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm
+﻿namespace Flint.Vm
 {
 	abstract class Ast : IEquatable<Ast>
 	{
-		public readonly SequencePoint SequencePoint;
-		protected Ast(SequencePoint sp)
+		public readonly CilPoint CilPoint;
+		protected Ast(CilPoint pt)
 		{
-			SequencePoint = sp;
+			CilPoint = pt;
 		}
 
 		public abstract IEnumerable<Ast> GetChildren();

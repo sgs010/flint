@@ -10,7 +10,7 @@ using Cil = Flint.Vm.Cil;
 namespace Flint.Analyzers
 {
 	#region CallInfo
-	record CallInfo(MethodReference Method, SequencePoint SequencePoint);
+	record CallInfo(MethodReference Method, CilPoint CilPoint);
 	#endregion
 
 	#region AssemblyDefinition
@@ -122,13 +122,12 @@ namespace Flint.Analyzers
 
 			public bool Equals(Call x, Call y)
 			{
-				return ReflectionExtensions.AreEqual(x.Method, y.Method)
-					&& ReflectionExtensions.AreEqual(x.SequencePoint, y.SequencePoint);
+				return x.CilPoint.Equals(y.CilPoint);
 			}
 
 			public int GetHashCode(Call obj)
 			{
-				return HashCode.Combine(obj.Method, obj.SequencePoint);
+				return obj.CilPoint.GetHashCode();
 			}
 		}
 
@@ -192,14 +191,14 @@ namespace Flint.Analyzers
 
 			foreach (var call in expressions.OfCall().Distinct(CallCmp.Instance))
 			{
-				innerCalls.Add(new CallInfo(call.Method, call.SequencePoint));
+				innerCalls.Add(new CallInfo(call.Method, call.CilPoint));
 
 				if (outerCallMap.TryGetValue(call.Method, out var outerCalls) == false)
 				{
 					outerCalls = [];
 					outerCallMap.Add(call.Method, outerCalls);
 				}
-				outerCalls.Add(new CallInfo(method, call.SequencePoint));
+				outerCalls.Add(new CallInfo(method, call.CilPoint));
 			}
 		}
 		#endregion

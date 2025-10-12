@@ -1,12 +1,10 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class Shr : Ast
 	{
 		public readonly Ast Value;
 		public readonly Ast Count;
-		public Shr(SequencePoint sp, Ast value, Ast count) : base(sp)
+		public Shr(CilPoint pt, Ast value, Ast count) : base(pt)
 		{
 			Value = value;
 			Count = count;

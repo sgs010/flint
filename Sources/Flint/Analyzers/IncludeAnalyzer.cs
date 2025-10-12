@@ -29,7 +29,7 @@ namespace Flint.Analyzers
 					sb.Append("add ");
 					PrettyPrintIncludes(sb, chain);
 					sb.Append(" in method ");
-					MethodAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.SequencePoint);
+					MethodAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.CilPoint);
 					ctx.Log(sb.ToString());
 				}
 			}

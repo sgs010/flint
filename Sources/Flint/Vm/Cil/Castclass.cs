@@ -1,5 +1,4 @@
 ﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Flint.Vm.Cil
 {
@@ -7,7 +6,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly TypeReference Type;
 		public readonly Ast Value;
-		public Castclass(SequencePoint sp, TypeReference type, Ast value) : base(sp)
+		public Castclass(CilPoint pt, TypeReference type, Ast value) : base(pt)
 		{
 			Type = type;
 			Value = value;

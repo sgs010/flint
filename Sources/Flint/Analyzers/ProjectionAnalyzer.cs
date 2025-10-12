@@ -23,7 +23,7 @@ namespace Flint.Analyzers
 				sb.Append("consider using projection { ");
 				PrettyPrintEntity(sb, entity, null);
 				sb.Append(" } in method ");
-				MethodAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.SequencePoint);
+				MethodAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.CilPoint);
 				ctx.Log(sb.ToString());
 			}
 		}

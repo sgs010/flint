@@ -1,20 +1,18 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class Bgt : Ast
 	{
 		public readonly Ast Left;
 		public readonly Ast Right;
-		public Bgt(SequencePoint sp, Ast left, Ast right) : base(sp)
+		public Bgt(CilPoint pt, Ast left, Ast right) : base(pt)
 		{
 			Left = left;
 			Right = right;
 		}
 
-		public static Bgt Create(SequencePoint sp, Ast left, Ast right)
+		public static Bgt Create(CilPoint pt, Ast left, Ast right)
 		{
-			return new Bgt(sp, left, right);
+			return new Bgt(pt, left, right);
 		}
 
 		public override IEnumerable<Ast> GetChildren()

@@ -10,6 +10,7 @@ namespace FlintTests.FlintCore
 	public class CilMachineTests
 	{
 		static readonly SequencePoint SP = new SequencePoint(Instruction.Create(OpCodes.Nop), new Document("test"));
+		static readonly CilPoint PT = new CilPoint(null, 0, SP);
 
 		readonly int IntField = default;
 		readonly static string StringField = default;
@@ -86,56 +87,56 @@ namespace FlintTests.FlintCore
 		public void Add()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Add);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Add(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Add(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Add_Ovf()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Add_Ovf);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Add(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Add(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Add_Ovf_Un()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Add_Ovf_Un);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Add(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Add(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void And()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.And);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.And(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.And(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
@@ -148,7 +149,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Arglist(SP, method));
+			ctx.Stack.Peek().AssertEquals(new Cil.Arglist(PT, method));
 		}
 
 		[TestMethod]
@@ -160,8 +161,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1)); // left
-			ctx.Stack.Push(new Cil.Int32(SP, 2)); // right
+			ctx.Stack.Push(new Cil.Int32(PT, 1)); // left
+			ctx.Stack.Push(new Cil.Int32(PT, 2)); // right
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -170,14 +171,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Beq(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Beq(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Beq(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Beq(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -190,8 +191,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1)); // left
-			ctx.Stack.Push(new Cil.Int32(SP, 2)); // right
+			ctx.Stack.Push(new Cil.Int32(PT, 1)); // left
+			ctx.Stack.Push(new Cil.Int32(PT, 2)); // right
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -200,14 +201,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Beq(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Beq(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Beq(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Beq(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -220,8 +221,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -230,14 +231,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bge(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bge(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bge(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bge(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -250,8 +251,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -260,14 +261,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bge(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bge(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bge(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bge(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -280,8 +281,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -290,14 +291,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bge(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bge(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bge(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bge(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -310,8 +311,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -320,14 +321,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bge(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bge(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bge(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bge(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -340,8 +341,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -350,14 +351,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bgt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bgt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bgt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bgt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -370,8 +371,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -380,14 +381,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bgt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bgt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bgt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bgt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -400,8 +401,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -410,14 +411,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bgt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bgt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bgt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bgt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -430,8 +431,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -440,14 +441,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bgt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bgt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bgt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bgt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -460,8 +461,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -470,14 +471,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Ble(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Ble(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Ble(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Ble(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -490,8 +491,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -500,14 +501,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Ble(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Ble(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Ble(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Ble(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -520,8 +521,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -530,14 +531,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Ble(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Ble(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Ble(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Ble(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -550,8 +551,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -560,14 +561,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Ble(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Ble(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Ble(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Ble(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -580,8 +581,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -590,14 +591,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Blt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Blt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Blt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Blt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -610,8 +611,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -620,14 +621,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Blt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Blt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Blt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Blt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -640,8 +641,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -650,14 +651,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Blt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Blt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Blt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Blt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -670,8 +671,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -680,14 +681,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Blt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Blt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Blt(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Blt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -700,8 +701,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -710,14 +711,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bne(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bne(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bne(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bne(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -730,8 +731,8 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -740,14 +741,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bne(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bne(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Bne(null, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)),
+					new Cil.Bne(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
 
@@ -755,13 +756,13 @@ namespace FlintTests.FlintCore
 		public void Box()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
 			var instruction = Instruction.Create(OpCodes.Box, IntT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Box(SP, new Cil.Int32(SP, 42)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Box(PT, new Cil.Int32(PT, 42)));
 		}
 
 		[TestMethod]
@@ -822,7 +823,7 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -831,14 +832,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Brfalse(null, new Cil.Int32(SP, 42)),
+					new Cil.Brfalse(null, new Cil.Int32(PT, 42)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Brfalse(null, new Cil.Int32(SP, 42)),
+					new Cil.Brfalse(null, new Cil.Int32(PT, 42)),
 					0));
 		}
 
@@ -851,7 +852,7 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -860,14 +861,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Brfalse(null, new Cil.Int32(SP, 42)),
+					new Cil.Brfalse(null, new Cil.Int32(PT, 42)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Brfalse(null, new Cil.Int32(SP, 42)),
+					new Cil.Brfalse(null, new Cil.Int32(PT, 42)),
 					0));
 		}
 
@@ -880,7 +881,7 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -889,14 +890,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Brtrue(null, new Cil.Int32(SP, 42)),
+					new Cil.Brtrue(null, new Cil.Int32(PT, 42)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Brtrue(null, new Cil.Int32(SP, 42)),
+					new Cil.Brtrue(null, new Cil.Int32(PT, 42)),
 					0));
 		}
 
@@ -909,7 +910,7 @@ namespace FlintTests.FlintCore
 			instruction.Next = dup;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -918,14 +919,14 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Brtrue(null, new Cil.Int32(SP, 42)),
+					new Cil.Brtrue(null, new Cil.Int32(PT, 42)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
 				new Condition(
-					new Cil.Brtrue(null, new Cil.Int32(SP, 42)),
+					new Cil.Brtrue(null, new Cil.Int32(PT, 42)),
 					0));
 		}
 
@@ -933,40 +934,40 @@ namespace FlintTests.FlintCore
 		public void Call_StaticMethod()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.String(SP, "foo"));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.String(PT, "foo"));
 			var instruction = Instruction.Create(OpCodes.Call, StaticMethodT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
 			ctx.Stack.Peek().AssertEquals(
-				new Cil.Call(SP, null, StaticMethodT, [new Cil.Int32(SP, 42), new Cil.String(SP, "foo")]));
+				new Cil.Call(PT, null, StaticMethodT, [new Cil.Int32(PT, 42), new Cil.String(PT, "foo")]));
 		}
 
 		[TestMethod]
 		public void Call_InstanceMethod()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 3);
-			ctx.Stack.Push(new Cil.This(SP, ClassT));
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.String(SP, "foo"));
+			ctx.Stack.Push(new Cil.This(PT, ClassT));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.String(PT, "foo"));
 			var instruction = Instruction.Create(OpCodes.Call, InstanceMethodT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
 			ctx.Stack.Peek().AssertEquals(
-				new Cil.Call(SP, new Cil.This(SP, ClassT), InstanceMethodT, [new Cil.Int32(SP, 42), new Cil.String(SP, "foo")]));
+				new Cil.Call(PT, new Cil.This(PT, ClassT), InstanceMethodT, [new Cil.Int32(PT, 42), new Cil.String(PT, "foo")]));
 		}
 
 		[TestMethod]
 		public void Call_VoidMethod()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 3);
-			ctx.Stack.Push(new Cil.This(SP, ClassT));
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.String(SP, "foo"));
+			ctx.Stack.Push(new Cil.This(PT, ClassT));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.String(PT, "foo"));
 			var instruction = Instruction.Create(OpCodes.Call, VoidMethodT);
 
 			CilMachine.Eval(ctx, instruction);
@@ -979,112 +980,112 @@ namespace FlintTests.FlintCore
 		public void Callvirt()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 3);
-			ctx.Stack.Push(new Cil.This(SP, ClassT));
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.String(SP, "foo"));
+			ctx.Stack.Push(new Cil.This(PT, ClassT));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.String(PT, "foo"));
 			var instruction = Instruction.Create(OpCodes.Callvirt, VirtualMethodT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
 			ctx.Stack.Peek().AssertEquals(
-				new Cil.Call(SP, new Cil.This(SP, ClassT), VirtualMethodT, [new Cil.Int32(SP, 42), new Cil.String(SP, "foo")]));
+				new Cil.Call(PT, new Cil.This(PT, ClassT), VirtualMethodT, [new Cil.Int32(PT, 42), new Cil.String(PT, "foo")]));
 		}
 
 		[TestMethod]
 		public void Castclass()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
 			var instruction = Instruction.Create(OpCodes.Castclass, ClassT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Castclass(SP, ClassT, new Cil.Int32(SP, 42)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Castclass(PT, ClassT, new Cil.Int32(PT, 42)));
 		}
 
 		[TestMethod]
 		public void Ceq()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Ceq);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Ceq(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Ceq(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Cgt()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Cgt);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Cgt(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Cgt(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Cgt_Un()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Cgt_Un);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Cgt(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Cgt(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Ckfinite()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
 			var instruction = Instruction.Create(OpCodes.Ckfinite);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Clt()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Clt);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Clt(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Clt(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Clt_Un()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Clt_Un);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Clt(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Clt(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
@@ -1108,7 +1109,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1121,7 +1122,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I1(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I1(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1134,7 +1135,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I2(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I2(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1147,7 +1148,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I4(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I4(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1160,7 +1161,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I8(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I8(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1173,7 +1174,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1186,7 +1187,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1199,7 +1200,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I1(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I1(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1212,7 +1213,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I1(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I1(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1225,7 +1226,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I2(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I2(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1238,7 +1239,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I2(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I2(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1251,7 +1252,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I4(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I4(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1264,7 +1265,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I4(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I4(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1277,7 +1278,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I8(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I8(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1290,7 +1291,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I8(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_I8(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1303,7 +1304,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1316,7 +1317,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1329,7 +1330,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U1(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U1(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1342,7 +1343,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U1(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U1(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1355,7 +1356,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U2(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U2(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1368,7 +1369,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U2(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U2(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1381,7 +1382,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U4(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U4(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1394,7 +1395,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U4(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U4(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1407,7 +1408,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U8(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U8(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1420,7 +1421,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U8(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U8(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1433,7 +1434,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_R4(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_R4(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1446,7 +1447,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_R4(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_R4(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1459,7 +1460,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_R8(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_R8(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1472,7 +1473,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1485,7 +1486,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U1(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U1(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1498,7 +1499,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U2(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U2(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1511,7 +1512,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U4(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U4(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
@@ -1524,16 +1525,16 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U8(SP, Cil.Null.Instance));
+			ctx.Stack.Peek().AssertEquals(new Cil.Conv_U8(PT, Cil.Null.Instance));
 		}
 
 		[TestMethod]
 		public void Cpblk()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 3);
-			ctx.Stack.Push(new Cil.Int32(SP, 2000)); // destination address
-			ctx.Stack.Push(new Cil.Int32(SP, 1000)); // source address
-			ctx.Stack.Push(new Cil.Int32(SP, 10)); // number of bytes to copy
+			ctx.Stack.Push(new Cil.Int32(PT, 2000)); // destination address
+			ctx.Stack.Push(new Cil.Int32(PT, 1000)); // source address
+			ctx.Stack.Push(new Cil.Int32(PT, 10)); // number of bytes to copy
 			var instruction = Instruction.Create(OpCodes.Cpblk);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1545,8 +1546,8 @@ namespace FlintTests.FlintCore
 		public void Cpobj()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 2000)); // destination object address
-			ctx.Stack.Push(new Cil.Int32(SP, 1000)); // source object address
+			ctx.Stack.Push(new Cil.Int32(PT, 2000)); // destination object address
+			ctx.Stack.Push(new Cil.Int32(PT, 1000)); // source object address
 			var instruction = Instruction.Create(OpCodes.Cpobj, ClassT);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1558,44 +1559,44 @@ namespace FlintTests.FlintCore
 		public void Div()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 10));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 10));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Div);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
 			ctx.Stack.Peek().AssertEquals(
-				new Cil.Div(SP, new Cil.Int32(SP, 10), new Cil.Int32(SP, 2)));
+				new Cil.Div(PT, new Cil.Int32(PT, 10), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Div_Un()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 10));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 10));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Div_Un);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
 			ctx.Stack.Peek().AssertEquals(
-				new Cil.Div(SP, new Cil.Int32(SP, 10), new Cil.Int32(SP, 2)));
+				new Cil.Div(PT, new Cil.Int32(PT, 10), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Dup()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
 			var instruction = Instruction.Create(OpCodes.Dup);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(2);
-			ctx.Stack.Pop().AssertEquals(new Cil.Int32(SP, 42));
-			ctx.Stack.Pop().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Pop().AssertEquals(new Cil.Int32(PT, 42));
+			ctx.Stack.Pop().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
@@ -1639,9 +1640,9 @@ namespace FlintTests.FlintCore
 		public void Initblk()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 3);
-			ctx.Stack.Push(new Cil.Int32(SP, 1000)); // starting address
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // initialization value
-			ctx.Stack.Push(new Cil.Int32(SP, 10)); // number of bytes to initialize
+			ctx.Stack.Push(new Cil.Int32(PT, 1000)); // starting address
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // initialization value
+			ctx.Stack.Push(new Cil.Int32(PT, 10)); // number of bytes to initialize
 			var instruction = Instruction.Create(OpCodes.Initblk);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1653,7 +1654,7 @@ namespace FlintTests.FlintCore
 		public void Initobj()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 1000)); // address
+			ctx.Stack.Push(new Cil.Int32(PT, 1000)); // address
 			var instruction = Instruction.Create(OpCodes.Initobj, ClassT);
 
 			CilMachine.Eval(ctx, instruction);
@@ -1665,14 +1666,14 @@ namespace FlintTests.FlintCore
 		public void Isinst()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.String(SP, "foo"));
+			ctx.Stack.Push(new Cil.String(PT, "foo"));
 			var instruction = Instruction.Create(OpCodes.Isinst, StringT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
 			ctx.Stack.Peek().AssertEquals(
-				new Cil.Isinst(SP, StringT, new Cil.String(SP, "foo")));
+				new Cil.Isinst(PT, StringT, new Cil.String(PT, "foo")));
 		}
 
 		[TestMethod]
@@ -1690,13 +1691,13 @@ namespace FlintTests.FlintCore
 		public void Ldarg_HasValue()
 		{
 			var ctx = new CilMachine.RoutineContext(StaticMethodT, stackSize: 1);
-			ctx.Args[1] = new Cil.Int32(SP, 42);
+			ctx.Args[1] = new Cil.Int32(PT, 42);
 			var instruction = Instruction.Create(OpCodes.Ldarg, Arg(1));
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
@@ -1708,7 +1709,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Arg(SP, 0, InstanceMethodT.Parameters[0]));
+			ctx.Stack.Peek().AssertEquals(new Cil.Arg(PT, 0, InstanceMethodT.Parameters[0]));
 		}
 
 		[TestMethod]
@@ -1720,7 +1721,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Arg(SP, 1, StaticMethodT.Parameters[1]));
+			ctx.Stack.Peek().AssertEquals(new Cil.Arg(PT, 1, StaticMethodT.Parameters[1]));
 		}
 
 		[TestMethod]
@@ -1732,7 +1733,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.This(SP, ClassT));
+			ctx.Stack.Peek().AssertEquals(new Cil.This(PT, ClassT));
 		}
 
 		[TestMethod]
@@ -1744,7 +1745,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Arg(SP, 0, ManyParametersMethodT.Parameters[0]));
+			ctx.Stack.Peek().AssertEquals(new Cil.Arg(PT, 0, ManyParametersMethodT.Parameters[0]));
 		}
 
 		[TestMethod]
@@ -1756,7 +1757,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Arg(SP, 1, ManyParametersMethodT.Parameters[1]));
+			ctx.Stack.Peek().AssertEquals(new Cil.Arg(PT, 1, ManyParametersMethodT.Parameters[1]));
 		}
 
 		[TestMethod]
@@ -1768,7 +1769,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Arg(SP, 2, ManyParametersMethodT.Parameters[2]));
+			ctx.Stack.Peek().AssertEquals(new Cil.Arg(PT, 2, ManyParametersMethodT.Parameters[2]));
 		}
 
 		[TestMethod]
@@ -1780,7 +1781,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Arg(SP, 3, ManyParametersMethodT.Parameters[3]));
+			ctx.Stack.Peek().AssertEquals(new Cil.Arg(PT, 3, ManyParametersMethodT.Parameters[3]));
 		}
 
 		[TestMethod]
@@ -1792,7 +1793,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Arg(SP, 4, ManyParametersMethodT.Parameters[4]));
+			ctx.Stack.Peek().AssertEquals(new Cil.Arg(PT, 4, ManyParametersMethodT.Parameters[4]));
 		}
 
 		[TestMethod]
@@ -1804,7 +1805,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Argptr(SP, 1));
+			ctx.Stack.Peek().AssertEquals(new Cil.Argptr(PT, 1));
 		}
 
 		[TestMethod]
@@ -1816,7 +1817,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Argptr(SP, 1));
+			ctx.Stack.Peek().AssertEquals(new Cil.Argptr(PT, 1));
 		}
 
 		[TestMethod]
@@ -1828,7 +1829,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
@@ -1840,7 +1841,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 0));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 0));
 		}
 
 		[TestMethod]
@@ -1852,7 +1853,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 1));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 1));
 		}
 
 		[TestMethod]
@@ -1864,7 +1865,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 2));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 2));
 		}
 
 		[TestMethod]
@@ -1876,7 +1877,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 3));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 3));
 		}
 
 		[TestMethod]
@@ -1888,7 +1889,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 4));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 4));
 		}
 
 		[TestMethod]
@@ -1900,7 +1901,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 5));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 5));
 		}
 
 		[TestMethod]
@@ -1912,7 +1913,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 6));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 6));
 		}
 
 		[TestMethod]
@@ -1924,7 +1925,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 7));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 7));
 		}
 
 		[TestMethod]
@@ -1936,7 +1937,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 8));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 8));
 		}
 
 		[TestMethod]
@@ -1948,7 +1949,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, -1));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, -1));
 		}
 
 		[TestMethod]
@@ -1960,7 +1961,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
@@ -1972,7 +1973,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int64(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int64(PT, 42));
 		}
 
 		[TestMethod]
@@ -1984,7 +1985,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Float32(SP, 3.14f));
+			ctx.Stack.Peek().AssertEquals(new Cil.Float32(PT, 3.14f));
 		}
 
 		[TestMethod]
@@ -1996,248 +1997,248 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Float64(SP, 3.14f));
+			ctx.Stack.Peek().AssertEquals(new Cil.Float64(PT, 3.14f));
 		}
 
 		[TestMethod]
 		public void Ldelem_HasValue()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1)), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)));
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1)), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_Any, IntT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldelem_NoValue()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Call(SP, null, ArrayMethodT, []));
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Stack.Push(new Cil.Call(PT, null, ArrayMethodT, []));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_Any, IntT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
 			ctx.Stack.Peek().AssertEquals(
-				new Cil.Elem(SP,
-					new Cil.Call(SP, null, ArrayMethodT, []),
-					new Cil.Int32(SP, 1)));
+				new Cil.Elem(PT,
+					new Cil.Call(PT, null, ArrayMethodT, []),
+					new Cil.Int32(PT, 1)));
 		}
 
 		[TestMethod]
 		public void Ldelem_I()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1)), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)));
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1)), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_I);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldelem_I1()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1)), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)));
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1)), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_I1);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldelem_I2()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1)), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)));
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1)), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_I2);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldelem_I4()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1)), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)));
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1)), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_I4);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldelem_I8()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1)), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)));
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1)), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_I8);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldelem_R4()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1)), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)));
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1)), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_R4);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldelem_R8()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1)), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)));
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1)), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_R8);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldelem_Ref()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1)), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)));
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1)), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_Ref);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldelem_U1()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1)), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)));
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1)), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_U1);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldelem_U2()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1)), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)));
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1)), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_U2);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldelem_U4()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1)), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)));
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Arrays.Add(new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1)), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 			var instruction = Instruction.Create(OpCodes.Ldelem_U4);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldelema()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			var array = new Cil.Array(SP, IntT, new Cil.Int32(SP, 5));
+			var array = new Cil.Array(PT, IntT, new Cil.Int32(PT, 5));
 			ctx.Stack.Push(array);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 			var instruction = Instruction.Create(OpCodes.Ldelema, IntT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
 			ctx.Stack.Peek().AssertEquals(
-				new Cil.Elemptr(SP,
-					new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)),
-					new Cil.Int32(SP, 1)));
+				new Cil.Elemptr(PT,
+					new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)),
+					new Cil.Int32(PT, 1)));
 		}
 
 		[TestMethod]
 		public void Ldfld()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.This(SP, ClassT));
+			ctx.Stack.Push(new Cil.This(PT, ClassT));
 			var instruction = Instruction.Create(OpCodes.Ldfld, IntFieldT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Fld(SP, new Cil.This(SP, ClassT), IntFieldT));
+			ctx.Stack.Peek().AssertEquals(new Cil.Fld(PT, new Cil.This(PT, ClassT), IntFieldT));
 		}
 
 		[TestMethod]
 		public void Ldflda()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.This(SP, ClassT));
+			ctx.Stack.Push(new Cil.This(PT, ClassT));
 			var instruction = Instruction.Create(OpCodes.Ldflda, IntFieldT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Fld(SP, new Cil.This(SP, ClassT), IntFieldT));
+			ctx.Stack.Peek().AssertEquals(new Cil.Fld(PT, new Cil.This(PT, ClassT), IntFieldT));
 		}
 
 		[TestMethod]
@@ -2249,278 +2250,278 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Ftn(SP, null, InstanceMethodT));
+			ctx.Stack.Peek().AssertEquals(new Cil.Ftn(PT, null, InstanceMethodT));
 		}
 
 		[TestMethod]
 		public void Ldind_I_HasValue()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Heap.Add(new Cil.Int32(SP, 1000), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Int32(SP, 1000));
+			ctx.Heap.Add(new Cil.Int32(PT, 1000), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_I);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldind_I_NoValue()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 1000));
+			ctx.Stack.Push(new Cil.Int32(PT, 1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_I);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Heapptr(SP, new Cil.Int32(SP, 1000)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Heapptr(PT, new Cil.Int32(PT, 1000)));
 		}
 
 		[TestMethod]
 		public void Ldind_I1()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Heap.Add(new Cil.Int32(SP, 1000), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Int32(SP, 1000));
+			ctx.Heap.Add(new Cil.Int32(PT, 1000), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_I1);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldind_I2()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Heap.Add(new Cil.Int32(SP, 1000), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Int32(SP, 1000));
+			ctx.Heap.Add(new Cil.Int32(PT, 1000), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_I2);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldind_I4()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Heap.Add(new Cil.Int32(SP, 1000), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Int32(SP, 1000));
+			ctx.Heap.Add(new Cil.Int32(PT, 1000), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_I4);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldind_I8()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Heap.Add(new Cil.Int32(SP, 1000), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Int32(SP, 1000));
+			ctx.Heap.Add(new Cil.Int32(PT, 1000), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_I8);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldind_R4()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Heap.Add(new Cil.Int32(SP, 1000), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Int32(SP, 1000));
+			ctx.Heap.Add(new Cil.Int32(PT, 1000), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_R4);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldind_R8()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Heap.Add(new Cil.Int32(SP, 1000), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Int32(SP, 1000));
+			ctx.Heap.Add(new Cil.Int32(PT, 1000), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_R8);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldind_Ref()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Heap.Add(new Cil.Int32(SP, 1000), new Cil.This(SP, ClassT));
-			ctx.Stack.Push(new Cil.Int32(SP, 1000));
+			ctx.Heap.Add(new Cil.Int32(PT, 1000), new Cil.This(PT, ClassT));
+			ctx.Stack.Push(new Cil.Int32(PT, 1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_Ref);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.This(SP, ClassT));
+			ctx.Stack.Peek().AssertEquals(new Cil.This(PT, ClassT));
 		}
 
 		[TestMethod]
 		public void Ldind_U1()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Heap.Add(new Cil.Int32(SP, 1000), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Int32(SP, 1000));
+			ctx.Heap.Add(new Cil.Int32(PT, 1000), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_U1);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldind_U2()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Heap.Add(new Cil.Int32(SP, 1000), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Int32(SP, 1000));
+			ctx.Heap.Add(new Cil.Int32(PT, 1000), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_U2);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldind_U4()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Heap.Add(new Cil.Int32(SP, 1000), new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.Int32(SP, 1000));
+			ctx.Heap.Add(new Cil.Int32(PT, 1000), new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 1000));
 			var instruction = Instruction.Create(OpCodes.Ldind_U4);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldlen()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)));
+			ctx.Stack.Push(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)));
 			var instruction = Instruction.Create(OpCodes.Ldlen);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Len(SP, new Cil.Array(SP, IntT, new Cil.Int32(SP, 5))));
+			ctx.Stack.Peek().AssertEquals(new Cil.Len(PT, new Cil.Array(PT, IntT, new Cil.Int32(PT, 5))));
 		}
 
 		[TestMethod]
 		public void Ldloc()
 		{
 			var ctx = new CilMachine.RoutineContext(varCount: 2, stackSize: 1);
-			ctx.Vars[1] = new Cil.Int32(SP, 42);
+			ctx.Vars[1] = new Cil.Int32(PT, 42);
 			var instruction = Instruction.Create(OpCodes.Ldloc, Var(1));
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldloc_S()
 		{
 			var ctx = new CilMachine.RoutineContext(varCount: 2, stackSize: 1);
-			ctx.Vars[1] = new Cil.Int32(SP, 42);
+			ctx.Vars[1] = new Cil.Int32(PT, 42);
 			var instruction = Instruction.Create(OpCodes.Ldloc_S, Var(1));
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldloc_0()
 		{
 			var ctx = new CilMachine.RoutineContext(varCount: 1, stackSize: 1);
-			ctx.Vars[0] = new Cil.Int32(SP, 42);
+			ctx.Vars[0] = new Cil.Int32(PT, 42);
 			var instruction = Instruction.Create(OpCodes.Ldloc_0);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldloc_1()
 		{
 			var ctx = new CilMachine.RoutineContext(varCount: 2, stackSize: 1);
-			ctx.Vars[1] = new Cil.Int32(SP, 42);
+			ctx.Vars[1] = new Cil.Int32(PT, 42);
 			var instruction = Instruction.Create(OpCodes.Ldloc_1);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldloc_2()
 		{
 			var ctx = new CilMachine.RoutineContext(varCount: 3, stackSize: 1);
-			ctx.Vars[2] = new Cil.Int32(SP, 42);
+			ctx.Vars[2] = new Cil.Int32(PT, 42);
 			var instruction = Instruction.Create(OpCodes.Ldloc_2);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldloc_3()
 		{
 			var ctx = new CilMachine.RoutineContext(varCount: 4, stackSize: 1);
-			ctx.Vars[3] = new Cil.Int32(SP, 42);
+			ctx.Vars[3] = new Cil.Int32(PT, 42);
 			var instruction = Instruction.Create(OpCodes.Ldloc_3);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Ldloca_HasValue()
 		{
 			var ctx = new CilMachine.RoutineContext(varCount: 2, stackSize: 1);
-			ctx.Vars[1] = new Cil.Int32(SP, 42);
+			ctx.Vars[1] = new Cil.Int32(PT, 42);
 			var instruction = Instruction.Create(OpCodes.Ldloca, Var(1));
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Stack.Peek().AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
@@ -2532,7 +2533,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Varptr(SP, 1));
+			ctx.Stack.Peek().AssertEquals(new Cil.Varptr(PT, 1));
 		}
 
 		[TestMethod]
@@ -2544,7 +2545,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Varptr(SP, 1));
+			ctx.Stack.Peek().AssertEquals(new Cil.Varptr(PT, 1));
 		}
 
 		[TestMethod]
@@ -2563,14 +2564,14 @@ namespace FlintTests.FlintCore
 		public void Ldobj()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Heap.Add(new Cil.Int32(SP, 1000), new Cil.This(SP, ClassT));
-			ctx.Stack.Push(new Cil.Int32(SP, 1000));
+			ctx.Heap.Add(new Cil.Int32(PT, 1000), new Cil.This(PT, ClassT));
+			ctx.Stack.Push(new Cil.Int32(PT, 1000));
 			var instruction = Instruction.Create(OpCodes.Ldobj, ClassT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.This(SP, ClassT));
+			ctx.Stack.Peek().AssertEquals(new Cil.This(PT, ClassT));
 		}
 
 		[TestMethod]
@@ -2582,7 +2583,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Fld(SP, null, StringFieldT));
+			ctx.Stack.Peek().AssertEquals(new Cil.Fld(PT, null, StringFieldT));
 		}
 
 		[TestMethod]
@@ -2594,7 +2595,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Fld(SP, null, StringFieldT));
+			ctx.Stack.Peek().AssertEquals(new Cil.Fld(PT, null, StringFieldT));
 		}
 
 		[TestMethod]
@@ -2606,7 +2607,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.String(SP, "foo"));
+			ctx.Stack.Peek().AssertEquals(new Cil.String(PT, "foo"));
 		}
 
 		[TestMethod]
@@ -2618,7 +2619,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Typeof(SP, IntT));
+			ctx.Stack.Peek().AssertEquals(new Cil.Typeof(PT, IntT));
 		}
 
 		[TestMethod]
@@ -2630,7 +2631,7 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Methodof(SP, InstanceMethodT));
+			ctx.Stack.Peek().AssertEquals(new Cil.Methodof(PT, InstanceMethodT));
 		}
 
 		[TestMethod]
@@ -2642,20 +2643,20 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Fieldof(SP, IntFieldT));
+			ctx.Stack.Peek().AssertEquals(new Cil.Fieldof(PT, IntFieldT));
 		}
 
 		[TestMethod]
 		public void Ldvirtftn()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.This(SP, ClassT));
+			ctx.Stack.Push(new Cil.This(PT, ClassT));
 			var instruction = Instruction.Create(OpCodes.Ldvirtftn, VirtualMethodT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Ftn(SP, new Cil.This(SP, ClassT), VirtualMethodT));
+			ctx.Stack.Peek().AssertEquals(new Cil.Ftn(PT, new Cil.This(PT, ClassT), VirtualMethodT));
 		}
 
 		[TestMethod]
@@ -2700,112 +2701,112 @@ namespace FlintTests.FlintCore
 		public void Localloc()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 10));
+			ctx.Stack.Push(new Cil.Int32(PT, 10));
 			var instruction = Instruction.Create(OpCodes.Localloc);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Bytes(SP, new Cil.Int32(SP, 10)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Bytes(PT, new Cil.Int32(PT, 10)));
 		}
 
 		[TestMethod]
 		public void Mkrefany()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 1000));
+			ctx.Stack.Push(new Cil.Int32(PT, 1000));
 			var instruction = Instruction.Create(OpCodes.Mkrefany, ClassT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Mkref(SP, new Cil.Int32(SP, 1000), ClassT));
+			ctx.Stack.Peek().AssertEquals(new Cil.Mkref(PT, new Cil.Int32(PT, 1000), ClassT));
 		}
 
 		[TestMethod]
 		public void Mul()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Mul);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Mul(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Mul(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Mul_Ovf()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Mul_Ovf);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Mul(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Mul(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Mul_Ovf_Un()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Mul_Ovf_Un);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Mul(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Mul(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Neg()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 			var instruction = Instruction.Create(OpCodes.Neg);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Neg(SP, new Cil.Int32(SP, 1)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Neg(PT, new Cil.Int32(PT, 1)));
 		}
 
 		[TestMethod]
 		public void Newarr()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 5));
+			ctx.Stack.Push(new Cil.Int32(PT, 5));
 			var instruction = Instruction.Create(OpCodes.Newarr, IntT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)));
 		}
 
 		[TestMethod]
 		public void Newobj()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
-			ctx.Stack.Push(new Cil.String(SP, "foo"));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
+			ctx.Stack.Push(new Cil.String(PT, "foo"));
 			var instruction = Instruction.Create(OpCodes.Newobj, ConstructorT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
 			ctx.Stack.Peek().AssertEquals(
-				new Cil.Newobj(SP,
+				new Cil.Newobj(PT,
 					ClassT,
 					ConstructorT,
-					[new Cil.Int32(SP, 42), new Cil.String(SP, "foo")]));
+					[new Cil.Int32(PT, 42), new Cil.String(PT, "foo")]));
 		}
 
 		[TestMethod]
@@ -2823,34 +2824,34 @@ namespace FlintTests.FlintCore
 		public void Not()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
 			var instruction = Instruction.Create(OpCodes.Not);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Not(SP, new Cil.Int32(SP, 42)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Not(PT, new Cil.Int32(PT, 42)));
 		}
 
 		[TestMethod]
 		public void Or()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Or);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Or(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Or(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Pop()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 			var instruction = Instruction.Create(OpCodes.Pop);
 
 			CilMachine.Eval(ctx, instruction);
@@ -2873,54 +2874,54 @@ namespace FlintTests.FlintCore
 		public void Refanytype()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 1000));
+			ctx.Stack.Push(new Cil.Int32(PT, 1000));
 			var instruction = Instruction.Create(OpCodes.Refanytype);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Refanytype(SP, new Cil.Int32(SP, 1000)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Refanytype(PT, new Cil.Int32(PT, 1000)));
 		}
 
 		[TestMethod]
 		public void Refanyval()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 1000));
+			ctx.Stack.Push(new Cil.Int32(PT, 1000));
 			var instruction = Instruction.Create(OpCodes.Refanyval, ClassT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Refanyval(SP, ClassT, new Cil.Int32(SP, 1000)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Refanyval(PT, ClassT, new Cil.Int32(PT, 1000)));
 		}
 
 		[TestMethod]
 		public void Rem()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 10));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 10));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Rem);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Rem(SP, new Cil.Int32(SP, 10), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Rem(PT, new Cil.Int32(PT, 10), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Rem_Un()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 10));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 10));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Rem_Un);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Rem(SP, new Cil.Int32(SP, 10), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Rem(PT, new Cil.Int32(PT, 10), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
@@ -2963,42 +2964,42 @@ namespace FlintTests.FlintCore
 		public void Shl()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 10));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 10));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Shl);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Shl(SP, new Cil.Int32(SP, 10), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Shl(PT, new Cil.Int32(PT, 10), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Shr()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 10));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 10));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Shr);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Shr(SP, new Cil.Int32(SP, 10), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Shr(PT, new Cil.Int32(PT, 10), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Shr_Un()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 10));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 10));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Shr_Un);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Shr(SP, new Cil.Int32(SP, 10), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Shr(PT, new Cil.Int32(PT, 10), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
@@ -3010,450 +3011,450 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Sizeof(SP, ClassT));
+			ctx.Stack.Peek().AssertEquals(new Cil.Sizeof(PT, ClassT));
 		}
 
 		[TestMethod]
 		public void Starg()
 		{
 			var ctx = new CilMachine.RoutineContext(InstanceMethodT, stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
 			var instruction = Instruction.Create(OpCodes.Starg, Arg(0));
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Args[0].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Args[0].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Starg_S()
 		{
 			var ctx = new CilMachine.RoutineContext(StaticMethodT, stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
 			var instruction = Instruction.Create(OpCodes.Starg_S, Arg(0));
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Args[0].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Args[0].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stelem()
 		{
-			var array = new Cil.Array(SP, IntT, new Cil.Int32(SP, 5));
+			var array = new Cil.Array(PT, IntT, new Cil.Int32(PT, 5));
 			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(array); // array
-			ctx.Stack.Push(new Cil.Int32(SP, 1)); // index
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1)); // index
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stelem_Any, IntT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1))].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1))].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stelem_I()
 		{
-			var array = new Cil.Array(SP, IntT, new Cil.Int32(SP, 5));
+			var array = new Cil.Array(PT, IntT, new Cil.Int32(PT, 5));
 			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(array); // array
-			ctx.Stack.Push(new Cil.Int32(SP, 1)); // index
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1)); // index
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stelem_I);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1))].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1))].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stelem_I1()
 		{
-			var array = new Cil.Array(SP, IntT, new Cil.Int32(SP, 5));
+			var array = new Cil.Array(PT, IntT, new Cil.Int32(PT, 5));
 			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(array); // array
-			ctx.Stack.Push(new Cil.Int32(SP, 1)); // index
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1)); // index
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stelem_I1);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1))].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1))].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stelem_I2()
 		{
-			var array = new Cil.Array(SP, IntT, new Cil.Int32(SP, 5));
+			var array = new Cil.Array(PT, IntT, new Cil.Int32(PT, 5));
 			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(array); // array
-			ctx.Stack.Push(new Cil.Int32(SP, 1)); // index
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1)); // index
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stelem_I2);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1))].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1))].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stelem_I4()
 		{
-			var array = new Cil.Array(SP, IntT, new Cil.Int32(SP, 5));
+			var array = new Cil.Array(PT, IntT, new Cil.Int32(PT, 5));
 			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(array); // array
-			ctx.Stack.Push(new Cil.Int32(SP, 1)); // index
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1)); // index
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stelem_I4);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1))].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1))].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stelem_I8()
 		{
-			var array = new Cil.Array(SP, IntT, new Cil.Int32(SP, 5));
+			var array = new Cil.Array(PT, IntT, new Cil.Int32(PT, 5));
 			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(array); // array
-			ctx.Stack.Push(new Cil.Int32(SP, 1)); // index
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1)); // index
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stelem_I8);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1))].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1))].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stelem_R4()
 		{
-			var array = new Cil.Array(SP, IntT, new Cil.Int32(SP, 5));
+			var array = new Cil.Array(PT, IntT, new Cil.Int32(PT, 5));
 			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(array); // array
-			ctx.Stack.Push(new Cil.Int32(SP, 1)); // index
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1)); // index
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stelem_R4);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1))].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1))].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stelem_R8()
 		{
-			var array = new Cil.Array(SP, IntT, new Cil.Int32(SP, 5));
+			var array = new Cil.Array(PT, IntT, new Cil.Int32(PT, 5));
 			var ctx = new CilMachine.RoutineContext(stackSize: 3);
 			ctx.Stack.Push(array); // array
-			ctx.Stack.Push(new Cil.Int32(SP, 1)); // index
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1)); // index
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stelem_R8);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1))].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1))].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stelem_Ref()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 3);
-			ctx.Stack.Push(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5))); // array
-			ctx.Stack.Push(new Cil.Int32(SP, 1)); // index
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5))); // array
+			ctx.Stack.Push(new Cil.Int32(PT, 1)); // index
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stelem_Ref);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
 			ctx.Arrays.AssertCount(1);
-			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(SP, IntT, new Cil.Int32(SP, 5)), new Cil.Int32(SP, 1))].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Arrays[new CilMachine.ArrayIndex(new Cil.Array(PT, IntT, new Cil.Int32(PT, 5)), new Cil.Int32(PT, 1))].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stfld()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.This(SP, ClassT)); // instance
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.This(PT, ClassT)); // instance
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stfld, IntFieldT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Objects[new CilMachine.ObjectField(new Cil.This(SP, ClassT), IntFieldT)].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Objects[new CilMachine.ObjectField(new Cil.This(PT, ClassT), IntFieldT)].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stind_I()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1000)); // address
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1000)); // address
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stind_I);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Heap[new Cil.Int32(SP, 1000)].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Heap[new Cil.Int32(PT, 1000)].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stind_I1()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1000)); // address
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1000)); // address
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stind_I1);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Heap[new Cil.Int32(SP, 1000)].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Heap[new Cil.Int32(PT, 1000)].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stind_I2()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1000)); // address
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1000)); // address
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stind_I2);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Heap[new Cil.Int32(SP, 1000)].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Heap[new Cil.Int32(PT, 1000)].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stind_I4()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1000)); // address
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1000)); // address
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stind_I4);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Heap[new Cil.Int32(SP, 1000)].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Heap[new Cil.Int32(PT, 1000)].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stind_I8()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1000)); // address
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1000)); // address
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stind_I8);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Heap[new Cil.Int32(SP, 1000)].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Heap[new Cil.Int32(PT, 1000)].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stind_R4()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1000)); // address
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1000)); // address
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stind_R4);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Heap[new Cil.Int32(SP, 1000)].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Heap[new Cil.Int32(PT, 1000)].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stind_R8()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1000)); // address
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1000)); // address
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stind_R8);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Heap[new Cil.Int32(SP, 1000)].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Heap[new Cil.Int32(PT, 1000)].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stind_Ref()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1000)); // address
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1000)); // address
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stind_Ref);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Heap[new Cil.Int32(SP, 1000)].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Heap[new Cil.Int32(PT, 1000)].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stloc()
 		{
 			var ctx = new CilMachine.RoutineContext(varCount: 2, stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stloc, Var(1));
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Vars[1].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Vars[1].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stloc_0()
 		{
 			var ctx = new CilMachine.RoutineContext(varCount: 1, stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stloc_0);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Vars[0].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Vars[0].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stloc_1()
 		{
 			var ctx = new CilMachine.RoutineContext(varCount: 2, stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stloc_1);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Vars[1].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Vars[1].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stloc_2()
 		{
 			var ctx = new CilMachine.RoutineContext(varCount: 3, stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stloc_2);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Vars[2].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Vars[2].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stloc_3()
 		{
 			var ctx = new CilMachine.RoutineContext(varCount: 4, stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stloc_3);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Vars[3].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Vars[3].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stloc_S()
 		{
 			var ctx = new CilMachine.RoutineContext(varCount: 2, stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 42)); // value
 			var instruction = Instruction.Create(OpCodes.Stloc_S, Var(1));
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Vars[1].AssertEquals(new Cil.Int32(SP, 42));
+			ctx.Vars[1].AssertEquals(new Cil.Int32(PT, 42));
 		}
 
 		[TestMethod]
 		public void Stobj()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1000)); // address
-			ctx.Stack.Push(new Cil.This(SP, ClassT)); // value
+			ctx.Stack.Push(new Cil.Int32(PT, 1000)); // address
+			ctx.Stack.Push(new Cil.This(PT, ClassT)); // value
 			var instruction = Instruction.Create(OpCodes.Stobj, ClassT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Heap[new Cil.Int32(SP, 1000)].AssertEquals(new Cil.This(SP, ClassT));
+			ctx.Heap[new Cil.Int32(PT, 1000)].AssertEquals(new Cil.This(PT, ClassT));
 		}
 
 		[TestMethod]
 		public void Stsfld()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.String(SP, "foo")); // value
+			ctx.Stack.Push(new Cil.String(PT, "foo")); // value
 			var instruction = Instruction.Create(OpCodes.Stsfld, StringFieldT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertEmpty();
-			ctx.Objects[new CilMachine.ObjectField(null, StringFieldT)].AssertEquals(new Cil.String(SP, "foo"));
+			ctx.Objects[new CilMachine.ObjectField(null, StringFieldT)].AssertEquals(new Cil.String(PT, "foo"));
 		}
 
 		[TestMethod]
 		public void Sub()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Sub);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Sub(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Sub(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Sub_Ovf()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Sub_Ovf);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Sub(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Sub(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
 		public void Sub_Ovf_Un()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Sub_Ovf_Un);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Sub(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Sub(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 
 		[TestMethod]
@@ -3467,7 +3468,7 @@ namespace FlintTests.FlintCore
 			instruction.Next = pop;
 
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
 
 			var branches = new List<CilMachine.RoutineContext>();
 			CilMachine.Eval(ctx, branches, instruction, out var nextInstruction);
@@ -3479,7 +3480,7 @@ namespace FlintTests.FlintCore
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
 				new Condition(
-					new Cil.Switch(null, new Cil.Int32(SP, 1)),
+					new Cil.Switch(null, new Cil.Int32(PT, 1)),
 					0));
 
 			// 1 branch
@@ -3487,7 +3488,7 @@ namespace FlintTests.FlintCore
 			branch1.StartInstruction.AssertEquals(dup);
 			branch1.Conditions.AssertContains(
 				new Condition(
-					new Cil.Switch(null, new Cil.Int32(SP, 1)),
+					new Cil.Switch(null, new Cil.Int32(PT, 1)),
 					1));
 
 			// 2 branch
@@ -3495,7 +3496,7 @@ namespace FlintTests.FlintCore
 			branch2.StartInstruction.AssertEquals(ret);
 			branch2.Conditions.AssertContains(
 				new Condition(
-					new Cil.Switch(null, new Cil.Int32(SP, 1)),
+					new Cil.Switch(null, new Cil.Int32(PT, 1)),
 					2));
 		}
 
@@ -3538,33 +3539,33 @@ namespace FlintTests.FlintCore
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Unaligned(SP, 128));
+			ctx.Stack.Peek().AssertEquals(new Cil.Unaligned(PT, 128));
 		}
 
 		[TestMethod]
 		public void Unbox()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.Int32(SP, 42));
+			ctx.Stack.Push(new Cil.Int32(PT, 42));
 			var instruction = Instruction.Create(OpCodes.Unbox, IntT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Unbox(SP, IntT, new Cil.Int32(SP, 42)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Unbox(PT, IntT, new Cil.Int32(PT, 42)));
 		}
 
 		[TestMethod]
 		public void Unbox_Any()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 1);
-			ctx.Stack.Push(new Cil.This(SP, ClassT));
+			ctx.Stack.Push(new Cil.This(PT, ClassT));
 			var instruction = Instruction.Create(OpCodes.Unbox_Any, ClassT);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Unbox(SP, ClassT, new Cil.This(SP, ClassT)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Unbox(PT, ClassT, new Cil.This(PT, ClassT)));
 		}
 
 		[TestMethod]
@@ -3582,14 +3583,14 @@ namespace FlintTests.FlintCore
 		public void Xor()
 		{
 			var ctx = new CilMachine.RoutineContext(stackSize: 2);
-			ctx.Stack.Push(new Cil.Int32(SP, 1));
-			ctx.Stack.Push(new Cil.Int32(SP, 2));
+			ctx.Stack.Push(new Cil.Int32(PT, 1));
+			ctx.Stack.Push(new Cil.Int32(PT, 2));
 			var instruction = Instruction.Create(OpCodes.Xor);
 
 			CilMachine.Eval(ctx, instruction);
 
 			ctx.Stack.AssertCount(1);
-			ctx.Stack.Peek().AssertEquals(new Cil.Xor(SP, new Cil.Int32(SP, 1), new Cil.Int32(SP, 2)));
+			ctx.Stack.Peek().AssertEquals(new Cil.Xor(PT, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)));
 		}
 	}
 }

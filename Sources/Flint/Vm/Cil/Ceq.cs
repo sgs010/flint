@@ -1,12 +1,10 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class Ceq : Ast
 	{
 		public readonly Ast Left;
 		public readonly Ast Right;
-		public Ceq(SequencePoint sp, Ast left, Ast right) : base(sp)
+		public Ceq(CilPoint pt, Ast left, Ast right) : base(pt)
 		{
 			Left = left;
 			Right = right;

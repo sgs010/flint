@@ -2,9 +2,7 @@
 using System.Text;
 using Flint.Common;
 using Flint.Vm;
-using Flint.Vm.Cil;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Flint.Analyzers
 {
@@ -99,7 +97,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		public static void PrettyPrintMethod(StringBuilder sb, MethodDefinition method, SequencePoint sp)
+		public static void PrettyPrintMethod(StringBuilder sb, MethodDefinition method, CilPoint pt)
 		{
 			sb.Append(method.DeclaringType.Namespace);
 			sb.Append('.');
@@ -107,10 +105,10 @@ namespace Flint.Analyzers
 			sb.Append('.');
 			sb.Append(method.Name);
 
-			if (sp != null)
+			if (pt.SequencePoint != null)
 			{
 				sb.Append(" line ");
-				sb.Append(sp.StartLine);
+				sb.Append(pt.SequencePoint.StartLine);
 			}
 		}
 		#endregion
@@ -147,7 +145,7 @@ namespace Flint.Analyzers
 						var implMethods = implTypes.SelectMany(x => x.Methods.Where(m => m.SignatureEquals(innerCall.Method)));
 						foreach (var impl in implMethods)
 						{
-							var implCall = new CallInfo(impl, innerCall.SequencePoint);
+							var implCall = new CallInfo(impl, innerCall.CilPoint);
 							PopulateCallChains(asm, target, level + 1, implCall, new CallChainNode(parent, implCall), visitedMethods, chains);
 						}
 					}

@@ -1,12 +1,11 @@
 ﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Flint.Vm.Cil
 {
 	class Fieldof : Ast
 	{
 		public readonly FieldReference Field;
-		public Fieldof(SequencePoint sp, FieldReference fld) : base(sp)
+		public Fieldof(CilPoint pt, FieldReference fld) : base(pt)
 		{
 			Field = fld;
 		}

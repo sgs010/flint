@@ -49,7 +49,7 @@ namespace Flint.Analyzers
 				return; // only outbox is accessed
 
 			// report issue
-			var debug = sendMessageAsync.SelectMany(x => x).FirstOrDefault()?.SequencePoint;
+			var debug = sendMessageAsync.SelectMany(x => x).FirstOrDefault()?.CilPoint;
 			var sb = new StringBuilder();
 			sb.Append("consider using Outbox pattern in method ");
 			MethodAnalyzer.PrettyPrintMethod(sb, method, debug);

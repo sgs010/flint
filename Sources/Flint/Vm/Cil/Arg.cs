@@ -1,5 +1,4 @@
 ﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Flint.Vm.Cil
 {
@@ -7,7 +6,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly int Number;
 		public readonly ParameterDefinition Parameter;
-		public Arg(SequencePoint sp, int number, ParameterDefinition parameter) : base(sp)
+		public Arg(CilPoint pt, int number, ParameterDefinition parameter) : base(pt)
 		{
 			Number = number;
 			Parameter = parameter;

@@ -1,11 +1,9 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class Refanytype : Ast
 	{
 		public readonly Ast Reference;
-		public Refanytype(SequencePoint sp, Ast reference) : base(sp)
+		public Refanytype(CilPoint pt, Ast reference) : base(pt)
 		{
 			Reference = reference;
 		}

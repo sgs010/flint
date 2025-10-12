@@ -1,11 +1,9 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class Float32 : Ast
 	{
 		public readonly float Value;
-		public Float32(SequencePoint sp, float value) : base(sp)
+		public Float32(CilPoint pt, float value) : base(pt)
 		{
 			Value = value;
 		}

@@ -20,7 +20,7 @@ namespace Flint.Analyzers
 	#region EntityPropertyDefinition
 	class EntityPropertyDefinition
 	{
-		public required PropertyReference Property { get; init; }
+		public required PropertyDefinition Property { get; init; }
 		public required EntityDefinition Entity { get; init; }
 		public required bool Read { get; init; }
 		public required bool Write { get; init; }
@@ -53,100 +53,72 @@ namespace Flint.Analyzers
 			return [.. entities];
 		}
 
-		public static ImmutableArray<EntityDefinition> CollectEntities(AssemblyDefinition asm, MethodDefinition method, IReadOnlyCollection<Ast> expressions)
-		{
-			var entities = new List<EntityDefinition>(asm.EntityTypes.Count);
-			foreach (var et in asm.EntityTypes)
-			{
-				var entity = CreateEntityDefinition(method, null, et, expressions, asm.EntityTypes);
-				if (entity.Properties.Length > 0)
-					entities.Add(entity);
-			}
-			return [.. entities];
-		}
+		//public static ImmutableArray<EntityDefinition> CollectEntities(AssemblyDefinition asm, MethodDefinition method, IReadOnlyCollection<Ast> expressions)
+		//{
+		//	var entities = new List<EntityDefinition>(asm.EntityTypes.Count);
+		//	foreach (var et in asm.EntityTypes)
+		//	{
+		//		var entity = CreateEntityDefinition(method, null, et, expressions, asm.EntityTypes);
+		//		if (entity.Properties.Length > 0)
+		//			entities.Add(entity);
+		//	}
+		//	return [.. entities];
+		//}
 		#endregion
 
 		#region Implementation
-		public static readonly string[] ROOTS =
-		[
-			//"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AsAsyncEnumerable",
-			//"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToArrayAsync",
-			//"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToDictionaryAsync",
-			//"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToHashSetAsync",
-			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync",
-			//"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstAsync",
-			//"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync",
-			//"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastAsync",
-			//"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastOrDefaultAsync",
-			//"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleAsync",
-			//"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleOrDefaultAsync",
-		];
-
 		private static void Analyze(AssemblyDefinition asm, MethodDefinition method, List<EntityDefinition> entities)
 		{
+			var expressions = MethodAnalyzer.Eval(asm, method);
+
 			// find roots (methods where IQueryable monad is unwrapped; ToListAsync and so on)
-			var roots = ROOTS
-				.Select(x => MethodAnalyzer.GetCallChains(asm, method, x))
-				.Where(x => x.Count > 0)
-				.ToList();
-			if (roots.Count == 0)
-				return;
+			// for every found root mark every ast accessible from it
+			var roots = new HashSet<Cil.Call>();
+			var marks = new Dictionary<Ast, List<Ast>>();
+			foreach (var expr in expressions)
+			{
+				var (root, ok) = CaptureAnyRoot(expr,
+				[
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AsAsyncEnumerable",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToArrayAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToDictionaryAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToHashSetAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastOrDefaultAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleAsync",
+					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleOrDefaultAsync",
+				]);
+				if (ok == false)
+					continue;
+
+				roots.Add(root);
+				var rootExpressions = marks.GetOrAddValue(root);
+				Mark(expr, root, rootExpressions);
+
+				// some methods (i.e. ToDictionaryAsync) use lambdas, analyze them too
+				var lambdas = new List<Ast>();
+				MethodAnalyzer.CollectLambdaExpressions(rootExpressions, lambdas);
+				rootExpressions.AddRange(lambdas);
+			}
 
 			// gather accessed properties
+			foreach (var root in roots)
+			{
+				if (marks.TryGetValue(root, out var rootExpressions) == false)
+					continue;
+
+				// et is T from METHOD<T> (i.e. ToListAsync<T>)
+				var et = (TypeDefinition)((GenericInstanceMethod)root.Method).GenericArguments.First();
+				if (asm.EntityTypes.Contains(et) == false)
+					continue;
+
+				var entity = CreateEntityDefinition(method, root, et, rootExpressions, asm.EntityTypes);
+				entities.Add(entity);
+			}
 		}
-
-		//private static void Analyze(AssemblyDefinition asm, MethodDefinition method, List<EntityDefinition> entities)
-		//{
-		//	var expressions = MethodAnalyzer.Eval(asm, method);
-
-		//	// find roots (methods where IQueryable monad is unwrapped; ToListAsync and so on)
-		//	// for every found root mark every ast accessible from it
-		//	var roots = new HashSet<Cil.Call>();
-		//	var marks = new Dictionary<Ast, List<Ast>>();
-		//	foreach (var expr in expressions)
-		//	{
-		//		var (root, ok) = CaptureAnyRoot(expr,
-		//		[
-		//			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AsAsyncEnumerable",
-		//			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToArrayAsync",
-		//			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToDictionaryAsync",
-		//			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToHashSetAsync",
-		//			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync",
-		//			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstAsync",
-		//			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync",
-		//			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastAsync",
-		//			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastOrDefaultAsync",
-		//			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleAsync",
-		//			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleOrDefaultAsync",
-		//		]);
-		//		if (ok == false)
-		//			continue;
-
-		//		roots.Add(root);
-		//		var rootExpressions = marks.GetOrAddValue(root);
-		//		Mark(expr, root, rootExpressions);
-
-		//		// some methods (i.e. ToDictionaryAsync) use lambdas, analyze them too
-		//		var lambdas = new List<Ast>();
-		//		MethodAnalyzer.CollectLambdaExpressions(rootExpressions, lambdas);
-		//		rootExpressions.AddRange(lambdas);
-		//	}
-
-		//	// gather accessed properties
-		//	foreach (var root in roots)
-		//	{
-		//		if (marks.TryGetValue(root, out var rootExpressions) == false)
-		//			continue;
-
-		//		// et is T from METHOD<T> (i.e. ToListAsync<T>)
-		//		var et = (TypeDefinition)((GenericInstanceMethod)root.Method).GenericArguments.First();
-		//		if (asm.EntityTypes.Contains(et) == false)
-		//			continue;
-
-		//		var entity = CreateEntityDefinition(method, root, et, rootExpressions, asm.EntityTypes);
-		//		entities.Add(entity);
-		//	}
-		//}
 
 		private static (Cil.Call root, bool ok) CaptureAnyRoot(Ast expression, IEnumerable<string> methodNames)
 		{

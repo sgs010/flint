@@ -21,7 +21,7 @@ namespace Flint.Analyzers
 				// report issue
 				var sb = new StringBuilder();
 				sb.Append("add AsNoTracking() in method ");
-				MethodAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.SequencePoint);
+				MethodAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.CilPoint);
 				ctx.Log(sb.ToString());
 			}
 		}

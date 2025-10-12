@@ -1,12 +1,10 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class Elem : Ast
 	{
 		public readonly Ast Array;
 		public readonly Ast Index;
-		public Elem(SequencePoint sp, Ast array, Ast index) : base(sp)
+		public Elem(CilPoint pt, Ast array, Ast index) : base(pt)
 		{
 			Array = array;
 			Index = index;

@@ -1,5 +1,4 @@
 ﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Flint.Vm.Cil
 {
@@ -7,7 +6,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly MethodReference Method;
 		public readonly MethodDefinition MethodImpl;
-		public Methodof(SequencePoint sp, MethodReference method) : base(sp)
+		public Methodof(CilPoint pt, MethodReference method) : base(pt)
 		{
 			Method = method;
 			MethodImpl = method.Resolve();

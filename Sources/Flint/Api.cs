@@ -1,6 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.IO;
-using System.Net.Security;
 using System.Runtime.CompilerServices;
 using Flint.Analyzers;
 
@@ -29,12 +27,18 @@ namespace Flint
 		{
 			var ctx = new AnalyzerContext();
 
-			Parallel.Invoke(
-				() => ProjectionAnalyzer.Run(ctx, asm),
-				() => IncludeAnalyzer.Run(ctx, asm),
-				() => AsNoTrackingAnalyzer.Run(ctx, asm),
-				() => AsSplitQueryAnalyzer.Run(ctx, asm),
-				() => OutboxAnalyzer.Run(ctx, asm));
+			//Parallel.Invoke(
+			//	() => ProjectionAnalyzer.Run(ctx, asm),
+			//	() => IncludeAnalyzer.Run(ctx, asm),
+			//	() => AsNoTrackingAnalyzer.Run(ctx, asm),
+			//	() => AsSplitQueryAnalyzer.Run(ctx, asm),
+			//	() => OutboxAnalyzer.Run(ctx, asm));
+
+			ProjectionAnalyzer.Run(ctx, asm);
+			IncludeAnalyzer.Run(ctx, asm);
+			AsNoTrackingAnalyzer.Run(ctx, asm);
+			AsSplitQueryAnalyzer.Run(ctx, asm);
+			OutboxAnalyzer.Run(ctx, asm);
 
 			return [.. ctx.Output];
 		}

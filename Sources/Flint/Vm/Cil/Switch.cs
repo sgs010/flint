@@ -1,11 +1,9 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class Switch : Ast
 	{
 		public readonly Ast Value;
-		public Switch(SequencePoint sp, Ast val) : base(sp)
+		public Switch(CilPoint pt, Ast val) : base(pt)
 		{
 			Value = val;
 		}

@@ -1,5 +1,4 @@
 ﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Flint.Vm.Cil
 {
@@ -9,7 +8,7 @@ namespace Flint.Vm.Cil
 		public readonly MethodReference Ctor;
 		public readonly MethodDefinition CtorImpl;
 		public readonly Ast[] Args;
-		public Newobj(SequencePoint sp, TypeReference type, MethodReference ctor, Ast[] args) : base(sp)
+		public Newobj(CilPoint pt, TypeReference type, MethodReference ctor, Ast[] args) : base(pt)
 		{
 			Type = type;
 			Ctor = ctor;

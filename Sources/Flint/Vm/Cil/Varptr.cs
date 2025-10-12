@@ -1,11 +1,9 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class Varptr : Ast
 	{
 		public readonly int Index;
-		public Varptr(SequencePoint sp, int index) : base(sp)
+		public Varptr(CilPoint pt, int index) : base(pt)
 		{
 			Index = index;
 		}

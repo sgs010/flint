@@ -1,5 +1,4 @@
 ﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Flint.Vm.Cil
 {
@@ -7,7 +6,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly TypeReference Type;
 		public readonly Ast Address;
-		public Refanyval(SequencePoint sp, TypeReference type, Ast address) : base(sp)
+		public Refanyval(CilPoint pt, TypeReference type, Ast address) : base(pt)
 		{
 			Type = type;
 			Address = address;

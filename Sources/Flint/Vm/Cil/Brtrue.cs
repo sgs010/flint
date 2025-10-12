@@ -1,18 +1,16 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class Brtrue : Ast
 	{
 		public readonly Ast Value;
-		public Brtrue(SequencePoint sp, Ast val) : base(sp)
+		public Brtrue(CilPoint pt, Ast val) : base(pt)
 		{
 			Value = val;
 		}
 
-		public static Brtrue Create(SequencePoint sp, Ast val)
+		public static Brtrue Create(CilPoint pt, Ast val)
 		{
-			return new Brtrue(sp, val);
+			return new Brtrue(pt, val);
 		}
 
 		public override IEnumerable<Ast> GetChildren()
