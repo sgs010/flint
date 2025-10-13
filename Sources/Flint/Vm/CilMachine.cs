@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Runtime.InteropServices;
 using Flint.Common;
 using Flint.Vm.Cil;
 using Mono.Cecil;
@@ -48,24 +47,31 @@ namespace Flint.Vm
 	}
 	#endregion
 
+	#region ICilMachineContext
+	interface ICilMachineContext
+	{
+		string GetMethodFullName(MethodReference method);
+	}
+	#endregion
+
 	#region CilMachine
 	static class CilMachine
 	{
 		#region Interface
-		public static ImmutableArray<Branch> Run(MethodDefinition mtd)
+		public static ImmutableArray<Branch> Run(MethodDefinition mtd, ICilMachineContext machineContext = null)
 		{
 			var branches = new List<RoutineContext> { new RoutineContext(mtd) };
 			for (var i = 0; i < branches.Count; ++i)
 			{
-				var ctx = branches[i];
-				var instruction = ctx.StartInstruction;
+				var currentBranch = branches[i];
+				var instruction = currentBranch.StartInstruction;
 				while (instruction != null)
 				{
-					if (ctx.VisitedOffsets.Contains(instruction.Offset))
+					if (currentBranch.VisitedOffsets.Contains(instruction.Offset))
 						break;
 
-					Eval(ctx, branches, instruction, out var nextInstruction);
-					ctx.VisitedOffsets.Add(instruction.Offset);
+					Eval(currentBranch, branches, instruction, out var nextInstruction, machineContext);
+					currentBranch.VisitedOffsets.Add(instruction.Offset);
 					instruction = nextInstruction;
 				}
 			}
@@ -197,10 +203,16 @@ namespace Flint.Vm
 		[Obsolete("for tests only")]
 		internal static void Eval(RoutineContext ctx, Instruction instruction)
 		{
-			Eval(ctx, [], instruction, out var _);
+			Eval(ctx, [], instruction, out var _, null);
 		}
 
+		[Obsolete("for tests only")]
 		internal static void Eval(RoutineContext ctx, List<RoutineContext> branches, Instruction instruction, out Instruction nextInstruction)
+		{
+			Eval(ctx, branches, instruction, out nextInstruction, null);
+		}
+
+		internal static void Eval(RoutineContext ctx, List<RoutineContext> branches, Instruction instruction, out Instruction nextInstruction, ICilMachineContext machineContext)
 		{
 			nextInstruction = instruction.Next;
 
@@ -275,7 +287,7 @@ namespace Flint.Vm
 					break;
 				case Code.Call:
 				case Code.Callvirt:
-					Call(ctx, instruction);
+					Call(ctx, instruction, machineContext);
 					break;
 				case Code.Castclass:
 					Castclass(ctx, instruction);
@@ -765,7 +777,7 @@ namespace Flint.Vm
 			ctx.Stack.Push(new Cil.Box(pt, value));
 		}
 
-		private static void Call(RoutineContext ctx, Instruction instruction)
+		private static void Call(RoutineContext ctx, Instruction instruction, ICilMachineContext machineContext)
 		{
 			var method = (MethodReference)instruction.Operand;
 			var pt = GetCilPoint(ctx, instruction);
@@ -775,7 +787,8 @@ namespace Flint.Vm
 			if (method.HasThis)
 				instance = ctx.Stack.Pop();
 
-			var call = new Cil.Call(pt, instance, method, args);
+			var methodFullName = machineContext?.GetMethodFullName(method);
+			var call = new Cil.Call(pt, instance, method, args, methodFullName);
 
 			ctx.Expressions.RemoveAll(args);
 			if (instance != null)

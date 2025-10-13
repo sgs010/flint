@@ -256,7 +256,7 @@ namespace Flint.Analyzers
 				if (asm.EntityTypes.Contains(et) == false)
 					continue;
 
-				var entity = CreateEntity(method, root, et, rootExpressions, asm.EntityTypes);
+				var entity = CreateEntity(asm, method, root, et, rootExpressions, asm.EntityTypes);
 				entities.Add(entity);
 			}
 		}
@@ -291,7 +291,7 @@ namespace Flint.Analyzers
 				Mark(child, root, marks);
 		}
 
-		private static XEntity CreateEntity(MethodDefinition mtd, Ast root, TypeDefinition type, IReadOnlyCollection<Ast> expressions, ISet<TypeDefinition> entityTypes)
+		private static XEntity CreateEntity(AssemblyInfo asm, MethodDefinition mtd, Ast root, TypeDefinition type, IReadOnlyCollection<Ast> expressions, ISet<TypeDefinition> entityTypes)
 		{
 			var entityProperties = new Dictionary<MetadataToken, XProperty>(type.Properties.Count);
 			foreach (var prop in type.Properties)
@@ -301,15 +301,17 @@ namespace Flint.Analyzers
 				foreach (var expr in expressions)
 				{
 					// check read (call of get_Property method)
+					var propGet = AssemblyAnalyzer.GetMethodFullName(asm, prop.GetMethod);
 					var (captureRead, ok) = expr.Match(
-						new Match.Call(Match.Any.Instance, prop.GetMethod.FullName, Match.Any.Args),
+						new Match.Call(Match.Any.Instance, propGet, Match.Any.Args),
 						true);
 					if (ok)
 						propRead = true;
 
 					// check write (call of set_Property method)
+					var propSet = AssemblyAnalyzer.GetMethodFullName(asm, prop.SetMethod);
 					(_, ok) = expr.Match(
-						new Match.Call(Match.Any.Instance, prop.SetMethod.FullName, Match.Any.Args),
+						new Match.Call(Match.Any.Instance, propSet, Match.Any.Args),
 						true);
 					if (ok)
 						propWrite = true;
@@ -321,12 +323,12 @@ namespace Flint.Analyzers
 					{
 						if (prop.PropertyType.IsGenericCollection(out var itemType, entityTypes))
 						{
-							propEnt = CreateEntity(mtd, root, itemType.Resolve(), expressions, entityTypes);
+							propEnt = CreateEntity(asm, mtd, root, itemType.Resolve(), expressions, entityTypes);
 							propWrite = IsCollectionChanged(expr, captureRead.Values);
 						}
 						else if (entityTypes.Contains(prop.PropertyType))
 						{
-							propEnt = CreateEntity(mtd, root, prop.PropertyType.Resolve(), expressions, entityTypes);
+							propEnt = CreateEntity(asm, mtd, root, prop.PropertyType.Resolve(), expressions, entityTypes);
 						}
 					}
 				}

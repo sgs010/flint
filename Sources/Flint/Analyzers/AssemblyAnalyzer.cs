@@ -22,6 +22,7 @@ namespace Flint.Analyzers
 		public required FrozenDictionary<MethodDefinition, ImmutableArray<Ast>> MethodExpressions { get; init; }
 		public required FrozenDictionary<MethodReference, ImmutableArray<CallInfo>> MethodInnerCalls { get; init; }
 		public required FrozenDictionary<MethodReference, ImmutableArray<CallInfo>> MethodOuterCalls { get; init; }
+		public required FrozenDictionary<MethodReference, string> MethodFullNames { get; init; }
 
 		protected override void BaseDispose(bool disposing)
 		{
@@ -71,12 +72,13 @@ namespace Flint.Analyzers
 			var entityPropMap = new HashSet<PropertyDefinition>();
 			var interfaceMap = new Dictionary<TypeReference, List<TypeDefinition>>();
 			var methodMap = new Dictionary<MethodDefinition, ImmutableArray<Ast>>(MethodReferenceEqualityComparer.Instance);
+			var methodNameMap = new Dictionary<MethodReference, string>(MethodReferenceEqualityComparer.Instance);
 
 			foreach (var t in module.Types)
 			{
 				PopulateEntities(t, entityMap, entityPropMap);
 				PopulateInterfaces(t, interfaceMap);
-				PopulateMethods(t, methodMap);
+				PopulateMethods(t, methodMap, methodNameMap);
 			}
 
 			var innerCallMap = new Dictionary<MethodReference, HashSet<CallInfo>>(MethodReferenceEqualityComparer.Instance);
@@ -94,8 +96,16 @@ namespace Flint.Analyzers
 				InterfaceImplementations = interfaceMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray()),
 				MethodExpressions = methodMap.ToFrozenDictionary(),
 				MethodInnerCalls = innerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray()),
-				MethodOuterCalls = outerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray())
+				MethodOuterCalls = outerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray()),
+				MethodFullNames = methodNameMap.ToFrozenDictionary(),
 			};
+		}
+
+		public static string GetMethodFullName(AssemblyInfo asm, MethodReference method)
+		{
+			if (asm.MethodFullNames.TryGetValue(method, out var fullName))
+				return fullName;
+			return method.FullName;
 		}
 		#endregion
 
@@ -166,7 +176,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void PopulateMethods(TypeDefinition type, Dictionary<MethodDefinition, ImmutableArray<Ast>> methodMap)
+		private static void PopulateMethods(TypeDefinition type, Dictionary<MethodDefinition, ImmutableArray<Ast>> methodMap, Dictionary<MethodReference, string> methodNameMap)
 		{
 			if (type.IsInterface)
 				return; // do not process interfaces
@@ -175,6 +185,8 @@ namespace Flint.Analyzers
 
 			foreach (var method in type.Methods)
 			{
+				methodNameMap.Add(method, method.FullName);
+
 				if (method.IsCompilerGenerated())
 					continue; // do not process auto generated methods
 

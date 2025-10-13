@@ -3,6 +3,23 @@ using Mono.Cecil.Cil;
 
 namespace Flint.Common
 {
+	#region TypeReferenceEqualityComparer
+	sealed class TypeReferenceEqualityComparer : IEqualityComparer<TypeReference>
+	{
+		public static TypeReferenceEqualityComparer Instance = new();
+
+		public bool Equals(TypeReference x, TypeReference y)
+		{
+			return x.MetadataToken.Equals(y.MetadataToken);
+		}
+
+		public int GetHashCode(TypeReference obj)
+		{
+			return obj.MetadataToken.GetHashCode();
+		}
+	}
+	#endregion
+
 	#region MethodReferenceEqualityComparer
 	sealed class MethodReferenceEqualityComparer : IEqualityComparer<MethodReference>
 	{

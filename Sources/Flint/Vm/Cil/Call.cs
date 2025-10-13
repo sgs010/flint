@@ -5,12 +5,14 @@ namespace Flint.Vm.Cil
 	class Call : Ast
 	{
 		public readonly Ast Instance;
+		public string MethodFullName;
 		public readonly MethodReference Method;
 		public readonly MethodDefinition MethodImpl;
 		public readonly Ast[] Args;
-		public Call(CilPoint pt, Ast instance, MethodReference method, Ast[] args) : base(pt)
+		public Call(CilPoint pt, Ast instance, MethodReference method, Ast[] args, string methodFullName = null) : base(pt)
 		{
 			Instance = instance;
+			MethodFullName = methodFullName ?? method.FullName;
 			Method = method;
 			MethodImpl = method.Resolve();
 			Args = args;

@@ -1,6 +1,4 @@
-﻿using Mono.Cecil;
-
-namespace Flint.Vm
+﻿namespace Flint.Vm
 {
 	static class AstExtensions
 	{
@@ -71,14 +69,6 @@ namespace Flint.Vm
 			foreach (var expr in expressions)
 				foreach (var ftn in expr.OfFtn())
 					yield return ftn;
-		}
-
-		public static Match.Call PropGet(this PropertyDefinition prop)
-		{
-			if (prop.GetMethod == null)
-				throw new InvalidOperationException($"Property {prop} does not have get accessor.");
-
-			return new Match.Call(Match.Any.Instance, prop.GetMethod.FullName);
 		}
 	}
 }

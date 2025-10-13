@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "FlintCLI": {
+      "commandName": "Project",
+      "commandLineArgs": "--input=webapp.dll"
+    }
+  }
+}
