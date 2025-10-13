@@ -13,6 +13,24 @@
 			return false;
 		}
 
+		public static IEnumerable<Cil.Call> OfCall(this Ast expression, string methodFullName = null)
+		{
+			if (expression is Cil.Call call)
+			{
+				if (methodFullName == null)
+					yield return call;
+				else if (call.MethodFullName == methodFullName)
+					yield return call;
+			}
+
+			foreach (var child in expression.GetChildren())
+			{
+				if (child != null)
+					foreach (var childCall in child.OfCall(methodFullName))
+						yield return childCall;
+			}
+		}
+
 		public static IEnumerable<Cil.Call> OfCall(this Ast expression, Ast instance, string methodName)
 		{
 			var (captures, ok) = expression.Match(
@@ -23,16 +41,6 @@
 
 			foreach (var cap in captures)
 				yield return (Cil.Call)cap.Value;
-		}
-
-		public static IEnumerable<Cil.Call> OfCall(this Ast expression, string methodName)
-		{
-			return OfCall(expression, Match.Any.Instance, methodName);
-		}
-
-		public static IEnumerable<Cil.Call> OfCall(this Ast expression)
-		{
-			return OfCall(expression, Match.Any.Instance, null);
 		}
 
 		public static IEnumerable<Cil.Call> OfCall(this IEnumerable<Ast> expressions, Ast instance, string methodName)

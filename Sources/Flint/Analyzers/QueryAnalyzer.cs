@@ -302,18 +302,13 @@ namespace Flint.Analyzers
 				{
 					// check read (call of get_Property method)
 					var propGet = AssemblyAnalyzer.GetMethodFullName(asm, prop.GetMethod);
-					var (captureRead, ok) = expr.Match(
-						new Match.Call(Match.Any.Instance, propGet, Match.Any.Args),
-						true);
-					if (ok)
+					var propGetCalls = expr.OfCall(propGet).ToList();
+					if (propGetCalls.Count > 0)
 						propRead = true;
 
 					// check write (call of set_Property method)
 					var propSet = AssemblyAnalyzer.GetMethodFullName(asm, prop.SetMethod);
-					(_, ok) = expr.Match(
-						new Match.Call(Match.Any.Instance, propSet, Match.Any.Args),
-						true);
-					if (ok)
+					if (expr.OfCall(propSet).Any())
 						propWrite = true;
 
 					if (propRead == false && propWrite == false)
@@ -324,7 +319,7 @@ namespace Flint.Analyzers
 						if (prop.PropertyType.IsGenericCollection(out var itemType, entityTypes))
 						{
 							propEnt = CreateEntity(asm, mtd, root, itemType.Resolve(), expressions, entityTypes);
-							propWrite = IsCollectionChanged(expr, captureRead.Values);
+							propWrite = IsCollectionChanged(expr, propGetCalls);
 						}
 						else if (entityTypes.Contains(prop.PropertyType))
 						{
