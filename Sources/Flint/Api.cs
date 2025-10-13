@@ -9,36 +9,30 @@ namespace Flint
 	public static class Api
 	{
 		#region Interface
-		public static ImmutableArray<string> Analyze(string dllPath)
+		public static ImmutableArray<string> Analyze(string dllPath, bool trace = false)
 		{
-			using var asm = AssemblyAnalyzer.Load(dllPath);
-			return Analyze(asm);
+			var ctx = new AnalyzerContext { Trace = trace };
+			using var asm = AssemblyAnalyzer.Load(ctx, dllPath);
+			return Analyze(ctx, asm);
 		}
 
-		public static ImmutableArray<string> Analyze(Stream dllStream, Stream pdbStream)
+		public static ImmutableArray<string> Analyze(Stream dllStream, Stream pdbStream, bool trace = false)
 		{
-			using var asm = AssemblyAnalyzer.Load(dllStream, pdbStream);
-			return Analyze(asm);
+			var ctx = new AnalyzerContext { Trace = trace };
+			using var asm = AssemblyAnalyzer.Load(ctx, dllStream, pdbStream);
+			return Analyze(ctx, asm);
 		}
 		#endregion
 
 		#region Implementation
-		private static ImmutableArray<string> Analyze(AssemblyInfo asm)
+		private static ImmutableArray<string> Analyze(AnalyzerContext ctx, AssemblyInfo asm)
 		{
-			var ctx = new AnalyzerContext();
-
 			Parallel.Invoke(
 				() => ProjectionAnalyzer.Run(ctx, asm),
 				() => IncludeAnalyzer.Run(ctx, asm),
 				() => AsNoTrackingAnalyzer.Run(ctx, asm),
 				() => AsSplitQueryAnalyzer.Run(ctx, asm),
 				() => OutboxAnalyzer.Run(ctx, asm));
-
-			//ProjectionAnalyzer.Run(ctx, asm);
-			//IncludeAnalyzer.Run(ctx, asm);
-			//AsNoTrackingAnalyzer.Run(ctx, asm);
-			//AsSplitQueryAnalyzer.Run(ctx, asm);
-			//OutboxAnalyzer.Run(ctx, asm);
 
 			return [.. ctx.Output];
 		}

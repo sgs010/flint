@@ -1,5 +1,6 @@
 ﻿using System.Collections.Frozen;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using Flint.Common;
 using Flint.Vm;
 using Flint.Vm.Cil;
@@ -38,7 +39,7 @@ namespace Flint.Analyzers
 	internal class AssemblyAnalyzer
 	{
 		#region Interface
-		public static AssemblyInfo Load(string path)
+		public static AssemblyInfo Load(IAnalyzerContext ctx, string path)
 		{
 			Stream dllStream = null, pdbStream = null;
 			try
@@ -49,7 +50,7 @@ namespace Flint.Analyzers
 				if (File.Exists(pdbPath))
 					pdbStream = File.OpenRead(pdbPath);
 
-				return Load(dllStream, pdbStream);
+				return Load(ctx, dllStream, pdbStream);
 			}
 			finally
 			{
@@ -58,7 +59,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		public static AssemblyInfo Load(Stream dllStream, Stream pdbStream)
+		public static AssemblyInfo Load(IAnalyzerContext ctx, Stream dllStream, Stream pdbStream)
 		{
 			var parameters = new ReaderParameters { AssemblyResolver = new AssemblyResolver() };
 			if (pdbStream != null)
@@ -74,11 +75,15 @@ namespace Flint.Analyzers
 			var methodMap = new Dictionary<MethodDefinition, ImmutableArray<Ast>>(MethodReferenceEqualityComparer.Instance);
 			var methodNameMap = new Dictionary<MethodReference, string>(MethodReferenceEqualityComparer.Instance);
 
-			foreach (var t in module.Types)
+			foreach (var type in module.Types)
 			{
-				PopulateEntities(t, entityMap, entityPropMap);
-				PopulateInterfaces(t, interfaceMap);
-				PopulateMethods(t, methodMap, methodNameMap);
+				var tt = ctx.BeginTrace($"load type {type.FullName}");
+
+				PopulateEntities(type, entityMap, entityPropMap);
+				PopulateInterfaces(type, interfaceMap);
+				PopulateMethods(type, methodMap, methodNameMap);
+
+				ctx.EndTrace(tt);
 			}
 
 			var innerCallMap = new Dictionary<MethodReference, HashSet<CallInfo>>(MethodReferenceEqualityComparer.Instance);
