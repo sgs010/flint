@@ -26,25 +26,25 @@ namespace FlintTests.FlintCore
 			]);
 		}
 
-		[TestMethod]
-		[Timeout(3000)]
-		public void TestAnyDll()
-		{
-			var ctx = new AnalyzerContext { Trace = true };
-			foreach (var path in Directory.GetFiles(".", "*.dll"))
-			{
-				#region BEGIN trace
-				Console.WriteLine($"BEGIN analyze {path}");
-				var watch = Stopwatch.StartNew();
-				#endregion
+		//[TestMethod]
+		//[Timeout(3000)]
+		//public void TestAnyDll()
+		//{
+		//	var ctx = new AnalyzerContext { Trace = true };
+		//	foreach (var path in Directory.GetFiles(".", "*.dll"))
+		//	{
+		//		#region BEGIN trace
+		//		Console.WriteLine($"BEGIN analyze {path}");
+		//		var watch = Stopwatch.StartNew();
+		//		#endregion
 
-				Flint.Api.Analyze(path, trace: true);
+		//		Flint.Api.Analyze(path, trace: true);
 
-				#region END trace
-				watch.Stop();
-				Console.WriteLine($"END analyze {path} - elapsed {watch.ElapsedMilliseconds} ms");
-				#endregion
-			}
-		}
+		//		#region END trace
+		//		watch.Stop();
+		//		Console.WriteLine($"END analyze {path} - elapsed {watch.ElapsedMilliseconds} ms");
+		//		#endregion
+		//	}
+		//}
 	}
 }

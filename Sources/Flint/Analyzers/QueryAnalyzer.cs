@@ -1,5 +1,6 @@
 ﻿using System.Collections.Frozen;
 using System.Collections.Immutable;
+using System.Xml.Linq;
 using Flint.Common;
 using Flint.Vm;
 using Mono.Cecil;
@@ -218,21 +219,8 @@ namespace Flint.Analyzers
 			var marks = new Dictionary<Ast, List<Ast>>();
 			foreach (var expr in expressions)
 			{
-				var (root, ok) = CaptureAnyRoot(expr,
-				[
-					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AsAsyncEnumerable",
-					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToArrayAsync",
-					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToDictionaryAsync",
-					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToHashSetAsync",
-					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync",
-					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstAsync",
-					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync",
-					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastAsync",
-					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastOrDefaultAsync",
-					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleAsync",
-					"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleOrDefaultAsync",
-				]);
-				if (ok == false)
+				var root = expr.OfCall(asm.EFCoreRoots).FirstOrDefault();
+				if (root == null)
 					continue;
 
 				roots.Add(root);
@@ -259,22 +247,6 @@ namespace Flint.Analyzers
 				var entity = CreateEntity(asm, method, root, et, rootExpressions, asm.EntityTypes);
 				entities.Add(entity);
 			}
-		}
-
-		private static (Cil.Call root, bool ok) CaptureAnyRoot(Ast expression, IEnumerable<string> methodNames)
-		{
-			foreach (var name in methodNames)
-			{
-				var (captures, ok) = expression.Match(
-					new Match.Call(null, name, Match.Any.Args),
-					true);
-				if (ok == false)
-					continue;
-
-				var root = (Cil.Call)captures.Values.First();
-				return (root, true);
-			}
-			return (null, false);
 		}
 
 		private static void Mark(Ast expression, Ast root, List<Ast> marks)

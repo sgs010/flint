@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm
+﻿using Mono.Cecil;
+
+namespace Flint.Vm
 {
 	static class AstExtensions
 	{
@@ -11,6 +13,22 @@
 					return true;
 			}
 			return false;
+		}
+
+		public static IEnumerable<Cil.Call> OfCall(this Ast expression, IReadOnlySet<MethodReference> methods)
+		{
+			if (expression is Cil.Call call)
+			{
+				if (methods.Contains(call.Method))
+					yield return call;
+			}
+
+			foreach (var child in expression.GetChildren())
+			{
+				if (child != null)
+					foreach (var childCall in child.OfCall(methods))
+						yield return childCall;
+			}
 		}
 
 		public static IEnumerable<Cil.Call> OfCall(this Ast expression, string methodFullName = null)

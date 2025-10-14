@@ -24,6 +24,7 @@ namespace Flint.Analyzers
 		public required FrozenDictionary<MethodReference, ImmutableArray<CallInfo>> MethodInnerCalls { get; init; }
 		public required FrozenDictionary<MethodReference, ImmutableArray<CallInfo>> MethodOuterCalls { get; init; }
 		public required FrozenDictionary<MethodReference, string> MethodFullNames { get; init; }
+		public required FrozenSet<MethodReference> EFCoreRoots { get; init; }
 
 		protected override void BaseDispose(bool disposing)
 		{
@@ -93,6 +94,10 @@ namespace Flint.Analyzers
 				PopulateCalls(m.Key, m.Value, innerCallMap, outerCallMap);
 			}
 
+			var efCoreRoots = outerCallMap.Keys
+				.Where(x => x.HasFullName(EF_CORE_ROOTS))
+				.ToFrozenSet(MethodReferenceEqualityComparer.Instance);
+
 			return new AssemblyInfo
 			{
 				Module = module,
@@ -103,6 +108,7 @@ namespace Flint.Analyzers
 				MethodInnerCalls = innerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray()),
 				MethodOuterCalls = outerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray()),
 				MethodFullNames = methodNameMap.ToFrozenDictionary(),
+				EFCoreRoots = efCoreRoots,
 			};
 		}
 
@@ -144,6 +150,20 @@ namespace Flint.Analyzers
 				return obj.CilPoint.GetHashCode();
 			}
 		}
+
+		private static readonly FrozenSet<string> EF_CORE_ROOTS = [
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AsAsyncEnumerable",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToArrayAsync",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToDictionaryAsync",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToHashSetAsync",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstAsync",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastAsync",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastOrDefaultAsync",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleAsync",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleOrDefaultAsync",
+		];
 
 		private static void PopulateEntities(TypeDefinition type, HashSet<TypeDefinition> entityMap, HashSet<PropertyDefinition> entityPropMap)
 		{

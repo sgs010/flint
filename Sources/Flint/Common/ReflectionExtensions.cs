@@ -133,6 +133,11 @@ namespace Flint.Common
 			return method.GetFullName().Equals(name, StringComparison.Ordinal);
 		}
 
+		public static bool HasFullName(this MethodReference method, IReadOnlySet<string> names)
+		{
+			return names.Contains(method.GetFullName());
+		}
+
 		public static bool AreEqual(TypeReference x, TypeReference y)
 		{
 			return x.MetadataToken.Equals(y.MetadataToken);
