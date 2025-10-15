@@ -1,6 +1,5 @@
 ﻿using System.Collections.Frozen;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using Flint.Common;
 using Flint.Vm;
 using Flint.Vm.Cil;
@@ -19,11 +18,14 @@ namespace Flint.Analyzers
 		public required ModuleDefinition Module { get; init; }
 		public required FrozenSet<TypeDefinition> EntityTypes { get; init; }
 		public required FrozenSet<PropertyDefinition> EntityCollections { get; init; }
+		public required FrozenSet<MethodReference> EntityGetSetMethods { get; init; }
 		public required FrozenDictionary<TypeReference, ImmutableArray<TypeDefinition>> InterfaceImplementations { get; init; }
 		public required FrozenDictionary<MethodDefinition, ImmutableArray<Ast>> MethodExpressions { get; init; }
 		public required FrozenDictionary<MethodReference, ImmutableArray<CallInfo>> MethodInnerCalls { get; init; }
 		public required FrozenDictionary<MethodReference, ImmutableArray<CallInfo>> MethodOuterCalls { get; init; }
 		public required FrozenDictionary<MethodReference, string> MethodFullNames { get; init; }
+
+		// roots are methods where IQueryable monad is unwrapped (ToListAsync and so on)
 		public required FrozenSet<MethodReference> EFCoreRoots { get; init; }
 
 		protected override void BaseDispose(bool disposing)
@@ -72,6 +74,7 @@ namespace Flint.Analyzers
 
 			var entityMap = new HashSet<TypeDefinition>();
 			var entityPropMap = new HashSet<PropertyDefinition>();
+			var entityGetSetMap = new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance);
 			var interfaceMap = new Dictionary<TypeReference, List<TypeDefinition>>();
 			var methodMap = new Dictionary<MethodDefinition, ImmutableArray<Ast>>(MethodReferenceEqualityComparer.Instance);
 			var methodNameMap = new Dictionary<MethodReference, string>(MethodReferenceEqualityComparer.Instance);
@@ -80,7 +83,7 @@ namespace Flint.Analyzers
 			{
 				var tt = ctx.BeginTrace($"load type {type.FullName}");
 
-				PopulateEntities(type, entityMap, entityPropMap);
+				PopulateEntities(type, entityMap, entityPropMap, entityGetSetMap);
 				PopulateInterfaces(type, interfaceMap);
 				PopulateMethods(type, methodMap, methodNameMap);
 
@@ -103,6 +106,7 @@ namespace Flint.Analyzers
 				Module = module,
 				EntityTypes = entityMap.ToFrozenSet(),
 				EntityCollections = entityPropMap.ToFrozenSet(),
+				EntityGetSetMethods = entityGetSetMap.ToFrozenSet(),
 				InterfaceImplementations = interfaceMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray()),
 				MethodExpressions = methodMap.ToFrozenDictionary(),
 				MethodInnerCalls = innerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray()),
@@ -165,7 +169,7 @@ namespace Flint.Analyzers
 			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleOrDefaultAsync",
 		];
 
-		private static void PopulateEntities(TypeDefinition type, HashSet<TypeDefinition> entityMap, HashSet<PropertyDefinition> entityPropMap)
+		private static void PopulateEntities(TypeDefinition type, HashSet<TypeDefinition> entityMap, HashSet<PropertyDefinition> entityPropMap, HashSet<MethodReference> entityGetSetMap)
 		{
 			if (type.BaseType == null)
 				return;
@@ -181,6 +185,14 @@ namespace Flint.Analyzers
 
 				entityMap.Add(entityType);
 				entityPropMap.Add(prop);
+
+				foreach (var ep in entityType.Properties)
+				{
+					if (ep.GetMethod != null)
+						entityGetSetMap.Add(ep.GetMethod);
+					if (ep.SetMethod != null)
+						entityGetSetMap.Add(ep.SetMethod);
+				}
 			}
 		}
 

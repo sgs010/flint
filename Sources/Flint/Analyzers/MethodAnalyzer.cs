@@ -82,21 +82,6 @@ namespace Flint.Analyzers
 			return [];
 		}
 
-		public static void CollectLambdaExpressions(IEnumerable<Ast> methodExpressions, List<Ast> lambdaExpressions)
-		{
-			// Ftn is ldftn IL instruction, lambdas are translated into this
-			foreach (var ftn in methodExpressions.OfFtn())
-			{
-				var lambdaMethod = ftn.MethodImpl.UnwrapAsyncMethod();
-				var lambdaBranches = CilMachine.Run(lambdaMethod);
-				foreach (var branch in lambdaBranches)
-				{
-					lambdaExpressions.AddRange(branch.Expressions);
-					CollectLambdaExpressions(branch.Expressions, lambdaExpressions);
-				}
-			}
-		}
-
 		public static void PrettyPrintMethod(StringBuilder sb, MethodDefinition method, CilPoint pt)
 		{
 			sb.Append(method.DeclaringType.Namespace);

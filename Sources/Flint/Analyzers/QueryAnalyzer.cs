@@ -1,6 +1,5 @@
 ﻿using System.Collections.Frozen;
 using System.Collections.Immutable;
-using System.Xml.Linq;
 using Flint.Common;
 using Flint.Vm;
 using Mono.Cecil;
@@ -14,7 +13,7 @@ namespace Flint.Analyzers
 	{
 		public required MethodDefinition Method { get; init; }
 		public required CilPoint CilPoint { get; init; }
-		public required ImmutableArray<Ast> Roots { get; init; }
+		public required ImmutableArray<Cil.Call> Roots { get; init; }
 		public required EntityInfo Entity { get; init; }
 	}
 	#endregion
@@ -55,25 +54,10 @@ namespace Flint.Analyzers
 
 		public static ImmutableArray<QueryInfo> Analyze(AssemblyInfo asm, string className = null, string methodName = null)
 		{
-			var entities = new List<XEntity>();
+			var queries = new List<QueryInfo>();
 			foreach (var method in MethodAnalyzer.GetMethods(asm, className, methodName))
 			{
-				Analyze(asm, method, entities);
-			}
-
-			var queries = new List<QueryInfo>();
-			foreach (var grp in entities.GroupBy(x => x.Root.CilPoint))
-			{
-				var entity = grp.First();
-				var roots = grp.Select(x => x.Root).ToImmutableArray();
-				var acc = Merge(grp);
-				queries.Add(new QueryInfo
-				{
-					Method = entity.Method,
-					CilPoint = grp.Key,
-					Roots = roots,
-					Entity = CreateEntityInfo(acc)
-				});
+				Analyze(asm, method, queries);
 			}
 			return [.. queries];
 		}
@@ -82,18 +66,16 @@ namespace Flint.Analyzers
 		#region Implementation
 		class XEntity
 		{
-			public required MethodDefinition Method { get; init; }
-			public required Ast Root { get; init; }
 			public required TypeDefinition Type { get; init; }
-			public required Dictionary<MetadataToken, XProperty> Properties { get; init; }
+			public Dictionary<MetadataToken, XProperty> Properties { get; } = [];
 		}
 
 		class XProperty
 		{
 			public required PropertyDefinition Property { get; init; }
-			public required XEntity Entity { get; init; }
-			public required bool Read { get; init; }
-			public required bool Write { get; init; }
+			public XEntity Entity { get; set; }
+			public bool Read { get; set; }
+			public bool Write { get; set; }
 		}
 
 		private static EntityInfo CreateEntityInfo(XEntity entity)
@@ -123,201 +105,109 @@ namespace Flint.Analyzers
 			};
 		}
 
-		private static XEntity Clone(XEntity obj)
+		private static IEnumerable<Ast> GetLambdas(Ast expr)
 		{
-			if (obj == null)
-				return null;
-
-			return new XEntity
+			ArgumentNullException.ThrowIfNull(expr);
+			foreach (var ftn in expr.OfFtn())
 			{
-				Method = obj.Method,
-				Root = obj.Root,
-				Type = obj.Type,
-				Properties = obj.Properties.ToDictionary(x => x.Key, x => Clone(x.Value))
-			};
-		}
-
-		private static XProperty Clone(XProperty obj)
-		{
-			if (obj == null)
-				return null;
-
-			return new XProperty
-			{
-				Property = obj.Property,
-				Entity = Clone(obj.Entity),
-				Read = obj.Read,
-				Write = obj.Write
-			};
-		}
-
-		private static XEntity Merge(IEnumerable<XEntity> entities)
-		{
-			XEntity result = null;
-			foreach (var entity in entities)
-			{
-				if (result == null)
-					result = Clone(entity);
-				else
-					result = Merge(result, entity);
-			}
-			return result;
-		}
-
-		private static XEntity Merge(XEntity a, XEntity b)
-		{
-			if (a.Type.MetadataToken != b.Type.MetadataToken)
-				return null;
-
-			var props = new Dictionary<MetadataToken, XProperty>();
-			foreach (var token in a.Properties.Keys.Union(b.Properties.Keys))
-			{
-				var pa = a.Properties.GetValueOrDefault(token);
-				var pb = b.Properties.GetValueOrDefault(token);
-				XProperty px = null;
-				if (pa != null && pb != null)
-					px = Merge(pa, pb);
-				else if (pa != null && pb == null)
-					px = Clone(pa);
-				else if (pa == null && pb != null)
-					px = Clone(pb);
-				if (px != null)
-					props.Add(token, px);
-			}
-			return new XEntity { Method = null, Root = null, Type = a.Type, Properties = props };
-		}
-
-		private static XProperty Merge(XProperty a, XProperty b)
-		{
-			if (a.Property.MetadataToken != b.Property.MetadataToken)
-				return null;
-
-			XEntity entity = null;
-			if (a.Entity != null && b.Entity != null)
-				entity = Merge(a.Entity, b.Entity);
-			else if (a.Entity != null && b.Entity == null)
-				entity = Clone(a.Entity);
-			else if (a.Entity == null && b.Entity != null)
-				entity = Clone(b.Entity);
-
-			return new XProperty
-			{
-				Property = a.Property,
-				Entity = entity,
-				Read = a.Read | b.Read,
-				Write = a.Write | b.Write
-			};
-		}
-
-		private static void Analyze(AssemblyInfo asm, MethodDefinition method, List<XEntity> entities)
-		{
-			var expressions = MethodAnalyzer.Eval(asm, method);
-
-			// find roots (methods where IQueryable monad is unwrapped; ToListAsync and so on)
-			// for every found root mark every ast accessible from it
-			var roots = new HashSet<Cil.Call>();
-			var marks = new Dictionary<Ast, List<Ast>>();
-			foreach (var expr in expressions)
-			{
-				var root = expr.OfCall(asm.EFCoreRoots).FirstOrDefault();
-				if (root == null)
-					continue;
-
-				roots.Add(root);
-				var rootExpressions = marks.GetOrAddValue(root);
-				Mark(expr, root, rootExpressions);
-
-				// some methods (i.e. ToDictionaryAsync) use lambdas, analyze them too
-				var lambdas = new List<Ast>();
-				MethodAnalyzer.CollectLambdaExpressions(rootExpressions, lambdas);
-				rootExpressions.AddRange(lambdas);
-			}
-
-			// gather accessed properties
-			foreach (var root in roots)
-			{
-				if (marks.TryGetValue(root, out var rootExpressions) == false)
-					continue;
-
-				// et is T from METHOD<T> (i.e. ToListAsync<T>)
-				var et = (TypeDefinition)((GenericInstanceMethod)root.Method).GenericArguments.First();
-				if (asm.EntityTypes.Contains(et) == false)
-					continue;
-
-				var entity = CreateEntity(asm, method, root, et, rootExpressions, asm.EntityTypes);
-				entities.Add(entity);
+				var lambdaMethod = ftn.MethodImpl.UnwrapAsyncMethod();
+				var lambdaBranches = CilMachine.Run(lambdaMethod);
+				foreach (var branch in lambdaBranches)
+					foreach (var branchExpr in branch.Expressions)
+						yield return branchExpr;
 			}
 		}
 
-		private static void Mark(Ast expression, Ast root, List<Ast> marks)
+		private static IEnumerable<(Ast branch, Cil.Call root, TypeDefinition et)> GetRoots(AssemblyInfo asm, MethodDefinition method)
 		{
-			// traverse expression tree top down and mark every node untill we reach root node
-
-			if (expression == null)
-				return;
-			if (expression == root)
-				return;
-
-			marks.Add(expression);
-			foreach (var child in expression.GetChildren())
-				Mark(child, root, marks);
-		}
-
-		private static XEntity CreateEntity(AssemblyInfo asm, MethodDefinition mtd, Ast root, TypeDefinition type, IReadOnlyCollection<Ast> expressions, ISet<TypeDefinition> entityTypes)
-		{
-			var entityProperties = new Dictionary<MetadataToken, XProperty>(type.Properties.Count);
-			foreach (var prop in type.Properties)
+			foreach (var branch in MethodAnalyzer.Eval(asm, method))
 			{
-				bool propRead = false, propWrite = false;
-				XEntity propEnt = null;
-				foreach (var expr in expressions)
+				foreach (var root in branch.OfCall(asm.EFCoreRoots))
 				{
-					// check read (call of get_Property method)
-					var propGet = AssemblyAnalyzer.GetMethodFullName(asm, prop.GetMethod);
-					var propGetCalls = expr.OfCall(propGet).ToList();
-					if (propGetCalls.Count > 0)
-						propRead = true;
+					// et is T from METHOD<T> (i.e. ToListAsync<T>)
+					var et = (TypeDefinition)((GenericInstanceMethod)root.Method).GenericArguments.First();
+					if (asm.EntityTypes.Contains(et))
+						yield return (branch, root, et);
 
-					// check write (call of set_Property method)
-					var propSet = AssemblyAnalyzer.GetMethodFullName(asm, prop.SetMethod);
-					if (expr.OfCall(propSet).Any())
-						propWrite = true;
-
-					if (propRead == false && propWrite == false)
-						continue;
-
-					if (propEnt == null)
-					{
-						if (prop.PropertyType.IsGenericCollection(out var itemType, entityTypes))
-						{
-							propEnt = CreateEntity(asm, mtd, root, itemType.Resolve(), expressions, entityTypes);
-							propWrite = IsCollectionChanged(expr, propGetCalls);
-						}
-						else if (entityTypes.Contains(prop.PropertyType))
-						{
-							propEnt = CreateEntity(asm, mtd, root, prop.PropertyType.Resolve(), expressions, entityTypes);
-						}
-					}
+					// some methods (i.e. ToDictionaryAsync) use lambdas, analyze them too
+					foreach (var lambda in GetLambdas(branch))
+						yield return (lambda, root, et);
 				}
-				if (propRead || propWrite)
-					entityProperties.Add(prop.MetadataToken, new XProperty { Property = prop, Entity = propEnt, Read = propRead, Write = propWrite });
 			}
-			return new XEntity { Method = mtd, Root = root, Type = type, Properties = entityProperties };
 		}
 
-		private static bool IsCollectionChanged(Ast expr, IReadOnlyCollection<Ast> captures)
+		private static void Analyze(AssemblyInfo asm, MethodDefinition method, List<QueryInfo> queryCollection)
 		{
-			string[] methods = ["Add", "Remove"];
-			foreach (var mtd in methods)
+			// GetRoots returns all branches where any EFCore root is present.
+			// Group branches by CIL point to get queries, because same root can be called in different branches.
+			var queries = GetRoots(asm, method).GroupBy(x => x.root.CilPoint).ToList();
+			foreach (var query in queries)
 			{
-				foreach (var capture in captures)
+				// collect all get/set methods in a query
+				var propMap = query
+					.SelectMany(x => x.branch.OfCall(asm.EntityGetSetMethods))
+					.GroupBy(x => x.Method, MethodReferenceEqualityComparer.Instance)
+					.ToDictionary(x => x.Key, x => x.ToList(), MethodReferenceEqualityComparer.Instance);
+
+				var entity = new XEntity { Type = query.First().et };
+				foreach (var (branch, _, _) in query)
+					FillEntity(asm, branch, propMap, entity);
+
+				queryCollection.Add(new QueryInfo
 				{
-					var (_, ok) = expr.Match(
-						new Match.Call(capture, mtd, Match.Any.Args),
-						true);
-					if (ok)
-						return true;
+					Method = method,
+					CilPoint = query.Key,
+					Roots = query.Select(x => x.root).ToImmutableArray(),
+					Entity = CreateEntityInfo(entity)
+				});
+			}
+		}
+
+		private static void FillEntity(AssemblyInfo asm, Ast branch, Dictionary<MethodReference, List<Cil.Call>> propMap, XEntity entity)
+		{
+			foreach (var prop in entity.Type.Properties)
+			{
+				var propGet = propMap.GetValueOrDefault(prop.GetMethod);
+				var propSet = propMap.GetValueOrDefault(prop.SetMethod);
+				if (propGet == null && propSet == null)
+					continue; // property is not accessed
+
+				if (entity.Properties.TryGetValue(prop.MetadataToken, out var xprop) == false)
+				{
+					xprop = new XProperty { Property = prop };
+					entity.Properties.Add(prop.MetadataToken, xprop);
 				}
+				if (propGet != null)
+					xprop.Read = true;
+				if (propSet != null)
+					xprop.Write = true;
+
+				if (prop.PropertyType.IsGenericCollection(out var itemType, asm.EntityTypes))
+				{
+					// property is entity collection
+					if (xprop.Entity == null)
+						xprop.Entity = new XEntity { Type = itemType };
+					FillEntity(asm, branch, propMap, xprop.Entity);
+					xprop.Write |= IsCollectionChanged(branch, propGet);
+				}
+				else if (asm.EntityTypes.Contains(prop.PropertyType))
+				{
+					// property is nested entity
+					if (xprop.Entity == null)
+						xprop.Entity = new XEntity { Type = prop.PropertyType.Resolve() };
+					FillEntity(asm, branch, propMap, xprop.Entity);
+				}
+			}
+		}
+
+		private static bool IsCollectionChanged(Ast branch, IReadOnlyCollection<Ast> propGet)
+		{
+			// check for patterns like prop_GetUsers().Add() and so on
+			var addRemoveCalls = branch.OfCallByName(["Add", "Remove"]).ToList();
+			foreach (var prop in propGet)
+			{
+				if (addRemoveCalls.Any(x => x.Instance.Equals(prop)))
+					return true;
 			}
 			return false;
 		}

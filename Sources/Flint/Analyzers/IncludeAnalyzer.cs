@@ -2,6 +2,7 @@
 using System.Text;
 using Flint.Vm;
 using Mono.Cecil;
+using Cil = Flint.Vm.Cil;
 using Match = Flint.Vm.Match;
 
 namespace Flint.Analyzers
@@ -41,7 +42,7 @@ namespace Flint.Analyzers
 		#region Implementation
 		record struct Include(PropertyReference Property, bool TopLevel);
 
-		private static void Analyze(ImmutableArray<Ast> roots, EntityInfo entity, bool topLevel, List<Include> missingIncludes)
+		private static void Analyze(ImmutableArray<Cil.Call> roots, EntityInfo entity, bool topLevel, List<Include> missingIncludes)
 		{
 			foreach (var prop in entity.Properties)
 			{

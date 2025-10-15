@@ -15,6 +15,22 @@ namespace Flint.Vm
 			return false;
 		}
 
+		public static IEnumerable<Cil.Call> OfCallByName(this Ast expression, IEnumerable<string> names)
+		{
+			if (expression is Cil.Call call)
+			{
+				if (names.Any(x => x == call.Method.Name))
+					yield return call;
+			}
+
+			foreach (var child in expression.GetChildren())
+			{
+				if (child != null)
+					foreach (var childCall in child.OfCallByName(names))
+						yield return childCall;
+			}
+		}
+
 		public static IEnumerable<Cil.Call> OfCall(this Ast expression, IReadOnlySet<MethodReference> methods)
 		{
 			if (expression is Cil.Call call)
