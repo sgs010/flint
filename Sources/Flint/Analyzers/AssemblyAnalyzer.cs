@@ -85,7 +85,7 @@ namespace Flint.Analyzers
 
 				PopulateEntities(type, entityMap, entityPropMap, entityGetSetMap);
 				PopulateInterfaces(type, interfaceMap);
-				PopulateMethods(type, methodMap, methodNameMap);
+				PopulateMethods(ctx, type, methodMap, methodNameMap);
 
 				ctx.EndTrace(tt);
 			}
@@ -213,7 +213,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void PopulateMethods(TypeDefinition type, Dictionary<MethodDefinition, ImmutableArray<Ast>> methodMap, Dictionary<MethodReference, string> methodNameMap)
+		private static void PopulateMethods(IAnalyzerContext ctx, TypeDefinition type, Dictionary<MethodDefinition, ImmutableArray<Ast>> methodMap, Dictionary<MethodReference, string> methodNameMap)
 		{
 			if (type.IsInterface)
 				return; // do not process interfaces
@@ -227,8 +227,12 @@ namespace Flint.Analyzers
 				if (method.IsCompilerGenerated())
 					continue; // do not process auto generated methods
 
+				var tt = ctx.BeginTrace($"load method {method.Name}");
+
 				var expressions = MethodAnalyzer.EvalRaw(method);
 				methodMap.Add(method, [.. expressions.Distinct()]);
+
+				ctx.EndTrace(tt);
 			}
 		}
 

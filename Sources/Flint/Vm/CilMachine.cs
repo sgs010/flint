@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using Flint.Common;
 using Flint.Vm.Cil;
 using Mono.Cecil;
@@ -132,6 +133,7 @@ namespace Flint.Vm
 			}
 		}
 
+		[DebuggerDisplay("{StartInstruction}")]
 		internal class RoutineContext
 		{
 			public readonly MethodDefinition Method;

@@ -1,4 +1,6 @@
 ﻿using System.Collections.Immutable;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Runtime.CompilerServices;
 using Flint.Analyzers;
 
@@ -12,15 +14,25 @@ namespace Flint
 		public static ImmutableArray<string> Analyze(string dllPath, bool trace = false)
 		{
 			var ctx = new AnalyzerContext { Trace = trace };
+			var tt = ctx.BeginTrace($"analyze {dllPath}");
+
 			using var asm = AssemblyAnalyzer.Load(ctx, dllPath);
-			return Analyze(ctx, asm);
+			var result = Analyze(ctx, asm);
+
+			ctx.EndTrace(tt);
+			return result;
 		}
 
 		public static ImmutableArray<string> Analyze(Stream dllStream, Stream pdbStream, bool trace = false)
 		{
 			var ctx = new AnalyzerContext { Trace = trace };
+			var tt = ctx.BeginTrace($"analyze");
+
 			using var asm = AssemblyAnalyzer.Load(ctx, dllStream, pdbStream);
-			return Analyze(ctx, asm);
+			var result = Analyze(ctx, asm);
+
+			ctx.EndTrace(tt);
+			return result;
 		}
 		#endregion
 

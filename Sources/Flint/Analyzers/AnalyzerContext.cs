@@ -19,6 +19,7 @@ namespace Flint.Analyzers
 	internal class AnalyzerContext : IAnalyzerContext
 	{
 		#region Data
+		private int _traceOffset;
 		private List<string> _output = [];
 		#endregion
 
@@ -38,7 +39,12 @@ namespace Flint.Analyzers
 			if (Trace == false)
 				return null;
 
+			for (var i = 0; i < _traceOffset; ++i)
+				Console.Write('\t');
 			Console.WriteLine($"BEGIN {message}");
+
+			++_traceOffset;
+
 			return new TraceToken(message, Stopwatch.StartNew());
 		}
 
@@ -52,7 +58,11 @@ namespace Flint.Analyzers
 			if (token is TraceToken tt)
 			{
 				tt.Watch.Stop();
-				Console.WriteLine($"END {tt.Message} - elapsed {tt.Watch.ElapsedMilliseconds} ms");
+				--_traceOffset;
+
+				for (var i = 0; i < _traceOffset; ++i)
+					Console.Write('\t');
+				Console.WriteLine($"END {tt.Message} [{tt.Watch.ElapsedMilliseconds} ms]");
 			}
 		}
 		#endregion
