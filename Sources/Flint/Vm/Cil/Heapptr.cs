@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Heapptr : Ast
 	{
@@ -22,7 +24,7 @@
 		{
 			if (other is Heapptr ptr)
 			{
-				return Address.Equals(ptr.Address);
+				return Are.Equal(Address, ptr.Address);
 			}
 			return false;
 		}

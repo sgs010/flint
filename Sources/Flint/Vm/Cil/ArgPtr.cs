@@ -22,7 +22,7 @@
 		{
 			if (other is Argptr ptr)
 			{
-				return Number.Equals(ptr.Number);
+				return Number == ptr.Number;
 			}
 			return false;
 		}

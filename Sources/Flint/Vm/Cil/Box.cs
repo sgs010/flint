@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Box : Ast
 	{
@@ -22,7 +24,7 @@
 		{
 			if (other is Box box)
 			{
-				return Value.Equals(box.Value);
+				return Are.Equal(Value, box.Value);
 			}
 			return false;
 		}

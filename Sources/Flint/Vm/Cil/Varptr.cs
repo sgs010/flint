@@ -22,7 +22,7 @@
 		{
 			if (other is Varptr v)
 			{
-				return Index.Equals(v.Index);
+				return Index == v.Index;
 			}
 			return false;
 		}

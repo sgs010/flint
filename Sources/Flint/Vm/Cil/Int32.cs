@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Int32 : Ast
 	{
@@ -22,7 +24,7 @@
 		{
 			if (other is Int32 int32)
 			{
-				return Value.Equals(int32.Value);
+				return Value == int32.Value;
 			}
 			return false;
 		}

@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Refanytype : Ast
 	{
@@ -22,7 +24,7 @@
 		{
 			if (other is Refanytype @ref)
 			{
-				return Reference.Equals(@ref.Reference);
+				return Are.Equal(Reference, @ref.Reference);
 			}
 			return false;
 		}

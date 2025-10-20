@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Len : Ast
 	{
@@ -22,7 +24,7 @@
 		{
 			if (other is Len len)
 			{
-				return Array.Equals(len.Array);
+				return Are.Equal(Array, len.Array);
 			}
 			return false;
 		}

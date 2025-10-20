@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Rem : Ast
 	{
@@ -25,8 +27,8 @@
 		{
 			if (other is Rem rem)
 			{
-				return Left.Equals(rem.Left)
-					&& Right.Equals(rem.Right);
+				return Are.Equal(Left, rem.Left)
+					&& Are.Equal(Right, rem.Right);
 			}
 			return false;
 		}

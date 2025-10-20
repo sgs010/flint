@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Conv_R8 : Ast
 	{
@@ -22,7 +24,7 @@
 		{
 			if (other is Conv_R8 conv)
 			{
-				return Value.Equals(conv.Value);
+				return Are.Equal(Value, conv.Value);
 			}
 			return false;
 		}

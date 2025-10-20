@@ -1,4 +1,5 @@
-﻿using Mono.Cecil;
+﻿using Flint.Common;
+using Mono.Cecil;
 
 namespace Flint.Vm.Cil
 {
@@ -21,15 +22,15 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Ftn), Instance, Method, MethodImpl);
+			return HashCode.Combine(typeof(Ftn), Instance, Hash.Code(Method));
 		}
 
 		public override bool Equals(Ast other)
 		{
 			if (other is Ftn ftn)
 			{
-				return (Instance != null ? Instance.Equals(ftn.Instance) : ftn.Instance is null)
-					&& Method.Equals(ftn.Method);
+				return Are.Equal(Instance, ftn.Instance)
+					&& Are.Equal(Method, ftn.Method);
 			}
 			return false;
 		}

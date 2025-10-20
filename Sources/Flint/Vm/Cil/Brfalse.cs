@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Brfalse : Ast
 	{
@@ -27,7 +29,7 @@
 		{
 			if (other is Brfalse br)
 			{
-				return Value.Equals(br.Value);
+				return Are.Equal(Value, br.Value);
 			}
 			return false;
 		}

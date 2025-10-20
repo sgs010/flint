@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class String : Ast
 	{
@@ -22,7 +24,7 @@
 		{
 			if (other is String str)
 			{
-				return Value.Equals(str.Value);
+				return Are.Equal(Value, str.Value);
 			}
 			return false;
 		}

@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Bge : Ast
 	{
@@ -30,8 +32,8 @@
 		{
 			if (other is Bge bge)
 			{
-				return Left.Equals(bge.Left)
-					&& Right.Equals(bge.Right);
+				return Are.Equal(Left, bge.Left)
+					&& Are.Equal(Right, bge.Right);
 			}
 			return false;
 		}

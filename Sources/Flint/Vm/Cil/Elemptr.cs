@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Elemptr : Ast
 	{
@@ -25,8 +27,8 @@
 		{
 			if (other is Elemptr ptr)
 			{
-				return Array.Equals(ptr.Array)
-					&& Index.Equals(ptr.Index);
+				return Are.Equal(Array, ptr.Array)
+					&& Are.Equal(Index, ptr.Index);
 			}
 			return false;
 		}

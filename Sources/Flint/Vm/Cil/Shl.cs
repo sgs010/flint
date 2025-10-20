@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Shl : Ast
 	{
@@ -25,8 +27,8 @@
 		{
 			if (other is Shl shl)
 			{
-				return Value.Equals(shl.Value)
-					&& Count.Equals(shl.Count);
+				return Are.Equal(Value, shl.Value)
+					&& Are.Equal(Count, shl.Count);
 			}
 			return false;
 		}

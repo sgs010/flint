@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Bytes : Ast
 	{
@@ -22,7 +24,7 @@
 		{
 			if (other is Bytes bytes)
 			{
-				return Count.Equals(bytes.Count);
+				return Are.Equal(Count, bytes.Count);
 			}
 			return false;
 		}

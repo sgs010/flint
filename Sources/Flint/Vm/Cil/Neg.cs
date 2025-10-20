@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Neg : Ast
 	{
@@ -22,7 +24,7 @@
 		{
 			if (other is Neg neg)
 			{
-				return Value.Equals(neg.Value);
+				return Are.Equal(Value, neg.Value);
 			}
 			return false;
 		}

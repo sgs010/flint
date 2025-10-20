@@ -70,7 +70,7 @@ namespace Flint.Common
 		public static bool SignatureEquals(this MethodReference left, MethodReference right)
 		{
 			return left.Name.Equals(right.Name)
-				&& AreEqual(left.ReturnType, right.ReturnType)
+				&& Are.Equal(left.ReturnType, right.ReturnType)
 				&& left.Parameters.SequenceEqual(right.Parameters, ParameterTypeEqualityComparer.Instance);
 		}
 
@@ -136,25 +136,6 @@ namespace Flint.Common
 		public static bool HasFullName(this MethodReference method, IReadOnlySet<string> names)
 		{
 			return names.Contains(method.GetFullName());
-		}
-
-		public static bool AreEqual(TypeReference x, TypeReference y)
-		{
-			return x.MetadataToken.Equals(y.MetadataToken);
-		}
-
-		public static bool AreEqual(MethodReference x, MethodReference y)
-		{
-			return x.MetadataToken.Equals(y.MetadataToken);
-		}
-
-		public static bool AreEqual(SequencePoint x, SequencePoint y)
-		{
-			if (x == null && y == null)
-				return true;
-			if (x != null && y != null)
-				return x.Equals(y);
-			return false;
 		}
 		#endregion
 

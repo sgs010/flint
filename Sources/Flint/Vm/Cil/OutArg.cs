@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class OutArg : Ast
 	{
@@ -24,8 +26,8 @@
 		{
 			if (other is OutArg arg)
 			{
-				return Call.Equals(arg.Call)
-					&& Index.Equals(arg.Index);
+				return Are.Equal(Call, arg.Call)
+					&& Index == arg.Index;
 			}
 			return false;
 		}

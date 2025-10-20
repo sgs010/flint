@@ -22,7 +22,7 @@
 		{
 			if (other is Float64 float64)
 			{
-				return Value.Equals(float64.Value);
+				return Value == float64.Value;
 			}
 			return false;
 		}

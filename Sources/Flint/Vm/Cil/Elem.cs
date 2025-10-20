@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Elem : Ast
 	{
@@ -25,8 +27,8 @@
 		{
 			if (other is Elem elem)
 			{
-				return Array.Equals(elem.Array)
-					&& Index.Equals(elem.Index);
+				return Are.Equal(Array, elem.Array)
+					&& Are.Equal(Index, elem.Index);
 			}
 			return false;
 		}

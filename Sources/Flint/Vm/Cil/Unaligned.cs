@@ -22,7 +22,7 @@
 		{
 			if (other is Unaligned un)
 			{
-				return Address.Equals(un.Address);
+				return Address == un.Address;
 			}
 			return false;
 		}

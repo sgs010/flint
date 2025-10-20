@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Not : Ast
 	{
@@ -22,7 +24,7 @@
 		{
 			if (other is Not not)
 			{
-				return Value.Equals(not.Value);
+				return Are.Equal(Value, not.Value);
 			}
 			return false;
 		}

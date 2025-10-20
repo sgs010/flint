@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Switch : Ast
 	{
@@ -22,7 +24,7 @@
 		{
 			if (other is Switch s)
 			{
-				return Value.Equals(s.Value);
+				return Are.Equal(Value, s.Value);
 			}
 			return false;
 		}

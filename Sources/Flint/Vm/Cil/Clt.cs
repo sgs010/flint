@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Clt : Ast
 	{
@@ -25,8 +27,8 @@
 		{
 			if (other is Clt clt)
 			{
-				return Left.Equals(clt.Left)
-					&& Right.Equals(clt.Right);
+				return Are.Equal(Left, clt.Left)
+					&& Are.Equal(Right, clt.Right);
 			}
 			return false;
 		}

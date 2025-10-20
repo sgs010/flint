@@ -22,7 +22,7 @@
 		{
 			if (other is Int64 int64)
 			{
-				return Value.Equals(int64.Value);
+				return Value == int64.Value;
 			}
 			return false;
 		}

@@ -1,4 +1,5 @@
-﻿using Mono.Cecil;
+﻿using Flint.Common;
+using Mono.Cecil;
 
 namespace Flint.Vm.Cil
 {
@@ -19,15 +20,15 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Refanyval), Type, Address);
+			return HashCode.Combine(typeof(Refanyval), Hash.Code(Type), Address);
 		}
 
 		public override bool Equals(Ast other)
 		{
 			if (other is Refanyval @ref)
 			{
-				return Type.Equals(@ref.Type)
-					&& Address.Equals(@ref.Address);
+				return Are.Equal(Type, @ref.Type)
+					&& Are.Equal(Address, @ref.Address);
 			}
 			return false;
 		}

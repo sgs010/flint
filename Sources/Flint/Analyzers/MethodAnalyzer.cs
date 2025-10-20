@@ -103,7 +103,7 @@ namespace Flint.Analyzers
 
 		private static void PopulateCallChains(AssemblyInfo asm, MethodReference target, int level, CallInfo call, CallChainNode parent, HashSet<MethodReference> visitedMethods, List<List<CallInfo>> chains)
 		{
-			if (ReflectionExtensions.AreEqual(call.Method, target))
+			if (Are.Equal(call.Method, target))
 			{
 				var chain = new List<CallInfo>(level + 1);
 				for (var x = parent; x != null; x = x.Parent)

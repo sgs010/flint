@@ -22,7 +22,7 @@
 		{
 			if (other is Float32 float32)
 			{
-				return Value.Equals(float32.Value);
+				return Value == float32.Value;
 			}
 			return false;
 		}

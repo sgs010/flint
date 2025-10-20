@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm.Cil
+﻿using Flint.Common;
+
+namespace Flint.Vm.Cil
 {
 	class Xor : Ast
 	{
@@ -25,8 +27,8 @@
 		{
 			if (other is Xor xor)
 			{
-				return Left.Equals(xor.Left)
-					&& Right.Equals(xor.Right);
+				return Are.Equal(Left, xor.Left)
+					&& Are.Equal(Right, xor.Right);
 			}
 			return false;
 		}
