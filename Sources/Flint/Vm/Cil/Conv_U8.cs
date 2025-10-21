@@ -1,32 +1,13 @@
-﻿using Flint.Common;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
-	class Conv_U8 : Ast
+	class Conv_U8 : UnaryOperator<Conv_U8>
 	{
-		public readonly Ast Value;
-		public Conv_U8(CilPoint pt, Ast value) : base(pt)
-		{
-			Value = value;
-		}
+		public Conv_U8(CilPoint pt, Ast value)
+			: base(pt, value) { }
 
-		public override IEnumerable<Ast> GetChildren()
+		protected override Conv_U8 CreateInstance(CilPoint pt, Ast value)
 		{
-			yield return Value;
-		}
-
-		public override int GetHashCode()
-		{
-			return HashCode.Combine(typeof(Conv_U8), Value);
-		}
-
-		public override bool Equals(Ast other)
-		{
-			if (other is Conv_U8 conv)
-			{
-				return Are.Equal(Value, conv.Value);
-			}
-			return false;
+			return new Conv_U8(pt, value);
 		}
 	}
 }

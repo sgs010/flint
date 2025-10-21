@@ -11,6 +11,30 @@
 		public abstract IEnumerable<Ast> GetChildren();
 		public abstract bool Equals(Ast other);
 		public virtual void Capture(Ast other, IDictionary<string, Ast> captures) { }
+		protected virtual (Ast, bool) Merge(Ast other) { return (null, false); }
+
+		public static (Ast, bool) Merge(Ast x, Ast y)
+		{
+			if (x == null && y == null)
+				return (null, true);
+			if (x != null && y == null)
+				return (x, true);
+			if (x == null && y != null)
+				return (y, true);
+
+			if (x.CilPoint != y.CilPoint)
+				return (null, false);
+
+			var (merged, ok) = x.Merge(y);
+			if (ok)
+				return (merged, true);
+
+			(merged, ok) = y.Merge(x);
+			if (ok)
+				return (merged, true);
+
+			return (null, false);
+		}
 
 		public override int GetHashCode()
 		{

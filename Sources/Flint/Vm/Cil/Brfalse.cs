@@ -1,37 +1,18 @@
-﻿using Flint.Common;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
-	class Brfalse : Ast
+	class Brfalse : UnaryOperator<Brfalse>
 	{
-		public readonly Ast Value;
-		public Brfalse(CilPoint pt, Ast val) : base(pt)
-		{
-			Value = val;
-		}
+		public Brfalse(CilPoint pt, Ast value)
+			: base(pt, value) { }
 
 		public static Brfalse Create(CilPoint pt, Ast val)
 		{
 			return new Brfalse(pt, val);
 		}
 
-		public override IEnumerable<Ast> GetChildren()
+		protected override Brfalse CreateInstance(CilPoint pt, Ast value)
 		{
-			yield return Value;
-		}
-
-		public override int GetHashCode()
-		{
-			return HashCode.Combine(typeof(Brfalse), Value);
-		}
-
-		public override bool Equals(Ast other)
-		{
-			if (other is Brfalse br)
-			{
-				return Are.Equal(Value, br.Value);
-			}
-			return false;
+			return Create(pt, value);
 		}
 	}
 }

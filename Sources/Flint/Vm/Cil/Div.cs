@@ -1,36 +1,13 @@
-﻿using Flint.Common;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
-	class Div : Ast
+	class Div : BinaryOperator<Div>
 	{
-		public readonly Ast Left;
-		public readonly Ast Right;
-		public Div(CilPoint pt, Ast left, Ast right) : base(pt)
-		{
-			Left = left;
-			Right = right;
-		}
+		public Div(CilPoint pt, Ast left, Ast right)
+			: base(pt, left, right) { }
 
-		public override IEnumerable<Ast> GetChildren()
+		protected override Div CreateInstance(CilPoint pt, Ast left, Ast right)
 		{
-			yield return Left;
-			yield return Right;
-		}
-
-		public override int GetHashCode()
-		{
-			return HashCode.Combine(typeof(Div), Left, Right);
-		}
-
-		public override bool Equals(Ast other)
-		{
-			if (other is Div div)
-			{
-				return Are.Equal(Left, div.Left)
-					&& Are.Equal(Right, div.Right);
-			}
-			return false;
+			return new Div(pt, left, right);
 		}
 	}
 }

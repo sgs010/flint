@@ -1,41 +1,18 @@
-﻿using Flint.Common;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
-	class Bge : Ast
+	class Bge : BinaryOperator<Bge>
 	{
-		public readonly Ast Left;
-		public readonly Ast Right;
-		public Bge(CilPoint pt, Ast left, Ast right) : base(pt)
-		{
-			Left = left;
-			Right = right;
-		}
+		public Bge(CilPoint pt, Ast left, Ast right)
+			: base(pt, left, right) { }
 
 		public static Bge Create(CilPoint pt, Ast left, Ast right)
 		{
 			return new Bge(pt, left, right);
 		}
 
-		public override IEnumerable<Ast> GetChildren()
+		protected override Bge CreateInstance(CilPoint pt, Ast left, Ast right)
 		{
-			yield return Left;
-			yield return Right;
-		}
-
-		public override int GetHashCode()
-		{
-			return HashCode.Combine(typeof(Bge), Left, Right);
-		}
-
-		public override bool Equals(Ast other)
-		{
-			if (other is Bge bge)
-			{
-				return Are.Equal(Left, bge.Left)
-					&& Are.Equal(Right, bge.Right);
-			}
-			return false;
+			return Create(pt, left, right);
 		}
 	}
 }

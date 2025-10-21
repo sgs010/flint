@@ -1,32 +1,13 @@
-﻿using Flint.Common;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
-	class Neg : Ast
+	class Neg : UnaryOperator<Neg>
 	{
-		public readonly Ast Value;
-		public Neg(CilPoint pt, Ast value) : base(pt)
-		{
-			Value = value;
-		}
+		public Neg(CilPoint pt, Ast value)
+			: base(pt, value) { }
 
-		public override IEnumerable<Ast> GetChildren()
+		protected override Neg CreateInstance(CilPoint pt, Ast value)
 		{
-			yield return Value;
-		}
-
-		public override int GetHashCode()
-		{
-			return HashCode.Combine(typeof(Neg), Value);
-		}
-
-		public override bool Equals(Ast other)
-		{
-			if (other is Neg neg)
-			{
-				return Are.Equal(Value, neg.Value);
-			}
-			return false;
+			return new Neg(pt, value);
 		}
 	}
 }

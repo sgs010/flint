@@ -1,41 +1,18 @@
-﻿using Flint.Common;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
-	class Beq : Ast
+	class Beq : BinaryOperator<Beq>
 	{
-		public readonly Ast Left;
-		public readonly Ast Right;
-		public Beq(CilPoint pt, Ast left, Ast right) : base(pt)
-		{
-			Left = left;
-			Right = right;
-		}
+		public Beq(CilPoint pt, Ast left, Ast right)
+			: base(pt, left, right) { }
 
 		public static Beq Create(CilPoint pt, Ast left, Ast right)
 		{
 			return new Beq(pt, left, right);
 		}
 
-		public override IEnumerable<Ast> GetChildren()
+		protected override Beq CreateInstance(CilPoint pt, Ast left, Ast right)
 		{
-			yield return Left;
-			yield return Right;
-		}
-
-		public override int GetHashCode()
-		{
-			return HashCode.Combine(typeof(Beq), Left, Right);
-		}
-
-		public override bool Equals(Ast other)
-		{
-			if (other is Beq beq)
-			{
-				return Are.Equal(Left, beq.Left)
-					&& Are.Equal(Right, beq.Right);
-			}
-			return false;
+			return Create(pt, left, right);
 		}
 	}
 }
