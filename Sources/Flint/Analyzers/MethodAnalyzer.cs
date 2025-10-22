@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Linq.Expressions;
 using System.Text;
 using Flint.Common;
 using Flint.Vm;
@@ -62,16 +63,15 @@ namespace Flint.Analyzers
 				return []; // this is an abstract method, nothing to evaluate
 
 			var expressions = new List<Ast>();
-			var methodBranches = CilMachine.Run(actualMethod);
-			foreach (var mb in methodBranches)
+
+			var methodExpressions = CilMachine.Run(actualMethod);
+			expressions.AddRange(methodExpressions);
+			foreach (var ftn in methodExpressions.OfFtn())
 			{
-				expressions.AddRange(mb.Expressions);
-				foreach (var ftn in mb.Expressions.OfFtn())
-				{
-					var lambdaBranches = EvalRaw(ftn.MethodImpl);
-					expressions.AddRange(lambdaBranches);
-				}
+				var lambdaExpressions = EvalRaw(ftn.MethodImpl);
+				expressions.AddRange(lambdaExpressions);
 			}
+
 			return [.. expressions];
 		}
 

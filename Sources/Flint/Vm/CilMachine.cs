@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Data;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Flint.Common;
 using Flint.Vm.Cil;
 using Mono.Cecil;
@@ -9,48 +9,6 @@ using Mono.Cecil.Cil;
 
 namespace Flint.Vm
 {
-	#region Condition
-	[DebuggerDisplay("IL_{Ast.CilPoint.Offset.ToString(\"X4\").ToLower()}: {Value}")]
-	sealed class Condition
-	{
-		public readonly Ast Ast;
-		public readonly int Value;
-		public Condition(Ast ast, int value)
-		{
-			Ast = ast;
-			Value = value;
-		}
-
-		public override int GetHashCode()
-		{
-			return HashCode.Combine(typeof(Condition), Ast, Value);
-		}
-
-		public override bool Equals(object obj)
-		{
-			if (obj is Condition cond)
-			{
-				return Ast.Equals(cond.Ast)
-					&& Value.Equals(cond.Value);
-			}
-			return false;
-		}
-	}
-	#endregion
-
-	#region Branch
-	sealed class Branch
-	{
-		public readonly ImmutableArray<Condition> Conditions;
-		public readonly ImmutableArray<Ast> Expressions;
-		public Branch(ImmutableArray<Condition> conditions, ImmutableArray<Ast> expressions)
-		{
-			Conditions = conditions;
-			Expressions = expressions;
-		}
-	}
-	#endregion
-
 	#region ICilMachineContext
 	interface ICilMachineContext
 	{
@@ -62,36 +20,46 @@ namespace Flint.Vm
 	static class CilMachine
 	{
 		#region Interface
-		public static ImmutableArray<Branch> Run(MethodDefinition mtd, ICilMachineContext machineContext = null)
+		public static ImmutableArray<Ast> Run(MethodDefinition mtd, ICilMachineContext machineContext = null)
 		{
-			var branches = new List<RoutineContext> { new RoutineContext(mtd) };
-			var visitedConditions = new HashSet<Condition>();
-			for (var i = 0; i < branches.Count; ++i)
+			// general idea: avoid combinatory explosion when a method has a lot of branches
+			// 1. eval branch and get a list of alt branches from it
+			// 2. merge branch expressions with prev branch expressions
+			// 3. if nothing changed, then ignore alt branches
+
+			var expressions = new Dictionary<CilPoint, Ast>();
+			var queue = new Queue<RoutineContext>();
+			queue.Enqueue(new RoutineContext(mtd));
+			while (queue.Count > 0)
 			{
-				if (mtd.Name == "ToAmqpMessage")
-				{
-				}
+				var branch = queue.Dequeue();
+				var altBranches = new List<RoutineContext>();
+				Eval(branch, altBranches, machineContext);
 
-				var currentBranch = branches[i];
-				var instruction = currentBranch.StartInstruction;
-				while (instruction != null)
-				{
-					// IL_007b ok
-					// IL_008a ???
+				var isChanged = Merge(expressions, branch.Expressions);
+				if (isChanged == false)
+					continue;
 
-					if (currentBranch.VisitedOffsets.Contains(instruction.Offset))
-						break;
-
-					Eval(currentBranch, branches, instruction, out var nextInstruction, visitedConditions, machineContext);
-					currentBranch.VisitedOffsets.Add(instruction.Offset);
-					instruction = nextInstruction;
-				}
+				foreach (var b in altBranches)
+					queue.Enqueue(b);
 			}
-			return [.. branches.Select(x => new Branch([.. x.Conditions], [.. x.Expressions]))];
+			return [.. expressions.Values];
 		}
 		#endregion
 
 		#region Implementation
+		[DebuggerDisplay("IL_{Ast.CilPoint.Offset.ToString(\"X4\").ToLower()}: {Value}")]
+		internal readonly struct Condition
+		{
+			public readonly Ast Ast;
+			public readonly int Value;
+			public Condition(Ast ast, int value)
+			{
+				Ast = ast;
+				Value = value;
+			}
+		}
+
 		internal readonly struct ArrayIndex
 		{
 			public readonly Ast Array;
@@ -213,19 +181,59 @@ namespace Flint.Vm
 			}
 		}
 
+		private static bool Merge(Dictionary<CilPoint, Ast> acc, IEnumerable<Ast> expressions)
+		{
+			var isChanged = false;
+			foreach (var expr in expressions)
+			{
+				var pt = expr.CilPoint;
+				if (acc.TryGetValue(pt, out var prevExpr))
+				{
+					// merge
+					var (merged, ok) = Ast.Merge(expr, prevExpr);
+					if (ok)
+					{
+						acc[pt] = merged;
+						isChanged = true;
+					}
+				}
+				else
+				{
+					// add
+					acc.Add(pt, expr);
+					isChanged = true;
+				}
+			}
+			return isChanged;
+		}
+
+		private static void Eval(RoutineContext branch, List<RoutineContext> altBranches, ICilMachineContext machineContext)
+		{
+			var instruction = branch.StartInstruction;
+			while (instruction != null)
+			{
+				if (branch.VisitedOffsets.Contains(instruction.Offset))
+					break; // avoid loops
+
+				Eval(branch, altBranches, instruction, out var nextInstruction, machineContext);
+				branch.VisitedOffsets.Add(instruction.Offset);
+				instruction = nextInstruction;
+			}
+		}
+
 		[Obsolete("for tests only")]
 		internal static void Eval(RoutineContext ctx, Instruction instruction)
 		{
-			Eval(ctx, [], instruction, out var _, [], null);
+			Eval(ctx, [], instruction, out var _, null);
 		}
 
 		[Obsolete("for tests only")]
 		internal static void Eval(RoutineContext ctx, List<RoutineContext> branches, Instruction instruction, out Instruction nextInstruction)
 		{
-			Eval(ctx, branches, instruction, out nextInstruction, [], null);
+			Eval(ctx, branches, instruction, out nextInstruction, null);
 		}
 
-		private static void Eval(RoutineContext ctx, List<RoutineContext> branches, Instruction instruction, out Instruction nextInstruction, HashSet<Condition> visitedConditions, ICilMachineContext machineContext)
+		private static void Eval(RoutineContext ctx, List<RoutineContext> branches, Instruction instruction, out Instruction nextInstruction, ICilMachineContext machineContext)
 		{
 			nextInstruction = instruction.Next;
 
@@ -251,35 +259,35 @@ namespace Flint.Vm
 					break;
 				case Code.Beq:
 				case Code.Beq_S:
-					Branch(Beq.Create, ctx, branches, visitedConditions, instruction, out nextInstruction);
+					Branch(Beq.Create, ctx, branches, instruction, out nextInstruction);
 					break;
 				case Code.Bge:
 				case Code.Bge_S:
 				case Code.Bge_Un:
 				case Code.Bge_Un_S:
-					Branch(Bge.Create, ctx, branches, visitedConditions, instruction, out nextInstruction);
+					Branch(Bge.Create, ctx, branches, instruction, out nextInstruction);
 					break;
 				case Code.Bgt:
 				case Code.Bgt_S:
 				case Code.Bgt_Un:
 				case Code.Bgt_Un_S:
-					Branch(Bgt.Create, ctx, branches, visitedConditions, instruction, out nextInstruction);
+					Branch(Bgt.Create, ctx, branches, instruction, out nextInstruction);
 					break;
 				case Code.Ble:
 				case Code.Ble_S:
 				case Code.Ble_Un:
 				case Code.Ble_Un_S:
-					Branch(Ble.Create, ctx, branches, visitedConditions, instruction, out nextInstruction);
+					Branch(Ble.Create, ctx, branches, instruction, out nextInstruction);
 					break;
 				case Code.Blt:
 				case Code.Blt_S:
 				case Code.Blt_Un:
 				case Code.Blt_Un_S:
-					Branch(Blt.Create, ctx, branches, visitedConditions, instruction, out nextInstruction);
+					Branch(Blt.Create, ctx, branches, instruction, out nextInstruction);
 					break;
 				case Code.Bne_Un:
 				case Code.Bne_Un_S:
-					Branch(Bne.Create, ctx, branches, visitedConditions, instruction, out nextInstruction);
+					Branch(Bne.Create, ctx, branches, instruction, out nextInstruction);
 					break;
 				case Code.Box:
 					Box(ctx, instruction);
@@ -292,11 +300,11 @@ namespace Flint.Vm
 					break;
 				case Code.Brfalse:
 				case Code.Brfalse_S:
-					Branch(Brfalse.Create, ctx, branches, visitedConditions, instruction, out nextInstruction);
+					Branch(Brfalse.Create, ctx, branches, instruction, out nextInstruction);
 					break;
 				case Code.Brtrue:
 				case Code.Brtrue_S:
-					Branch(Brtrue.Create, ctx, branches, visitedConditions, instruction, out nextInstruction);
+					Branch(Brtrue.Create, ctx, branches, instruction, out nextInstruction);
 					break;
 				case Code.Call:
 				case Code.Callvirt:
@@ -661,7 +669,7 @@ namespace Flint.Vm
 					Sub(ctx, instruction);
 					break;
 				case Code.Switch:
-					Switch(ctx, branches, visitedConditions, instruction, out nextInstruction);
+					Switch(ctx, branches, instruction, out nextInstruction);
 					break;
 				case Code.Tail:
 					break;
@@ -689,36 +697,31 @@ namespace Flint.Vm
 		delegate Ast UnaryConditionProvider(CilPoint pt, Ast value);
 		delegate Ast BinaryConditionProvider(CilPoint pt, Ast left, Ast right);
 
-		private static void Branch(ConditionProvider prov, RoutineContext ctx, List<RoutineContext> branches, HashSet<Condition> visitedConditions, Instruction instruction, out Instruction nextInstruction)
+		private static void Branch(ConditionProvider prov, RoutineContext ctx, List<RoutineContext> branches, Instruction instruction, out Instruction nextInstruction)
 		{
 			nextInstruction = (Instruction)instruction.Operand;
 
 			var pt = GetCilPoint(ctx, instruction);
 			var conditionAst = prov(pt, ctx.Stack);
 
-			var altCondition = new Condition(conditionAst, 0);
-			if (visitedConditions.Contains(altCondition) == false)
-			{
-				var altBranch = new RoutineContext(ctx, instruction.Next);
-				altBranch.Conditions.Add(altCondition);
-				branches.Add(altBranch);
-				//visitedConditions.Add(altCondition);
-			}
+			var altBranch = new RoutineContext(ctx, instruction.Next);
+			altBranch.Conditions.Add(new Condition(conditionAst, 0));
+			branches.Add(altBranch);
 
 			ctx.Conditions.Add(new Condition(conditionAst, 1));
 		}
 
-		private static void Branch(UnaryConditionProvider prov, RoutineContext ctx, List<RoutineContext> branches, HashSet<Condition> visitedConditions, Instruction instruction, out Instruction nextInstruction)
+		private static void Branch(UnaryConditionProvider prov, RoutineContext ctx, List<RoutineContext> branches, Instruction instruction, out Instruction nextInstruction)
 		{
 			Branch((CilPoint pt, Stack<Ast> stack) =>
 			{
 				var value = stack.Pop();
 				return prov(pt, value);
 			},
-			ctx, branches, visitedConditions, instruction, out nextInstruction);
+			ctx, branches, instruction, out nextInstruction);
 		}
 
-		private static void Branch(BinaryConditionProvider prov, RoutineContext ctx, List<RoutineContext> branches, HashSet<Condition> visitedConditions, Instruction instruction, out Instruction nextInstruction)
+		private static void Branch(BinaryConditionProvider prov, RoutineContext ctx, List<RoutineContext> branches, Instruction instruction, out Instruction nextInstruction)
 		{
 			Branch((CilPoint pt, Stack<Ast> stack) =>
 			{
@@ -726,10 +729,10 @@ namespace Flint.Vm
 				var left = ctx.Stack.Pop();
 				return prov(pt, left, right);
 			},
-			ctx, branches, visitedConditions, instruction, out nextInstruction);
+			ctx, branches, instruction, out nextInstruction);
 		}
 
-		private static void Switch(RoutineContext ctx, List<RoutineContext> branches, HashSet<Condition> visitedConditions, Instruction instruction, out Instruction nextInstruction)
+		private static void Switch(RoutineContext ctx, List<RoutineContext> branches, Instruction instruction, out Instruction nextInstruction)
 		{
 			var pt = GetCilPoint(ctx, instruction);
 			var value = ctx.Stack.Pop();
@@ -738,14 +741,9 @@ namespace Flint.Vm
 			var tbl = (Instruction[])instruction.Operand;
 			for (var i = 1; i < tbl.Length; ++i)
 			{
-				var nthCondition = new Condition(conditionAst, i);
-				if (visitedConditions.Contains(nthCondition) == false)
-				{
-					var nthBranch = new RoutineContext(ctx, tbl[i]);
-					nthBranch.Conditions.Add(nthCondition);
-					branches.Add(nthBranch);
-					//visitedConditions.Add(nthCondition);
-				}
+				var nthBranch = new RoutineContext(ctx, tbl[i]);
+				nthBranch.Conditions.Add(new Condition(conditionAst, i));
+				branches.Add(nthBranch);
 			}
 
 			ctx.Conditions.Add(new Condition(conditionAst, 0));

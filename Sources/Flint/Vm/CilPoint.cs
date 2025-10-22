@@ -1,4 +1,5 @@
-﻿using Mono.Cecil;
+﻿using Flint.Common;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace Flint.Vm
@@ -17,15 +18,15 @@ namespace Flint.Vm
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(CilPoint), Method.MetadataToken, Offset);
+			return HashCode.Combine(typeof(CilPoint), Hash.Code(Method), Offset);
 		}
 
 		public override bool Equals(object obj)
 		{
 			if (obj is CilPoint pt)
 			{
-				return Method.MetadataToken.Equals(pt.Method.MetadataToken)
-					&& Offset.Equals(pt.Offset);
+				return Are.Equal(Method, pt.Method)
+					&& Offset == pt.Offset;
 			}
 			return false;
 		}

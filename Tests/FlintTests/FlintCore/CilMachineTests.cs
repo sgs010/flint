@@ -170,14 +170,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Beq(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Beq(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -200,14 +200,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Beq(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Beq(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -230,14 +230,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bge(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bge(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -260,14 +260,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bge(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bge(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -290,14 +290,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bge(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bge(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -320,14 +320,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bge(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bge(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -350,14 +350,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bgt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bgt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -380,14 +380,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bgt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bgt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -410,14 +410,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bgt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bgt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -440,14 +440,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bgt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bgt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -470,14 +470,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Ble(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Ble(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -500,14 +500,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Ble(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Ble(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -530,14 +530,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Ble(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Ble(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -560,14 +560,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Ble(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Ble(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -590,14 +590,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Blt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Blt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -620,14 +620,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Blt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Blt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -650,14 +650,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Blt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Blt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -680,14 +680,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Blt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Blt(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -710,14 +710,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bne(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bne(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -740,14 +740,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bne(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Bne(null, new Cil.Int32(PT, 1), new Cil.Int32(PT, 2)),
 					0));
 		}
@@ -831,14 +831,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Brfalse(null, new Cil.Int32(PT, 42)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Brfalse(null, new Cil.Int32(PT, 42)),
 					0));
 		}
@@ -860,14 +860,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Brfalse(null, new Cil.Int32(PT, 42)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Brfalse(null, new Cil.Int32(PT, 42)),
 					0));
 		}
@@ -889,14 +889,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Brtrue(null, new Cil.Int32(PT, 42)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Brtrue(null, new Cil.Int32(PT, 42)),
 					0));
 		}
@@ -918,14 +918,14 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Brtrue(null, new Cil.Int32(PT, 42)),
 					1));
 
 			var altBranch = branches[0];
 			altBranch.StartInstruction.AssertEquals(dup);
 			altBranch.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Brtrue(null, new Cil.Int32(PT, 42)),
 					0));
 		}
@@ -3479,7 +3479,7 @@ namespace FlintTests.FlintCore
 			nextInstruction.AssertEquals(nop);
 			ctx.Stack.AssertEmpty();
 			ctx.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Switch(null, new Cil.Int32(PT, 1)),
 					0));
 
@@ -3487,7 +3487,7 @@ namespace FlintTests.FlintCore
 			var branch1 = branches[0];
 			branch1.StartInstruction.AssertEquals(dup);
 			branch1.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Switch(null, new Cil.Int32(PT, 1)),
 					1));
 
@@ -3495,7 +3495,7 @@ namespace FlintTests.FlintCore
 			var branch2 = branches[1];
 			branch2.StartInstruction.AssertEquals(ret);
 			branch2.Conditions.AssertContains(
-				new Condition(
+				new CilMachine.Condition(
 					new Cil.Switch(null, new Cil.Int32(PT, 1)),
 					2));
 		}

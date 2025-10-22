@@ -10,12 +10,22 @@ namespace Flint.Vm.Cil
 		public readonly MethodReference Method;
 		public readonly MethodDefinition MethodImpl;
 		public readonly Ast[] Args;
+
 		public Call(CilPoint pt, Ast instance, MethodReference method, Ast[] args, string methodFullName = null) : base(pt)
 		{
 			Instance = instance;
 			MethodFullName = methodFullName ?? method.FullName;
 			Method = method;
 			MethodImpl = method.Resolve();
+			Args = args;
+		}
+
+		private Call(CilPoint pt, Ast instance, string methodFullName, MethodReference method, MethodDefinition methodImpl, Ast[] args) : base(pt)
+		{
+			Instance = instance;
+			MethodFullName = methodFullName;
+			Method = method;
+			MethodImpl = methodImpl;
 			Args = args;
 		}
 
@@ -40,6 +50,27 @@ namespace Flint.Vm.Cil
 					&& Args.SequenceEqual(call.Args);
 			}
 			return false;
+		}
+
+		protected override (Ast, bool) Merge(Ast other)
+		{
+			if (other is Call call)
+			{
+				if (Are.Equal(Method, call.Method) == false)
+					return (null, false);
+
+				var (instance, instanceOk) = Merge(Instance, call.Instance);
+				if (instanceOk == false)
+					return (null, false);
+
+				var (args, argsOk) = Merge(Args, call.Args);
+				if (argsOk == false)
+					return (null, false);
+
+				var merged = new Call(CilPoint, instance, MethodFullName, Method, MethodImpl, args);
+				return (merged, true);
+			}
+			return (null, false);
 		}
 	}
 }

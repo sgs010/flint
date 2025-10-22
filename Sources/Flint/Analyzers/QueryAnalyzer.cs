@@ -105,16 +105,14 @@ namespace Flint.Analyzers
 			};
 		}
 
-		private static IEnumerable<Ast> GetLambdas(Ast expr)
+		private static IEnumerable<Ast> GetLambdas(Ast expression)
 		{
-			ArgumentNullException.ThrowIfNull(expr);
-			foreach (var ftn in expr.OfFtn())
+			foreach (var ftn in expression.OfFtn())
 			{
 				var lambdaMethod = ftn.MethodImpl.UnwrapAsyncMethod();
-				var lambdaBranches = CilMachine.Run(lambdaMethod);
-				foreach (var branch in lambdaBranches)
-					foreach (var branchExpr in branch.Expressions)
-						yield return branchExpr;
+				var lambdaExpressions = CilMachine.Run(lambdaMethod);
+				foreach (var expr in lambdaExpressions)
+					yield return expr;
 			}
 		}
 
