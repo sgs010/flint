@@ -11,58 +11,60 @@
 		public abstract IEnumerable<Ast> GetChildren();
 		public abstract bool Equals(Ast other);
 		public virtual void Capture(Ast other, IDictionary<string, Ast> captures) { }
-		protected virtual (Ast, bool) Merge(Ast other) { return (null, false); }
+		protected virtual (Ast, MergeResult) Merge(Ast other) { return (null, MergeResult.NotMerged); }
 
-		public static (Ast, bool) Merge(Ast x, Ast y)
+		public enum MergeResult { NotMerged = 0, Merged = 1, Equal = 2 }
+
+		public static (Ast, MergeResult) Merge(Ast x, Ast y)
 		{
 			if (x == null && y == null)
-				return (null, true);
+				return (null, MergeResult.Equal);
 			if (x != null && y == null)
-				return (x, true);
+				return (x, MergeResult.Merged);
 			if (x == null && y != null)
-				return (y, true);
-
-			if (x.CilPoint.Equals(y.CilPoint) == false)
-				return (null, false);
+				return (y, MergeResult.Merged);
 
 			if (x.Equals(y))
-				return (x, true);
+				return (x, MergeResult.Equal);
 
-			var (merged, ok) = x.Merge(y);
-			if (ok)
-				return (merged, true);
+			var (m, r) = x.Merge(y);
+			if (r != MergeResult.NotMerged)
+				return (m, r);
 
-			(merged, ok) = y.Merge(x);
-			if (ok)
-				return (merged, true);
+			(m, r) = y.Merge(x);
+			if (r != MergeResult.NotMerged)
+				return (m, r);
 
-			return (null, false);
+			return (null, MergeResult.NotMerged);
 		}
 
-		public static (Ast[], bool) Merge(Ast[] x, Ast[] y)
+		public static (Ast[], MergeResult) Merge(Ast[] x, Ast[] y)
 		{
 			if (x == null && y == null)
-				return (null, true);
+				return (null, MergeResult.Equal);
 			if (x != null && y == null)
-				return (x, true);
+				return (x, MergeResult.Merged);
 			if (x == null && y != null)
-				return (y, true);
+				return (y, MergeResult.Merged);
 
 			if (x.Length == 0 && y.Length == 0)
-				return (x, true);
+				return (x, MergeResult.Equal);
 
 			if (x.Length != y.Length)
-				return (null, false);
+				return (null, MergeResult.NotMerged);
 
 			var merged = new Ast[x.Length];
+			var mergeResult = (int)MergeResult.Equal;
 			for (var i = 0; i < x.Length; ++i)
 			{
-				var (m, ok) = Merge(x[i], y[i]);
-				if (ok == false)
-					return (null, false);
+				var (m, r) = Merge(x[i], y[i]);
+				if (r == MergeResult.NotMerged)
+					return (null, MergeResult.NotMerged);
+
 				merged[i] = m;
+				mergeResult = Math.Min(mergeResult, (int)r);
 			}
-			return (merged, true);
+			return (merged, (MergeResult)mergeResult);
 		}
 
 		public override int GetHashCode()

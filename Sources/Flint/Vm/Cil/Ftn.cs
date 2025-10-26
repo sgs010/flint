@@ -8,11 +8,19 @@ namespace Flint.Vm.Cil
 		public readonly Ast Instance;
 		public readonly MethodReference Method;
 		public readonly MethodDefinition MethodImpl;
+
 		public Ftn(CilPoint pt, Ast instance, MethodReference method) : base(pt)
 		{
 			Instance = instance;
 			Method = method;
 			MethodImpl = method.Resolve();
+		}
+
+		private Ftn(CilPoint pt, Ast instance, MethodReference method, MethodDefinition methodImpl) : base(pt)
+		{
+			Instance = instance;
+			Method = method;
+			MethodImpl = methodImpl;
 		}
 
 		public override IEnumerable<Ast> GetChildren()
@@ -33,6 +41,23 @@ namespace Flint.Vm.Cil
 					&& Are.Equal(Method, ftn.Method);
 			}
 			return false;
+		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			if (other is Ftn ftn)
+			{
+				if (Are.Equal(Method, ftn.Method) == false)
+					return (null, MergeResult.NotMerged);
+
+				var (instance, instanceResult) = Merge(Instance, ftn.Instance);
+				if (instanceResult == MergeResult.NotMerged)
+					return (null, MergeResult.NotMerged);
+
+				var merged = new Ftn(CilPoint, instance, Method, MethodImpl);
+				return (merged, MergeResult.Merged);
+			}
+			return (null, MergeResult.NotMerged);
 		}
 	}
 }

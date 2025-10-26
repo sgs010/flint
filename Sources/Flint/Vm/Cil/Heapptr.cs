@@ -28,5 +28,19 @@ namespace Flint.Vm.Cil
 			}
 			return false;
 		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			if (other is Heapptr ptr)
+			{
+				var (address, addressResult) = Merge(Address, ptr.Address);
+				if (addressResult == MergeResult.NotMerged)
+					return (null, MergeResult.NotMerged);
+
+				var merged = new Heapptr(CilPoint, address);
+				return (merged, MergeResult.Merged);
+			}
+			return (null, MergeResult.NotMerged);
+		}
 	}
 }

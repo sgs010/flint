@@ -52,25 +52,25 @@ namespace Flint.Vm.Cil
 			return false;
 		}
 
-		protected override (Ast, bool) Merge(Ast other)
+		protected override (Ast, MergeResult) Merge(Ast other)
 		{
 			if (other is Call call)
 			{
 				if (Are.Equal(Method, call.Method) == false)
-					return (null, false);
+					return (null, MergeResult.NotMerged);
 
-				var (instance, instanceOk) = Merge(Instance, call.Instance);
-				if (instanceOk == false)
-					return (null, false);
+				var (instance, instanceResult) = Merge(Instance, call.Instance);
+				if (instanceResult == MergeResult.NotMerged)
+					return (null, MergeResult.NotMerged);
 
-				var (args, argsOk) = Merge(Args, call.Args);
-				if (argsOk == false)
-					return (null, false);
+				var (args, argsResult) = Merge(Args, call.Args);
+				if (argsResult == MergeResult.NotMerged)
+					return (null, MergeResult.NotMerged);
 
 				var merged = new Call(CilPoint, instance, MethodFullName, Method, MethodImpl, args);
-				return (merged, true);
+				return (merged, MergeResult.Merged);
 			}
-			return (null, false);
+			return (null, MergeResult.NotMerged);
 		}
 	}
 }

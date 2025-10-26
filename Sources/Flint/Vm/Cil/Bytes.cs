@@ -28,5 +28,19 @@ namespace Flint.Vm.Cil
 			}
 			return false;
 		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			if (other is Bytes bytes)
+			{
+				var (count, countResult) = Merge(Count, bytes.Count);
+				if (countResult == MergeResult.NotMerged)
+					return (null, MergeResult.NotMerged);
+
+				var merged = new Bytes(CilPoint, count);
+				return (merged, MergeResult.Merged);
+			}
+			return (null, MergeResult.NotMerged);
+		}
 	}
 }

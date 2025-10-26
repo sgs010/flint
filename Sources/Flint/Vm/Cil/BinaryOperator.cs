@@ -36,22 +36,22 @@ namespace Flint.Vm.Cil
 			return false;
 		}
 
-		protected sealed override (Ast, bool) Merge(Ast other)
+		protected sealed override (Ast, MergeResult) Merge(Ast other)
 		{
 			if (other is T t)
 			{
-				var (left, leftOk) = Merge(Left, t.Left);
-				if (leftOk == false)
-					return (null, false);
+				var (left, leftResult) = Merge(Left, t.Left);
+				if (leftResult == MergeResult.NotMerged)
+					return (null, MergeResult.NotMerged);
 
-				var (right, rightOk) = Merge(Right, t.Right);
-				if (rightOk == false)
-					return (null, false);
+				var (right, rightResult) = Merge(Right, t.Right);
+				if (rightResult == MergeResult.NotMerged)
+					return (null, MergeResult.NotMerged);
 
 				var merged = CreateInstance(CilPoint, left, right);
-				return (merged, true);
+				return (merged, MergeResult.Merged);
 			}
-			return (null, false);
+			return (null, MergeResult.NotMerged);
 		}
 	}
 }

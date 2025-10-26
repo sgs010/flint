@@ -1,6 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.ComponentModel.DataAnnotations;
-using System.IO;
 using System.Runtime.CompilerServices;
 using Flint.Analyzers;
 
