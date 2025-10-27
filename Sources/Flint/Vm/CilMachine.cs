@@ -191,7 +191,7 @@ namespace Flint.Vm
 				{
 					// merge
 					var (merged, mergeResult) = Ast.Merge(expr, prevExpr);
-					if (mergeResult == Ast.MergeResult.Merged)
+					if (mergeResult == Ast.MergeResult.OkMerged)
 					{
 						acc[pt] = merged;
 						isChanged = true;

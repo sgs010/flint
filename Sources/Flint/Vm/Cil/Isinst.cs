@@ -38,16 +38,15 @@ namespace Flint.Vm.Cil
 			if (other is Isinst inst)
 			{
 				if (Are.Equal(Type, inst.Type) == false)
-					return (null, MergeResult.NotMerged);
+					return NotMerged();
 
-				var (instance, instanceResult) = Merge(Instance, inst.Instance);
-				if (instanceResult == MergeResult.NotMerged)
-					return (null, MergeResult.NotMerged);
+				var (instance, instanceMr) = Merge(Instance, inst.Instance);
+				if (instanceMr == MergeResult.NotMerged)
+					return NotMerged();
 
-				var merged = new Isinst(CilPoint, Type, instance);
-				return (merged, MergeResult.Merged);
+				return OkMerged(new Isinst(CilPoint, Type, instance));
 			}
-			return (null, MergeResult.NotMerged);
+			return NotMerged();
 		}
 	}
 }

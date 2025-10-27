@@ -37,18 +37,17 @@ namespace Flint.Vm.Cil
 		{
 			if (other is Elem elem)
 			{
-				var (array, arrayResult) = Merge(Array, elem.Array);
-				if (arrayResult == MergeResult.NotMerged)
-					return (null, MergeResult.NotMerged);
+				var (array, arrayMr) = Merge(Array, elem.Array);
+				if (arrayMr == MergeResult.NotMerged)
+					return NotMerged();
 
-				var (index, indexResult) = Merge(Index, elem.Index);
-				if (indexResult == MergeResult.NotMerged)
-					return (null, MergeResult.NotMerged);
+				var (index, indexMr) = Merge(Index, elem.Index);
+				if (indexMr == MergeResult.NotMerged)
+					return NotMerged();
 
-				var merged = new Elem(CilPoint, array, index);
-				return (merged, MergeResult.Merged);
+				return OkMerged(new Elem(CilPoint, array, index));
 			}
-			return (other, MergeResult.NotMerged);
+			return NotMerged();
 		}
 	}
 }

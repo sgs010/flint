@@ -38,16 +38,15 @@ namespace Flint.Vm.Cil
 			if (other is Castclass cast)
 			{
 				if (Are.Equal(Type, cast.Type) == false)
-					return (null, MergeResult.NotMerged);
+					return NotMerged();
 
-				var (value, valueResult) = Merge(Value, cast.Value);
-				if (valueResult == MergeResult.NotMerged)
-					return (null, MergeResult.NotMerged);
+				var (value, valueMr) = Merge(Value, cast.Value);
+				if (valueMr == MergeResult.NotMerged)
+					return NotMerged();
 
-				var merged = new Castclass(CilPoint, Type, value);
-				return (merged, MergeResult.Merged);
+				return OkMerged(new Castclass(CilPoint, Type, value));
 			}
-			return (null, MergeResult.NotMerged);
+			return NotMerged();
 		}
 	}
 }

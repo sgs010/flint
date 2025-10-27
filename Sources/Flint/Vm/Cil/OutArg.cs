@@ -37,16 +37,15 @@ namespace Flint.Vm.Cil
 			if (other is OutArg arg)
 			{
 				if (Index != arg.Index)
-					return (null, MergeResult.NotMerged);
+					return NotMerged();
 
-				var (call, callResult) = Merge(Call, arg.Call);
-				if (callResult == MergeResult.NotMerged)
-					return (null, MergeResult.NotMerged);
+				var (call, callMr) = Merge(Call, arg.Call);
+				if (callMr == MergeResult.NotMerged)
+					return NotMerged();
 
-				var merged = new OutArg(CilPoint, (Call)call, Index);
-				return (merged, MergeResult.Merged);
+				return OkMerged(new OutArg(CilPoint, (Call)call, Index));
 			}
-			return (null, MergeResult.NotMerged);
+			return NotMerged();
 		}
 	}
 }

@@ -33,14 +33,13 @@ namespace Flint.Vm.Cil
 		{
 			if (other is Heapptr ptr)
 			{
-				var (address, addressResult) = Merge(Address, ptr.Address);
-				if (addressResult == MergeResult.NotMerged)
-					return (null, MergeResult.NotMerged);
+				var (address, addressMr) = Merge(Address, ptr.Address);
+				if (addressMr == MergeResult.NotMerged)
+					return NotMerged();
 
-				var merged = new Heapptr(CilPoint, address);
-				return (merged, MergeResult.Merged);
+				return OkMerged(new Heapptr(CilPoint, address));
 			}
-			return (null, MergeResult.NotMerged);
+			return NotMerged();
 		}
 	}
 }

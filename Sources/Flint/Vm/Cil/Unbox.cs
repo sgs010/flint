@@ -32,5 +32,21 @@ namespace Flint.Vm.Cil
 			}
 			return false;
 		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			if (other is Unbox unbox)
+			{
+				if (Are.Equal(Type, unbox.Type) == false)
+					return NotMerged();
+
+				var (value, valueMr) = Merge(Value, unbox.Value);
+				if (valueMr == MergeResult.NotMerged)
+					return NotMerged();
+
+				return OkMerged(new Unbox(CilPoint, Type, value));
+			}
+			return NotMerged();
+		}
 	}
 }

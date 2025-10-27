@@ -57,20 +57,19 @@ namespace Flint.Vm.Cil
 			if (other is Call call)
 			{
 				if (Are.Equal(Method, call.Method) == false)
-					return (null, MergeResult.NotMerged);
+					return NotMerged();
 
-				var (instance, instanceResult) = Merge(Instance, call.Instance);
-				if (instanceResult == MergeResult.NotMerged)
-					return (null, MergeResult.NotMerged);
+				var (instance, instanceMr) = Merge(Instance, call.Instance);
+				if (instanceMr == MergeResult.NotMerged)
+					return NotMerged();
 
-				var (args, argsResult) = Merge(Args, call.Args);
-				if (argsResult == MergeResult.NotMerged)
-					return (null, MergeResult.NotMerged);
+				var (args, argsMr) = Merge(Args, call.Args);
+				if (argsMr == MergeResult.NotMerged)
+					return NotMerged();
 
-				var merged = new Call(CilPoint, instance, MethodFullName, Method, MethodImpl, args);
-				return (merged, MergeResult.Merged);
+				return OkMerged(new Call(CilPoint, instance, MethodFullName, Method, MethodImpl, args));
 			}
-			return (null, MergeResult.NotMerged);
+			return NotMerged();
 		}
 	}
 }

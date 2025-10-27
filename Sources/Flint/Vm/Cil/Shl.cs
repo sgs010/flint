@@ -32,5 +32,22 @@ namespace Flint.Vm.Cil
 			}
 			return false;
 		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			if (other is Shl shl)
+			{
+				var (value, valueMr) = Merge(Value, shl.Value);
+				if (valueMr == MergeResult.NotMerged)
+					return NotMerged();
+
+				var (count, countMr) = Merge(Count, shl.Count);
+				if (countMr == MergeResult.NotMerged)
+					return NotMerged();
+
+				return OkMerged(new Shl(CilPoint, value, count));
+			}
+			return NotMerged();
+		}
 	}
 }

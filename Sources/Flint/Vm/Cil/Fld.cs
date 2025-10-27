@@ -35,7 +35,7 @@ namespace Flint.Vm.Cil
 
 		protected override (Ast, MergeResult) Merge(Ast other)
 		{
-			return (other, MergeResult.Merged);
+			return OkMerged(other);
 		}
 	}
 }

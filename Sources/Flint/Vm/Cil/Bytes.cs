@@ -33,14 +33,13 @@ namespace Flint.Vm.Cil
 		{
 			if (other is Bytes bytes)
 			{
-				var (count, countResult) = Merge(Count, bytes.Count);
-				if (countResult == MergeResult.NotMerged)
-					return (null, MergeResult.NotMerged);
+				var (count, countMr) = Merge(Count, bytes.Count);
+				if (countMr == MergeResult.NotMerged)
+					return NotMerged();
 
-				var merged = new Bytes(CilPoint, count);
-				return (merged, MergeResult.Merged);
+				return OkMerged(new Bytes(CilPoint, count));
 			}
-			return (null, MergeResult.NotMerged);
+			return NotMerged();
 		}
 	}
 }

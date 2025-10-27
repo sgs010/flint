@@ -1,4 +1,6 @@
-﻿namespace Flint.Vm
+﻿using System.Runtime.CompilerServices;
+
+namespace Flint.Vm
 {
 	abstract class Ast : IEquatable<Ast>
 	{
@@ -11,18 +13,30 @@
 		public abstract IEnumerable<Ast> GetChildren();
 		public abstract bool Equals(Ast other);
 		public virtual void Capture(Ast other, IDictionary<string, Ast> captures) { }
-		protected virtual (Ast, MergeResult) Merge(Ast other) { return (null, MergeResult.NotMerged); }
+		protected virtual (Ast, MergeResult) Merge(Ast other) { return NotMerged(); }
 
-		public enum MergeResult { NotMerged = 0, Merged = 1, Equal = 2 }
+		public enum MergeResult { NotMerged = 0, OkMerged = 1, Equal = 2 }
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		protected static (Ast, MergeResult) NotMerged()
+		{
+			return (null, MergeResult.NotMerged);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		protected static (Ast, MergeResult) OkMerged(Ast ast)
+		{
+			return (ast, MergeResult.OkMerged);
+		}
 
 		public static (Ast, MergeResult) Merge(Ast x, Ast y)
 		{
 			if (x == null && y == null)
 				return (null, MergeResult.Equal);
 			if (x != null && y == null)
-				return (x, MergeResult.Merged);
+				return (x, MergeResult.OkMerged);
 			if (x == null && y != null)
-				return (y, MergeResult.Merged);
+				return (y, MergeResult.OkMerged);
 
 			if (x.Equals(y))
 				return (x, MergeResult.Equal);
@@ -43,9 +57,9 @@
 			if (x == null && y == null)
 				return (null, MergeResult.Equal);
 			if (x != null && y == null)
-				return (x, MergeResult.Merged);
+				return (x, MergeResult.OkMerged);
 			if (x == null && y != null)
-				return (y, MergeResult.Merged);
+				return (y, MergeResult.OkMerged);
 
 			if (x.Length == 0 && y.Length == 0)
 				return (x, MergeResult.Equal);

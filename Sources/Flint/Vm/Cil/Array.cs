@@ -38,16 +38,15 @@ namespace Flint.Vm.Cil
 			if (other is Array array)
 			{
 				if (Are.Equal(Type, array.Type) == false)
-					return (null, MergeResult.NotMerged);
+					return NotMerged();
 
-				var (size, sizeResult) = Merge(Size, array.Size);
-				if (sizeResult == MergeResult.NotMerged)
-					return (null, MergeResult.NotMerged);
+				var (size, sizeMr) = Merge(Size, array.Size);
+				if (sizeMr == MergeResult.NotMerged)
+					return NotMerged();
 
-				var merged = new Array(CilPoint, Type, size);
-				return (merged, MergeResult.Merged);
+				return OkMerged(new Array(CilPoint, Type, size));
 			}
-			return (null, MergeResult.NotMerged);
+			return NotMerged();
 		}
 	}
 }

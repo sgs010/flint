@@ -36,14 +36,13 @@ namespace Flint.Vm.Cil
 		{
 			if (other is T t)
 			{
-				var (value, valueResult) = Merge(Value, t.Value);
-				if (valueResult == MergeResult.NotMerged)
-					return (null, MergeResult.NotMerged);
+				var (value, valueMr) = Merge(Value, t.Value);
+				if (valueMr == MergeResult.NotMerged)
+					return NotMerged();
 
-				var merged = CreateInstance(CilPoint, value);
-				return (merged, MergeResult.Merged);
+				return OkMerged(CreateInstance(CilPoint, value));
 			}
-			return (null, MergeResult.NotMerged);
+			return NotMerged();
 		}
 	}
 }

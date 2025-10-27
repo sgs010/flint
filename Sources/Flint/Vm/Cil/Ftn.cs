@@ -48,16 +48,15 @@ namespace Flint.Vm.Cil
 			if (other is Ftn ftn)
 			{
 				if (Are.Equal(Method, ftn.Method) == false)
-					return (null, MergeResult.NotMerged);
+					return NotMerged();
 
-				var (instance, instanceResult) = Merge(Instance, ftn.Instance);
-				if (instanceResult == MergeResult.NotMerged)
-					return (null, MergeResult.NotMerged);
+				var (instance, instanceMr) = Merge(Instance, ftn.Instance);
+				if (instanceMr == MergeResult.NotMerged)
+					return NotMerged();
 
-				var merged = new Ftn(CilPoint, instance, Method, MethodImpl);
-				return (merged, MergeResult.Merged);
+				return OkMerged(new Ftn(CilPoint, instance, Method, MethodImpl));
 			}
-			return (null, MergeResult.NotMerged);
+			return NotMerged();
 		}
 	}
 }
