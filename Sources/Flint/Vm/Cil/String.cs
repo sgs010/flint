@@ -1,32 +1,8 @@
-﻿using Flint.Common;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
-	class String : Ast
+	class String : Literal<string, String>
 	{
-		public readonly string Value;
-		public String(CilPoint pt, string value) : base(pt)
-		{
-			Value = value;
-		}
-
-		public override IEnumerable<Ast> GetChildren()
-		{
-			yield break;
-		}
-
-		public override int GetHashCode()
-		{
-			return HashCode.Combine(typeof(String), Value);
-		}
-
-		public override bool Equals(Ast other)
-		{
-			if (other is String str)
-			{
-				return Are.Equal(Value, str.Value);
-			}
-			return false;
-		}
+		public String(CilPoint pt, string value)
+			: base(pt, value) { }
 	}
 }

@@ -15,5 +15,10 @@
 		{
 			return other is Null;
 		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			return OkMerged(other);
+		}
 	}
 }

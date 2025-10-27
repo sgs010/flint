@@ -27,11 +27,15 @@ namespace Flint.Vm
 			// 2. merge branch expressions with prev branch expressions
 			// 3. if nothing changed, then ignore alt branches
 
+			var n = 0;
+
 			var expressions = new Dictionary<CilPoint, Ast>();
 			var queue = new Queue<RoutineContext>();
 			queue.Enqueue(new RoutineContext(mtd));
 			while (queue.Count > 0)
 			{
+				++n;
+
 				var branch = queue.Dequeue();
 				var altBranches = new List<RoutineContext>();
 				Eval(branch, altBranches, machineContext);
@@ -43,6 +47,7 @@ namespace Flint.Vm
 				foreach (var b in altBranches)
 					queue.Enqueue(b);
 			}
+
 			return [.. expressions.Values];
 		}
 		#endregion
