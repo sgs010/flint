@@ -27,7 +27,7 @@ namespace FlintTests.FlintCore
 		}
 
 		//[TestMethod]
-		//[Timeout(5 * 60 * 1000)]
+		//[Timeout(1000)]
 		//public void TestAnyDll()
 		//{
 		//	var ctx = new AnalyzerContext { Trace = true };
