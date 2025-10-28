@@ -26,15 +26,15 @@ namespace FlintTests.FlintCore
 			]);
 		}
 
-		//[TestMethod]
-		//[Timeout(1000)]
-		//public void TestAnyDll()
-		//{
-		//	var ctx = new AnalyzerContext { Trace = true };
-		//	foreach (var path in Directory.GetFiles(".", "*.dll"))
-		//	{
-		//		Flint.Api.Analyze(path, trace: true);
-		//	}
-		//}
+		[TestMethod]
+		[Timeout(60 * 1000)]
+		public void TestAnyDll()
+		{
+			var ctx = new AnalyzerContext { Trace = true };
+			foreach (var path in Directory.GetFiles(".", "*.dll"))
+			{
+				Flint.Api.Analyze(path, trace: true);
+			}
+		}
 	}
 }

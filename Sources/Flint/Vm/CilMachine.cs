@@ -27,25 +27,34 @@ namespace Flint.Vm
 			// 2. merge branch expressions with prev branch expressions
 			// 3. if nothing changed, then ignore alt branches
 
-			var n = 0;
-
 			var expressions = new Dictionary<CilPoint, Ast>();
+			var visitedBranches = new HashSet<int>();
 			var queue = new Queue<RoutineContext>();
 			queue.Enqueue(new RoutineContext(mtd));
 			while (queue.Count > 0)
 			{
-				++n;
-
 				var branch = queue.Dequeue();
+				visitedBranches.Add(branch.StartInstruction.Offset);
+
 				var altBranches = new List<RoutineContext>();
 				Eval(branch, altBranches, machineContext);
 
+				// check if this branch gives us any new expressions
 				var isChanged = Merge(expressions, branch.Expressions);
-				if (isChanged == false)
+				if (isChanged)
+				{
+					// got new expressions, process all alt branches
+					foreach (var b in altBranches)
+						queue.Enqueue(b);
 					continue;
+				}
 
+				// got no new expressions, but possibly could get new unvisited branches - process them too
 				foreach (var b in altBranches)
-					queue.Enqueue(b);
+				{
+					if (visitedBranches.Contains(b.StartInstruction.Offset) == false)
+						queue.Enqueue(b);
+				}
 			}
 
 			return [.. expressions.Values];
