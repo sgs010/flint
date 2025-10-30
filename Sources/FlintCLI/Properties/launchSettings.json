@@ -1,8 +1,9 @@
 {
-  "profiles": {
-    "FlintCLI": {
-      "commandName": "Project",
-      "commandLineArgs": "--input=webapp.dll"
-    }
-  }
+	"profiles": {
+		"FlintCLI": {
+			"commandName": "Project",
+			"commandLineArgs": "--input=webapp.dll"
+			//"commandLineArgs": "--input=Microsoft.Extensions.DependencyInjection.dll --trace"
+		}
+	}
 }

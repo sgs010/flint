@@ -68,6 +68,9 @@ namespace Flint.Analyzers
 			expressions.AddRange(methodExpressions);
 			foreach (var ftn in methodExpressions.OfFtn())
 			{
+				if (Are.Equal(method, ftn.MethodImpl))
+					continue; // avoid stack overflow in endless recursion
+
 				var lambdaExpressions = EvalRaw(ftn.MethodImpl);
 				expressions.AddRange(lambdaExpressions);
 			}

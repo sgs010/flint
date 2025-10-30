@@ -122,8 +122,11 @@ namespace Flint.Analyzers
 			{
 				foreach (var root in branch.OfCall(asm.EFCoreRoots))
 				{
+					var t = ((GenericInstanceMethod)root.Method).GenericArguments.First();
+					if (t is not TypeDefinition et)
+						continue;
+
 					// et is T from METHOD<T> (i.e. ToListAsync<T>)
-					var et = (TypeDefinition)((GenericInstanceMethod)root.Method).GenericArguments.First();
 					if (asm.EntityTypes.Contains(et))
 						yield return (branch, root, et);
 

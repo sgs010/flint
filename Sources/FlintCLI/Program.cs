@@ -5,6 +5,7 @@
 		class InputParameters
 		{
 			public string Input { get; set; }
+			public bool Trace { get; set; }
 		}
 
 		internal static int Main(string[] args)
@@ -18,7 +19,7 @@
 			try
 			{
 				var parameters = ParseInputParameters(args);
-				var result = Api.Analyze(parameters.Input);
+				var result = Api.Analyze(parameters.Input, parameters.Trace);
 				foreach (var item in result)
 					Console.WriteLine(item);
 				return 0;
@@ -36,6 +37,7 @@
 			Console.WriteLine("Usage: FlintCLI --input=<path_to_assembly>");
 			Console.WriteLine("Options:");
 			Console.WriteLine("  --input - Path to the assembly (DLL or EXE) to analyze.");
+			Console.WriteLine("  --trace - Show trace.");
 			Console.WriteLine("Example:");
 			Console.WriteLine("  FlintCLI --input=MyApp.dll");
 		}
@@ -45,9 +47,13 @@
 			var parameters = new InputParameters();
 			foreach (var arg in args)
 			{
-				if (arg.StartsWith("--input="))
+				if (arg.StartsWith("--input=", StringComparison.InvariantCultureIgnoreCase))
 				{
 					parameters.Input = arg.Substring("--input=".Length);
+				}
+				else if (arg.Equals("--trace", StringComparison.InvariantCultureIgnoreCase))
+				{
+					parameters.Trace = true;
 				}
 				else
 				{
