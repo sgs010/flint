@@ -18,7 +18,7 @@ namespace FlintWeb.Pages
 		}
 
 		[BindProperty]
-		[Required]
+		[Required(ErrorMessage = "required")]
 		public IFormFile DllFile { get; set; }
 
 		[BindProperty]
@@ -27,6 +27,8 @@ namespace FlintWeb.Pages
 		public bool ShowResult { get; set; }
 		public ImmutableArray<string> Result { get; set; }
 		public long ElapsedMilliseconds { get; set; }
+		public string FileName { get; set; }
+		public string Error { get; set; }
 
 		public IActionResult OnPost()
 		{
@@ -35,18 +37,33 @@ namespace FlintWeb.Pages
 			if (DllFile == null)
 				return Page();
 
+			FileName = DllFile.FileName;
 			Result = [];
 			ElapsedMilliseconds = 0;
+			Error = null;
 
-			using (var dllStream = DllFile.OpenReadStream())
-			using (var pdbStream = PdbFile?.OpenReadStream())
+			using (_logger.BeginScope("OnPost"))
 			{
-				var watch = Stopwatch.StartNew();
-				Result = _flint.Analyze(dllStream, pdbStream);
-				watch.Stop();
-				ElapsedMilliseconds = watch.ElapsedMilliseconds;
+				_logger.LogInformation($"Processing file {FileName}");
+				using (var dllStream = DllFile.OpenReadStream())
+				using (var pdbStream = PdbFile?.OpenReadStream())
+				{
+					var watch = Stopwatch.StartNew();
+					try
+					{
+						Result = _flint.Analyze(dllStream, pdbStream);
+					}
+					catch (Exception ex)
+					{
+						_logger.LogError(ex.ToString());
+						Error = ex.Message;
+					}
+					watch.Stop();
+					ElapsedMilliseconds = watch.ElapsedMilliseconds;
+				}
+				if (Error == null)
+					_logger.LogInformation($"Finished in {ElapsedMilliseconds} ms");
 			}
-
 			ShowResult = true;
 			return Page();
 		}

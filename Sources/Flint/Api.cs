@@ -6,12 +6,18 @@ using Flint.Analyzers;
 
 namespace Flint
 {
+	public class ApiOptions
+	{
+		public bool Trace { get; set; }
+	}
+
 	public static class Api
 	{
 		#region Interface
-		public static ImmutableArray<string> Analyze(string dllPath, bool trace = false)
+		public static ImmutableArray<string> Analyze(string dllPath, ApiOptions options = null)
 		{
-			var ctx = new AnalyzerContext { Trace = trace };
+			var opt = options ?? new ApiOptions();
+			var ctx = new AnalyzerContext { Trace = opt.Trace };
 			var tt = ctx.BeginTrace($"analyze {dllPath}");
 
 			using var asm = AssemblyAnalyzer.Load(ctx, dllPath);
@@ -21,9 +27,10 @@ namespace Flint
 			return result;
 		}
 
-		public static ImmutableArray<string> Analyze(Stream dllStream, Stream pdbStream, bool trace = false)
+		public static ImmutableArray<string> Analyze(Stream dllStream, Stream pdbStream, ApiOptions options = null)
 		{
-			var ctx = new AnalyzerContext { Trace = trace };
+			var opt = options ?? new ApiOptions();
+			var ctx = new AnalyzerContext { Trace = opt.Trace };
 			var tt = ctx.BeginTrace($"analyze");
 
 			using var asm = AssemblyAnalyzer.Load(ctx, dllStream, pdbStream);

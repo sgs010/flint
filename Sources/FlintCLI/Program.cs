@@ -19,9 +19,15 @@
 			try
 			{
 				var parameters = ParseInputParameters(args);
-				var result = Api.Analyze(parameters.Input, parameters.Trace);
+				var options = new ApiOptions
+				{
+					Trace = parameters.Trace
+				};
+				var result = Api.Analyze(parameters.Input, options);
 				foreach (var item in result)
+				{
 					Console.WriteLine(item);
+				}
 				return 0;
 			}
 			catch (Exception ex)
