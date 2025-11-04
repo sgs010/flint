@@ -39,3 +39,9 @@ body {
 .check-result code {
 	font-size: large;
 }
+
+.text-error {
+	background-color: red;
+	color: white;
+	padding: 3px;
+}

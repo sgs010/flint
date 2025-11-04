@@ -46,12 +46,12 @@
 		@if (Model.Error != null)
 		{
 			<p>Failed to process file @Model.FileName</p>
-			<p class="text-danger">@Model.Error</p>
+			<p class="text-error">@Model.Error</p>
 		}
 		else
 		{
-			<p>File @Model.FileName processed in @Model.ElapsedMilliseconds ms. Found @Model.Result.Length issues.</p>
-			@if (Model.Result.Length > 0)
+			<p>File @Model.FileName processed in @Model.ElapsedMilliseconds ms. Found @Model.Result.Count issues.</p>
+			@if (Model.Result.Count > 0)
 			{
 				<ol>
 					@foreach (var issue in Model.Result)

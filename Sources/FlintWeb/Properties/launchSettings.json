@@ -1,22 +1,15 @@
 {
 	"$schema": "https://json.schemastore.org/launchsettings.json",
 	"profiles": {
-		"http": {
-			"commandName": "Project",
-			"dotnetRunMessages": true,
-			"launchBrowser": true,
-			"applicationUrl": "http://localhost:12345",
-			"environmentVariables": {
-				"ASPNETCORE_ENVIRONMENT": "Development"
-			}
-		},
 		"https": {
 			"commandName": "Project",
 			"dotnetRunMessages": true,
 			"launchBrowser": true,
 			"applicationUrl": "https://localhost:12345",
 			"environmentVariables": {
-				"ASPNETCORE_ENVIRONMENT": "Development"
+				"ASPNETCORE_ENVIRONMENT": "Development",
+				"AZURE_STORAGE_CONNECTION_STRING": ".blob",
+				"AZURE_STORAGE_CONTAINER_NAME": "uploads"
 			}
 		}
 	}

@@ -65,7 +65,7 @@ namespace Flint.Analyzers
 		public static AssemblyInfo Load(IAnalyzerContext ctx, Stream dllStream, Stream pdbStream)
 		{
 			var parameters = new ReaderParameters { AssemblyResolver = new AssemblyResolver() };
-			if (pdbStream != null)
+			if (pdbStream != null && pdbStream.Length > 0)
 			{
 				parameters.ReadSymbols = true;
 				parameters.SymbolStream = pdbStream;
