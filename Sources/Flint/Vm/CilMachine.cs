@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Data;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Flint.Common;
 using Flint.Vm.Cil;
 using Mono.Cecil;
@@ -1087,7 +1086,7 @@ namespace Flint.Vm
 			var pt = GetCilPoint(ctx, instruction);
 
 			Ast instance = null;
-			if (fldImpl.IsStatic == false)
+			if (fldImpl != null && fldImpl.IsStatic == false)
 				instance = ctx.Stack.Pop();
 
 			if (ctx.Objects.TryGetValue(new ObjectField(instance, fld), out var value) == false)
@@ -1326,7 +1325,7 @@ namespace Flint.Vm
 			var value = ctx.Stack.Pop();
 
 			Ast instance = null;
-			if (fldImpl.IsStatic == false)
+			if (fldImpl != null && fldImpl.IsStatic == false)
 				instance = ctx.Stack.Pop();
 
 			ctx.Objects.AddOrReplace(new ObjectField(instance, fld), value);
