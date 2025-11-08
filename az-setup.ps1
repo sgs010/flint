@@ -1,6 +1,10 @@
+Set-StrictMode -Version Latest
+
 $project = "flint"
 $location = "polandcentral"
-$dnsZone = "privatelink.azurewebsites.net"
+$dnsZone = "${project}.net"
+$appZone = "app"
+$storageZone = "storage"
 
 $rg = "${project}-resource-group"
 
@@ -13,12 +17,11 @@ $storage = "${project}blob$(Get-Random)"
 
 $appPlan = "${project}-app-plan"
 $appName = "${project}app$(Get-Random)"
-$appFqdn = "${appName}.azurewebsites.net"
 $appProbe = "${project}-hc-probe"
 
 $gateway = "${project}-gateway"
 $gatewayPolicy = "${project}-gateway-policy"
-$gatewayPublicIp = "${project}-gateway-pip"
+$gatewayIpAddr = "${project}-gateway-pip"
 $gatewayBackendPool = "${project}-gateway-backend-pool"
 $gatewayHttpSettings = "${project}-gateway-http-settings"
 
@@ -28,7 +31,7 @@ $subnetAppId = ""
 $subnetStorageId = ""
 $subnetGatewayId = ""
 $appId = ""
-$appPrivateIp = ""
+$appIpAddr = ""
 
 #--------------------------------------------------------------------------------------------------
 # resource group
@@ -64,6 +67,7 @@ $subnetAppId = az network vnet subnet show `
 	--name $subnetApp `
 	--query id -o tsv
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+Write-Host "app subnet ID is ${subnetAppId}" -ForegroundColor DarkCyan
 
 Write-Host "--- create storage subnet ---" -ForegroundColor Green
 az network vnet subnet create `
@@ -80,6 +84,7 @@ $subnetStorageId = az network vnet subnet show `
 	--name $subnetStorage `
 	--query id -o tsv
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+Write-Host "storage subnet ID is ${subnetStorageId}" -ForegroundColor DarkCyan
 
 Write-Host "--- create gateway subnet ---" -ForegroundColor Green
 az network vnet subnet create `
@@ -95,6 +100,22 @@ $subnetGatewayId = az network vnet subnet show `
 	--vnet-name $vnet `
 	--name $subnetGateway `
 	--query id -o tsv
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+Write-Host "gateway subnet ID is ${subnetGatewayId}" -ForegroundColor DarkCyan
+
+Write-Host "--- create private DNS zone ---" -ForegroundColor Green
+az network private-dns zone create `
+	--resource-group $rg `
+	--name $dnsZone
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+Write-Host "--- link private DNS zone to virtual network ---" -ForegroundColor Green
+az network private-dns link vnet create `
+	--resource-group $rg `
+	--name "${dnsZone}-link" `
+	--zone-name $dnsZone `
+	--virtual-network $vnet `
+	--registration-enabled false
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 #--------------------------------------------------------------------------------------------------
@@ -146,7 +167,7 @@ az appservice plan create `
 	--is-linux
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-Write-Host "--- create web app for ASP.NET Core 9 ---" -ForegroundColor Green
+Write-Host "--- create webapp for ASP.NET Core 9 ---" -ForegroundColor Green
 az webapp create `
 	--resource-group $rg `
 	--name $appName `
@@ -159,6 +180,7 @@ $appId = az webapp show `
 	--name $appName `
 	--query id -o tsv
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }	
+Write-Host "webapp ID is ${appId}" -ForegroundColor DarkCyan
 
 Write-Host "--- create private endpoint for webapp ---" -ForegroundColor Green
 az network private-endpoint create `
@@ -171,42 +193,26 @@ az network private-endpoint create `
 	--connection-name "${appName}-pe-conn"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-$appPrivateIp = az network private-endpoint list `
+$appPeIpAddr = az network private-endpoint list `
 	--resource-group $rg `
-	--query "[?name=='${appName}-pe'][0].customDnsConfigs[0].ipAddresses[0]" -o tsv
+	--query "[?name=='${appName}-pe'].customDnsConfigs[0].ipAddresses[0]" -o tsv
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+Write-Host "private endpoint IP address is ${appPeIpAddr}" -ForegroundColor DarkCyan
 
-Write-Host "--- create webapp private DNS zone ---" -ForegroundColor Green
-az network private-dns zone create `
-	--resource-group $rg `
-	--name $dnsZone
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-Write-Host "--- link webapp private DNS zone to VNet ---" -ForegroundColor Green
-az network private-dns link vnet create `
-	--resource-group $rg `
-	--name "${dnsZone}-link" `
-	--zone-name $dnsZone `
-	--virtual-network $vnet `
-	--registration-enabled false
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-Write-Host "--- create A record for the azurewebsites.net name pointing to the private IP ---" -ForegroundColor Green
+Write-Host "--- create A record set for webapp ---" -ForegroundColor Green
 az network private-dns record-set a create `
 	--resource-group $rg `
-	--name $appName `
-	--zone $dnsZone
+	--name $appZone `
+	--zone-name $dnsZone
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-
+Write-Host "--- add A record for webapp private IP address ---" -ForegroundColor Green
 az network private-dns record-set a add-record `
 	--resource-group $rg `
-	--name $appName `
-	--zone $dnsZone `
-	--ipv4-address $appPrivateIp
+	--record-set-name $appZone `
+	--zone-name $dnsZone `
+	--ipv4-address $appPeIpAddr
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-!!!!! ERROR argument --ipv4-address/-a: expected one argument
 
 # # # Write-Host "--- deny all public traffic to webapp ---" -ForegroundColor Green
 # # # az webapp config access-restriction add `
