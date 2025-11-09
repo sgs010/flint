@@ -13,23 +13,25 @@ $subnetApp = "app-subnet"
 $subnetStorage = "storage-subnet"
 $subnetGateway = "gateway-subnet"
 
-$storage = "${project}blob$(Get-Random)"
+$storageName = "${project}blob$(Get-Random)"
 
 $appPlan = "${project}-app-plan"
 $appName = "${project}app$(Get-Random)"
 $appProbe = "${project}-hc-probe"
 
-$gateway = "${project}-gateway"
+$gatewayName = "${project}-gateway"
 $gatewayPolicy = "${project}-gateway-policy"
 $gatewayIpAddr = "${project}-gateway-pip"
 $gatewayBackendPool = "${project}-gateway-backend-pool"
 $gatewayHttpSettings = "${project}-gateway-http-settings"
 
-$logsWorkspace = "${project}-logs"
+$logWorkspace = "${project}-log"
 
 $subnetAppId = ""
 $subnetStorageId = ""
 $subnetGatewayId = ""
+$storageId = ""
+$storageIpAddr = ""
 $appId = ""
 $appIpAddr = ""
 
@@ -121,39 +123,56 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 #--------------------------------------------------------------------------------------------------
 # storage
 #--------------------------------------------------------------------------------------------------
-# Write-Host "--- create storage account ---" -ForegroundColor Green
-# az storage account create `
-# 	--name $storage `
-# 	--resource-group $rg `
-# 	--location $location `
-# 	--sku Standard_LRS `
-# 	--kind StorageV2 `
-# 	--public-network-access Disabled
-# if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+Write-Host "--- create storage ---" -ForegroundColor Green
+az storage account create `
+	--resource-group $rg `
+	--name $storageName `
+	--location $location `
+	--sku Standard_LRS `
+	--kind StorageV2 `
+	--public-network-access Disabled
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-# Write-Host "--- create private endpoint for blob ---" -ForegroundColor Green
-# $blobId = az storage account show `
-# 	--name $storage `
-# 	--resource-group $rg `
-# 	--query id -o tsv
-# if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }	
+$storageId = az storage account show `
+	--resource-group $rg `
+	--name $storageName `
+	--query id -o tsv
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }	
+Write-Host "gateway subnet ID is ${storageId}" -ForegroundColor DarkCyan
 
-# $subnetIdStorage = az network vnet subnet show `
-# 	--resource-group $rg `
-# 	--vnet-name $vnet `
-# 	--name $subnetStorage `
-# 	--query id -o tsv
-# if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+Write-Host "--- create private endpoint for storage ---" -ForegroundColor Green
+az network private-endpoint create `
+	--resource-group $rg `
+	--name "${storageName}-pe" `
+	--location $location `
+	--subnet $subnetStorageId `
+	--private-connection-resource-id $storageId `
+	--group-id blob `
+	--connection-name "${storageName}-pe-conn"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-# az network private-endpoint create `
-# 	--name "${storage}-pe" `
-# 	--resource-group $rg `
-# 	--location $location `
-# 	--subnet $subnetIdStorage `
-# 	--private-connection-resource-id $blobId `
-# 	--group-id blob `
-# 	--connection-name "${storage}-blob-conn"
-# if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+$storageIpAddr = az network private-endpoint list `
+	--resource-group $rg `
+	--query "[?name=='${storageName}-pe'].customDnsConfigs[0].ipAddresses[0]" -o tsv
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+Write-Host "storage IP address is ${storageIpAddr}" -ForegroundColor DarkCyan
+
+Write-Host "--- create A record set for storage ---" -ForegroundColor Green
+az network private-dns record-set a create `
+	--resource-group $rg `
+	--name $storageZone `
+	--zone-name $dnsZone
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+Write-Host "--- add A record for storage IP address ---" -ForegroundColor Green
+az network private-dns record-set a add-record `
+	--resource-group $rg `
+	--record-set-name $storageZone `
+	--zone-name $dnsZone `
+	--ipv4-address $storageIpAddr
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+exit
 
 #--------------------------------------------------------------------------------------------------
 # webapp
@@ -193,11 +212,11 @@ az network private-endpoint create `
 	--connection-name "${appName}-pe-conn"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-$appPeIpAddr = az network private-endpoint list `
+$appIpAddr = az network private-endpoint list `
 	--resource-group $rg `
 	--query "[?name=='${appName}-pe'].customDnsConfigs[0].ipAddresses[0]" -o tsv
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-Write-Host "private endpoint IP address is ${appPeIpAddr}" -ForegroundColor DarkCyan
+Write-Host "webapp IP address is ${appIpAddr}" -ForegroundColor DarkCyan
 
 Write-Host "--- create A record set for webapp ---" -ForegroundColor Green
 az network private-dns record-set a create `
@@ -206,12 +225,12 @@ az network private-dns record-set a create `
 	--zone-name $dnsZone
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-Write-Host "--- add A record for webapp private IP address ---" -ForegroundColor Green
+Write-Host "--- add A record for webapp IP address ---" -ForegroundColor Green
 az network private-dns record-set a add-record `
 	--resource-group $rg `
 	--record-set-name $appZone `
 	--zone-name $dnsZone `
-	--ipv4-address $appPeIpAddr
+	--ipv4-address $appIpAddr
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 # # # Write-Host "--- deny all public traffic to webapp ---" -ForegroundColor Green
@@ -237,8 +256,6 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 # # # 	--description "Allow private endpoint"
 # # # if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-exit
-
 #--------------------------------------------------------------------------------------------------
 # gateway
 #--------------------------------------------------------------------------------------------------
@@ -254,31 +271,27 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Write-Host "--- create public IP ---" -ForegroundColor Green
 az network public-ip create `
 	--resource-group $rg `
-	--name $gatewayPublicIp `
+	--name $gatewayIpAddr `
 	--sku Standard
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host "--- create gateway ---" -ForegroundColor Green
 az network application-gateway create `
 	--resource-group $rg `
-	--name $gateway `
+	--name $gatewayName `
 	--location $location `
 	--sku WAF_v2 `
 	--capacity 1 `
 	--waf-policy $gatewayPolicy `
-	--public-ip-address $gatewayPublicIp `
+	--public-ip-address $gatewayIpAddr `
 	--vnet $vnet `
 	--subnet $subnetGateway `
-	--frontend-port 80 `
-	--http-settings-port 80 `
-	--http-settings-protocol Http `
-	--http-settings-cookie-based-affinity Disabled
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host "--- create gateway backend pool ---" -ForegroundColor Green
 az network application-gateway address-pool create `
 	--resource-group $rg `
-	--gateway-name $gateway `
+	--gateway-name $gatewayName `
 	--name $gatewayBackendPool `
 	--servers $appFqdn
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -286,7 +299,7 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Write-Host "--- create gateway HTTP settings ---" -ForegroundColor Green
 az network application-gateway http-settings create `
 	--resource-group $rg `
-	--gateway-name $gateway `
+	--gateway-name $gatewayName `
 	--name $gatewayHttpSettings `
 	--port 80 `
 	--protocol Http `
@@ -294,27 +307,27 @@ az network application-gateway http-settings create `
 	--pick-hostname-from-backend-pool true
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-Write-Host "--- create webapp healthcheck probe ---" -ForegroundColor Green
-az network application-gateway probe create `
-	--resource-group $rg `
-	--gateway-name $gateway `
-	--name $appProbe `
-	--protocol Http `
-	--host $appFqdn `
-	--port 80 `
-	--path /hc `
-	--interval 30 `
-	--threshold 3 `
-	--timeout 30
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+# Write-Host "--- create webapp healthcheck probe ---" -ForegroundColor Green
+# az network application-gateway probe create `
+# 	--resource-group $rg `
+# 	--gateway-name $gatewayName `
+# 	--name $appProbe `
+# 	--protocol Http `
+# 	--host $appFqdn `
+# 	--port 80 `
+# 	--path /hc `
+# 	--interval 30 `
+# 	--threshold 3 `
+# 	--timeout 30
+# if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-Write-Host "--- attach webapp healthcheck probe to gateway ---" -ForegroundColor Green
-az network application-gateway http-settings update `
-	--resource-group $rg `
-	--gateway-name $gateway `
-	--name $gatewayHttpSettings `
-	--probe $appProbe
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+# Write-Host "--- attach webapp healthcheck probe to gateway ---" -ForegroundColor Green
+# az network application-gateway http-settings update `
+# 	--resource-group $rg `
+# 	--gateway-name $gatewayName `
+# 	--name $gatewayHttpSettings `
+# 	--probe $appProbe
+# if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 
 
