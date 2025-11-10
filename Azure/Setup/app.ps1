@@ -39,17 +39,32 @@ $appIpAddr = az network private-endpoint list `
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Write-Host "webapp IP address is ${appIpAddr}" -ForegroundColor DarkCyan
 
-Write-Host "--- create A record set for webapp ---" -ForegroundColor Green
-az network private-dns record-set a create `
-	--resource-group $rg `
-	--name $appZone `
-	--zone-name $dnsZone
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+# Write-Host "--- create A record set for webapp ---" -ForegroundColor Green
+# az network private-dns record-set a create `
+# 	--resource-group $rg `
+# 	--name $appName `
+# 	--zone-name $dnsZone
+# if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-Write-Host "--- add A record for webapp IP address ---" -ForegroundColor Green
-az network private-dns record-set a add-record `
-	--resource-group $rg `
-	--record-set-name $appZone `
-	--zone-name $dnsZone `
-	--ipv4-address $appIpAddr
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+# Write-Host "--- add A record for webapp IP address ---" -ForegroundColor Green
+# az network private-dns record-set a add-record `
+# 	--resource-group $rg `
+# 	--record-set-name $appName `
+# 	--zone-name $dnsZone `
+# 	--ipv4-address $appIpAddr
+# if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+# Write-Host "--- create A record set for webapp SCM ---" -ForegroundColor Green
+# az network private-dns record-set a create `
+# 	--resource-group $rg `
+# 	--name "${appName}.scm" `
+# 	--zone-name $dnsZone
+# if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+# Write-Host "--- add A record for webapp SCM IP address ---" -ForegroundColor Green
+# az network private-dns record-set a add-record `
+# 	--resource-group $rg `
+# 	--record-set-name "${appName}.scm" `
+# 	--zone-name $dnsZone `
+# 	--ipv4-address $appIpAddr
+# if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

@@ -1,13 +1,11 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$project = "flint"
+$project = "test"
 $location = "polandcentral"
-$dnsZone = "${project}.net"
-$appZone = "app"
-$storageZone = "storage"
+#$dnsZone = "privatelink.azurewebsites.net"
 
-$rg = "${project}-resource-group"
+$rg = "${project}-rg"
 
 $vnet = "${project}-vnet"
 $subnetApp = "app-subnet"
@@ -18,13 +16,13 @@ $storageName = "${project}blob$(Get-Random)"
 
 $appPlan = "${project}-app-plan"
 $appName = "${project}app$(Get-Random)"
-$appProbe = "${project}-hc-probe"
+$appProbe = "${project}-app-probe"
 
 $gatewayName = "${project}-gateway"
 $gatewayPolicy = "${project}-gateway-policy"
 $gatewayIpAddr = "${project}-gateway-pip"
-$gatewayBackendPool = "${project}-gateway-backend-pool"
-$gatewayHttpSettings = "${project}-gateway-http-settings"
+#$gatewayBackendPool = "${project}-gateway-backend-pool"
+#$gatewayHttpSettings = "${project}-gateway-http-settings"
 
 $logWorkspace = "${project}-log"
 
@@ -41,8 +39,15 @@ az group create --name $rg --location $location
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 . "$PSScriptRoot\vnet.ps1"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 #. "$PSScriptRoot\storage.ps1"
-#. "$PSScriptRoot\app.ps1"
+#if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+. "$PSScriptRoot\app.ps1"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 . "$PSScriptRoot\gateway.ps1"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host "--- complete ---" -ForegroundColor Green

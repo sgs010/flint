@@ -56,17 +56,17 @@ $subnetGatewayId = az network vnet subnet show `
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Write-Host "gateway subnet ID is ${subnetGatewayId}" -ForegroundColor DarkCyan
 
-Write-Host "--- create private DNS zone ---" -ForegroundColor Green
-az network private-dns zone create `
-	--resource-group $rg `
-	--name $dnsZone
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+# Write-Host "--- create private DNS zone ---" -ForegroundColor Green
+# az network private-dns zone create `
+# 	--resource-group $rg `
+# 	--name $dnsZone
+# if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-Write-Host "--- link private DNS zone to virtual network ---" -ForegroundColor Green
-az network private-dns link vnet create `
-	--resource-group $rg `
-	--name "${dnsZone}-link" `
-	--zone-name $dnsZone `
-	--virtual-network $vnet `
-	--registration-enabled false
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+# Write-Host "--- link private DNS zone to virtual network ---" -ForegroundColor Green
+# az network private-dns link vnet create `
+# 	--resource-group $rg `
+# 	--name "${dnsZone}-link" `
+# 	--zone-name $dnsZone `
+# 	--virtual-network $vnet `
+# 	--registration-enabled false
+# if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

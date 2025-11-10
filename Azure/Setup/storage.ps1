@@ -31,18 +31,3 @@ $storageIpAddr = az network private-endpoint list `
 	--query "[?name=='${storageName}-pe'].customDnsConfigs[0].ipAddresses[0]" -o tsv
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Write-Host "storage IP address is ${storageIpAddr}" -ForegroundColor DarkCyan
-
-Write-Host "--- create A record set for storage ---" -ForegroundColor Green
-az network private-dns record-set a create `
-	--resource-group $rg `
-	--name $storageZone `
-	--zone-name $dnsZone
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-Write-Host "--- add A record for storage IP address ---" -ForegroundColor Green
-az network private-dns record-set a add-record `
-	--resource-group $rg `
-	--record-set-name $storageZone `
-	--zone-name $dnsZone `
-	--ipv4-address $storageIpAddr
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
