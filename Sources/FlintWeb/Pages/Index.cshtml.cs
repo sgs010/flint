@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Security.Cryptography;
@@ -45,28 +44,27 @@ namespace FlintWeb.Pages
 			ElapsedMilliseconds = 0;
 			Error = null;
 
-			var traceId = Guid.NewGuid();
-			_logger.LogInformation($"[{traceId}] processing file {FileName}");
+			_logger.LogInformation("processing file {FileName}", FileName);
 			var watch = Stopwatch.StartNew();
 			try
 			{
-				Result = await ProcessFileAsync(DllFile, PdbFile, _flint, _storage, ct);
+				Result = await ProcessFileAsync(DllFile, PdbFile, _flint, _storage, _logger, ct);
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError($"[{traceId}] ERROR {ex}");
+				_logger.LogError("{Error}", ex);
 				Error = ex.Message;
 			}
 			watch.Stop();
 			ElapsedMilliseconds = watch.ElapsedMilliseconds;
 			if (Error == null)
-				_logger.LogInformation($"[{traceId}] finished in {ElapsedMilliseconds} ms");
+				_logger.LogInformation("finished in {ElapsedMilliseconds} ms", ElapsedMilliseconds);
 
 			ShowResult = true;
 			return Page();
 		}
 
-		private static async Task<IReadOnlyList<string>> ProcessFileAsync(IFormFile dllFile, IFormFile pdbFile, IFlintService flint, IStorageService storage, CancellationToken ct)
+		private static async Task<IReadOnlyList<string>> ProcessFileAsync(IFormFile dllFile, IFormFile pdbFile, IFlintService flint, IStorageService storage, ILogger log, CancellationToken ct)
 		{
 			using var dllStream = new MemoryStream();
 			await dllFile.CopyToAsync(dllStream, ct);
@@ -79,6 +77,8 @@ namespace FlintWeb.Pages
 			dllStream.Position = 0;
 			var dllHashBytes = await sha256.ComputeHashAsync(dllStream, ct);
 			var dllHash = Convert.ToHexStringLower(dllHashBytes);
+			log.LogInformation("hash {Hash}", dllHash);
+
 			var blobFile = dllHash + ".blob";
 			var resultFile = dllHash + ".result";
 			var errorFile = dllHash + ".error";
@@ -86,10 +86,12 @@ namespace FlintWeb.Pages
 			IReadOnlyList<string> result = null;
 			if (await storage.ExistsAsync(resultFile, ct))
 			{
+				log.LogInformation("using existing result");
 				result = await storage.ReadAllLinesAsync(resultFile, ct);
 			}
 			else
 			{
+				log.LogInformation("processing file");
 				dllStream.Position = 0;
 				await storage.UploadAsync(blobFile, dllStream, ct);
 
