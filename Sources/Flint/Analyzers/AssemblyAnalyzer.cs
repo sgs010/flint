@@ -64,13 +64,7 @@ namespace Flint.Analyzers
 
 		public static AssemblyInfo Load(IAnalyzerContext ctx, Stream dllStream, Stream pdbStream)
 		{
-			var parameters = new ReaderParameters { AssemblyResolver = new AssemblyResolver() };
-			if (pdbStream != null && pdbStream.Length > 0)
-			{
-				parameters.ReadSymbols = true;
-				parameters.SymbolStream = pdbStream;
-			}
-			var module = ModuleDefinition.ReadModule(dllStream, parameters);
+			var module = LoadModule(dllStream, pdbStream);
 
 			var entityMap = new HashSet<TypeDefinition>();
 			var entityPropMap = new HashSet<PropertyDefinition>();
@@ -168,6 +162,30 @@ namespace Flint.Analyzers
 			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleAsync",
 			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleOrDefaultAsync",
 		];
+
+		private static ModuleDefinition LoadModule(Stream dllStream, Stream pdbStream)
+		{
+			var parameters = new ReaderParameters { AssemblyResolver = new AssemblyResolver() };
+			if (pdbStream != null && pdbStream.Length > 0)
+			{
+				parameters.ReadSymbols = true;
+				parameters.SymbolStream = pdbStream;
+			}
+
+			// load module with pdb
+			try
+			{
+				return ModuleDefinition.ReadModule(dllStream, parameters);
+			}
+			catch (Mono.Cecil.Cil.SymbolsNotFoundException) { }
+			catch (Mono.Cecil.Cil.SymbolsNotMatchingException) { }
+
+			// if we a here then pdb is invalid, so ignore it and try to load module again
+			parameters.ReadSymbols = false;
+			parameters.SymbolStream = null;
+			dllStream.Position = 0;
+			return ModuleDefinition.ReadModule(dllStream, parameters);
+		}
 
 		private static void PopulateEntities(TypeDefinition type, HashSet<TypeDefinition> entityMap, HashSet<PropertyDefinition> entityPropMap, HashSet<MethodReference> entityGetSetMap)
 		{

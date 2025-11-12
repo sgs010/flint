@@ -14,6 +14,12 @@ namespace Flint
 	public static class Api
 	{
 		#region Interface
+		public static void CheckValidImage(Stream dllStream)
+		{
+			dllStream.Position = 0;
+			Mono.Cecil.ModuleDefinition.ReadModule(dllStream).Dispose();
+		}
+
 		public static ImmutableArray<string> Analyze(string dllPath, ApiOptions options = null)
 		{
 			var opt = options ?? new ApiOptions();

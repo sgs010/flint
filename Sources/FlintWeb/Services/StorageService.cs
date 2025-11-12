@@ -105,28 +105,26 @@ namespace FlintWeb.Services
 
 		public async Task<bool> ExistsAsync(string fileName, CancellationToken ct)
 		{
-			var blob = await GetBlobClient(fileName, ct);
+			var blob = GetBlobClient(fileName, ct);
 			var result = await blob.ExistsAsync(ct);
 			return result;
 		}
 
 		public async Task UploadAsync(string fileName, Stream data, CancellationToken ct)
 		{
-			var blob = await GetBlobClient(fileName, ct);
+			var blob = GetBlobClient(fileName, ct);
 			await blob.UploadAsync(data, overwrite: true, ct);
 		}
 
 		public async Task DownloadAsync(string fileName, Stream result, CancellationToken ct)
 		{
-			var blob = await GetBlobClient(fileName, ct);
+			var blob = GetBlobClient(fileName, ct);
 			await blob.DownloadToAsync(result, ct);
 		}
 
-		private async Task<BlobClient> GetBlobClient(string fileName, CancellationToken ct)
+		private BlobClient GetBlobClient(string fileName, CancellationToken ct)
 		{
 			var client = new BlobContainerClient(_connectionString, _containeerName);
-			await client.CreateIfNotExistsAsync(cancellationToken: ct);
-
 			var blob = client.GetBlobClient(fileName);
 			return blob;
 		}

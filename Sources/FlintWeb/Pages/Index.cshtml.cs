@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Net.Security;
 using System.Security.Cryptography;
 using FlintWeb.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -44,7 +45,7 @@ namespace FlintWeb.Pages
 			ElapsedMilliseconds = 0;
 			Error = null;
 
-			_logger.LogInformation("processing file {FileName}", FileName);
+			_logger.LogInformation("processing file {fileName}", FileName);
 			var watch = Stopwatch.StartNew();
 			try
 			{
@@ -52,16 +53,34 @@ namespace FlintWeb.Pages
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError("{Error}", ex);
-				Error = ex.Message;
+				_logger.LogError("ERROR: {error}", ex);
+				Error = PrettyPrint(ex);
 			}
 			watch.Stop();
 			ElapsedMilliseconds = watch.ElapsedMilliseconds;
 			if (Error == null)
-				_logger.LogInformation("finished in {ElapsedMilliseconds} ms", ElapsedMilliseconds);
+				_logger.LogInformation("finished in {ms} ms", ElapsedMilliseconds);
 
 			ShowResult = true;
 			return Page();
+		}
+
+		private static string PrettyPrint(Exception ex)
+		{
+			if (ex is BadImageFormatException)
+			{
+				return ex.Message;
+			}
+			return "Internal error";
+		}
+
+		private static async Task<string> ComputeHashAsync(Stream stream, CancellationToken ct)
+		{
+			using var sha256 = SHA256.Create();
+			stream.Position = 0;
+			var hashBytes = await sha256.ComputeHashAsync(stream, ct);
+			var hash = Convert.ToHexStringLower(hashBytes);
+			return hash;
 		}
 
 		private static async Task<IReadOnlyList<string>> ProcessFileAsync(IFormFile dllFile, IFormFile pdbFile, IFlintService flint, IStorageService storage, ILogger log, CancellationToken ct)
@@ -69,47 +88,24 @@ namespace FlintWeb.Pages
 			using var dllStream = new MemoryStream();
 			await dllFile.CopyToAsync(dllStream, ct);
 
+			flint.CheckValidImage(dllStream);
+			ct.ThrowIfCancellationRequested();
+
 			using var pdbStream = new MemoryStream();
 			if (pdbFile != null)
 				await pdbFile.CopyToAsync(pdbStream, ct);
 
-			using var sha256 = SHA256.Create();
+			string hash = await ComputeHashAsync(dllStream, ct);
+			log.LogInformation("hash {hash}", hash);
+
 			dllStream.Position = 0;
-			var dllHashBytes = await sha256.ComputeHashAsync(dllStream, ct);
-			var dllHash = Convert.ToHexStringLower(dllHashBytes);
-			log.LogInformation("hash {Hash}", dllHash);
+			await storage.UploadAsync(hash, dllStream, ct);
 
-			var blobFile = dllHash + ".blob";
-			var resultFile = dllHash + ".result";
-			var errorFile = dllHash + ".error";
+			dllStream.Position = 0;
+			pdbStream.Position = 0;
+			var result = flint.Analyze(dllStream, pdbStream);
+			ct.ThrowIfCancellationRequested();
 
-			IReadOnlyList<string> result = null;
-			if (await storage.ExistsAsync(resultFile, ct))
-			{
-				log.LogInformation("using existing result");
-				result = await storage.ReadAllLinesAsync(resultFile, ct);
-			}
-			else
-			{
-				log.LogInformation("processing file");
-				dllStream.Position = 0;
-				await storage.UploadAsync(blobFile, dllStream, ct);
-
-				try
-				{
-					dllStream.Position = 0;
-					pdbStream.Position = 0;
-					result = flint.Analyze(dllStream, pdbStream);
-				}
-				catch (Exception ex)
-				{
-					await storage.UploadAsync(errorFile, ex.ToString(), ct);
-					throw;
-				}
-				ct.ThrowIfCancellationRequested();
-
-				await storage.UploadAsync(resultFile, result, ct);
-			}
 			return result;
 		}
 	}
