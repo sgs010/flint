@@ -54,7 +54,7 @@ namespace Flint
 			IncludeAnalyzer.Run(ctx, asm);
 			AsNoTrackingAnalyzer.Run(ctx, asm);
 			AsSplitQueryAnalyzer.Run(ctx, asm);
-			//OutboxAnalyzer.Run(ctx, asm);
+			OutboxAnalyzer.Run(ctx, asm);
 
 			return [.. ctx.Output];
 		}
