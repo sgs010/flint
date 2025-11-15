@@ -51,6 +51,15 @@ namespace Flint.Common
 			return false;
 		}
 
+		public static bool Equal(PropertyReference x, PropertyReference y)
+		{
+			if (x == null && y == null)
+				return true;
+			if (x != null && y != null)
+				return x.MetadataToken.Equals(y.MetadataToken);
+			return false;
+		}
+
 		public static bool Equal(SequencePoint x, SequencePoint y)
 		{
 			if (x == null && y == null)

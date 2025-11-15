@@ -35,7 +35,8 @@ namespace Flint.Analyzers
 			// check if message is added to outbox
 			foreach (var outbox in asm.EntityTypes.Where(x => x.Name.Contains("Outbox")))
 			{
-				var add = MethodAnalyzer.GetCallChains(asm, method, $"Microsoft.EntityFrameworkCore.DbSet`1<{outbox.FullName}>.Add");
+				var outboxName = AssemblyAnalyzer.GetTypeFullName(asm, outbox);
+				var add = MethodAnalyzer.GetCallChains(asm, method, $"Microsoft.EntityFrameworkCore.DbSet`1<{outboxName}>.Add");
 				if (add.Count > 0)
 					return; // message added to outbox
 			}

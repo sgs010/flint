@@ -57,7 +57,8 @@ namespace Flint.Analyzers
 			var queries = new List<QueryInfo>();
 			foreach (var method in MethodAnalyzer.GetMethods(asm, className, methodName))
 			{
-				Analyze(asm, method, queries);
+				if (AssemblyAnalyzer.MethodHasEFCoreRoots(asm, method))
+					Analyze(asm, method, queries);
 			}
 			return [.. queries];
 		}
@@ -109,8 +110,8 @@ namespace Flint.Analyzers
 		{
 			foreach (var ftn in expression.OfFtn())
 			{
-				var lambdaMethod = ftn.MethodImpl.UnwrapAsyncMethod();
-				var lambdaExpressions = CilMachine.Run(lambdaMethod);
+				var lambdaMethod = ftn.Method.Resolve().UnwrapAsyncMethod();
+				var lambdaExpressions = CilMachine.Eval(lambdaMethod);
 				foreach (var expr in lambdaExpressions)
 					yield return expr;
 			}

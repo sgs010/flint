@@ -1,5 +1,4 @@
 ﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Flint.Common
 {
@@ -10,12 +9,46 @@ namespace Flint.Common
 
 		public bool Equals(TypeReference x, TypeReference y)
 		{
-			return x.MetadataToken.Equals(y.MetadataToken);
+			return Are.Equal(x, y);
 		}
 
 		public int GetHashCode(TypeReference obj)
 		{
-			return obj.MetadataToken.GetHashCode();
+			return Hash.Code(obj);
+		}
+	}
+	#endregion
+
+	#region TypeDefinitionEqualityComparer
+	sealed class TypeDefinitionEqualityComparer : IEqualityComparer<TypeDefinition>
+	{
+		public static TypeDefinitionEqualityComparer Instance = new();
+
+		public bool Equals(TypeDefinition x, TypeDefinition y)
+		{
+			return Are.Equal(x, y);
+		}
+
+		public int GetHashCode(TypeDefinition obj)
+		{
+			return Hash.Code(obj);
+		}
+	}
+	#endregion
+
+	#region FieldReferenceEqualityComparer
+	sealed class FieldReferenceEqualityComparer : IEqualityComparer<FieldReference>
+	{
+		public static FieldReferenceEqualityComparer Instance = new();
+
+		public bool Equals(FieldReference x, FieldReference y)
+		{
+			return Are.Equal(x, y);
+		}
+
+		public int GetHashCode(FieldReference obj)
+		{
+			return Hash.Code(obj);
 		}
 	}
 	#endregion
@@ -27,12 +60,46 @@ namespace Flint.Common
 
 		public bool Equals(MethodReference x, MethodReference y)
 		{
-			return x.MetadataToken.Equals(y.MetadataToken);
+			return Are.Equal(x, y);
 		}
 
 		public int GetHashCode(MethodReference obj)
 		{
-			return obj.MetadataToken.GetHashCode();
+			return Hash.Code(obj);
+		}
+	}
+	#endregion
+
+	#region PropertyReferenceEqualityComparer
+	sealed class PropertyReferenceEqualityComparer : IEqualityComparer<PropertyReference>
+	{
+		public static PropertyReferenceEqualityComparer Instance = new();
+
+		public bool Equals(PropertyReference x, PropertyReference y)
+		{
+			return Are.Equal(x, y);
+		}
+
+		public int GetHashCode(PropertyReference obj)
+		{
+			return Hash.Code(obj);
+		}
+	}
+	#endregion
+
+	#region PropertyDefinitionEqualityComparer
+	sealed class PropertyDefinitionEqualityComparer : IEqualityComparer<PropertyDefinition>
+	{
+		public static PropertyDefinitionEqualityComparer Instance = new();
+
+		public bool Equals(PropertyDefinition x, PropertyDefinition y)
+		{
+			return Are.Equal(x, y);
+		}
+
+		public int GetHashCode(PropertyDefinition obj)
+		{
+			return Hash.Code(obj);
 		}
 	}
 	#endregion
@@ -41,16 +108,6 @@ namespace Flint.Common
 	static class ReflectionExtensions
 	{
 		#region Interface
-		public static bool IsCompilerGenerated(this TypeDefinition type)
-		{
-			return type.CustomAttributes.Any(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.CompilerGeneratedAttribute");
-		}
-
-		public static bool IsCompilerGenerated(this MethodDefinition method)
-		{
-			return method.CustomAttributes.Any(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.CompilerGeneratedAttribute");
-		}
-
 		public static MethodDefinition UnwrapAsyncMethod(this MethodDefinition method)
 		{
 			// check if method is async and return actual implementation
@@ -122,21 +179,6 @@ namespace Flint.Common
 			itemType = t.Resolve();
 			return true;
 		}
-
-		public static string GetFullName(this MethodReference method)
-		{
-			return method.DeclaringType.FullName + "." + method.Name;
-		}
-
-		public static bool HasFullName(this MethodReference method, string name)
-		{
-			return method.GetFullName().Equals(name, StringComparison.Ordinal);
-		}
-
-		public static bool HasFullName(this MethodReference method, IReadOnlySet<string> names)
-		{
-			return names.Contains(method.GetFullName());
-		}
 		#endregion
 
 		#region Implementation
@@ -146,12 +188,12 @@ namespace Flint.Common
 
 			public bool Equals(ParameterDefinition x, ParameterDefinition y)
 			{
-				return x.ParameterType.MetadataToken.Equals(y.ParameterType.MetadataToken);
+				return Are.Equal(x.ParameterType, y.ParameterType);
 			}
 
 			public int GetHashCode(ParameterDefinition obj)
 			{
-				return obj.ParameterType.MetadataToken.GetHashCode();
+				return Hash.Code(obj.ParameterType);
 			}
 		}
 		#endregion

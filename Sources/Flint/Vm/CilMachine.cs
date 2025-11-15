@@ -19,7 +19,43 @@ namespace Flint.Vm
 	static class CilMachine
 	{
 		#region Interface
-		public static ImmutableArray<Ast> Run(MethodDefinition mtd, ICilMachineContext machineContext = null)
+		public static IEnumerable<(MethodReference, CilPoint)> GetCalls(MethodDefinition mtd)
+		{
+			var ctx = new RoutineContext(mtd);
+			foreach (var instruction in mtd.Body.Instructions)
+			{
+				switch (instruction.OpCode.Code)
+				{
+					case Code.Call:
+					case Code.Callvirt:
+						var m = (MethodReference)instruction.Operand;
+						var pt = GetCilPoint(ctx, instruction);
+						yield return (m, pt);
+						break;
+					default: break;
+				}
+			}
+		}
+
+		public static IEnumerable<(MethodReference, CilPoint)> GetLambdas(MethodDefinition mtd)
+		{
+			var ctx = new RoutineContext(mtd);
+			foreach (var instruction in mtd.Body.Instructions)
+			{
+				switch (instruction.OpCode.Code)
+				{
+					case Code.Ldftn:
+					case Code.Ldvirtftn:
+						var m = (MethodReference)instruction.Operand;
+						var pt = GetCilPoint(ctx, instruction);
+						yield return (m, pt);
+						break;
+					default: break;
+				}
+			}
+		}
+
+		public static ImmutableArray<Ast> Eval(MethodDefinition mtd, ICilMachineContext machineContext = null)
 		{
 			// general idea: avoid combinatory explosion when a method has a lot of branches
 			// 1. eval branch and get a list of alt branches from it

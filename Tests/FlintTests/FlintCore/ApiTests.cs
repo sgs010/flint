@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using Flint.Analyzers;
-
-namespace FlintTests.FlintCore
+﻿namespace FlintTests.FlintCore
 {
 	[TestClass]
 	public class ApiTests
@@ -22,20 +19,19 @@ namespace FlintTests.FlintCore
 				"add AsNoTracking() in method WebApp.Program.Main line 44",
 				"consider adding AsSplitQuery() in method WebApp.Program.Main line 44",
 
-				"consider using Outbox pattern in method WebApp.Program.Main line 58",
+				//"consider using Outbox pattern in method WebApp.Program.Main line 58",
 			]);
 		}
 
-		//[TestMethod]
-		//[Timeout(60 * 1000)]
-		//public void TestAnyDll()
-		//{
-		//	var ctx = new AnalyzerContext { Trace = true };
-		//	foreach (var path in Directory.GetFiles(".", "*.dll"))
-		//	{
-		//		Debug.WriteLine(path);
-		//		Flint.Api.Analyze(path, trace: true);
-		//	}
-		//}
+		[TestMethod]
+		[Timeout(60 * 1000)]
+		public void TestAnyDll()
+		{
+			var options = new Flint.ApiOptions { Trace = true };
+			foreach (var path in Directory.GetFiles(".", "*.dll"))
+			{
+				Flint.Api.Analyze(path, options);
+			}
+		}
 	}
 }

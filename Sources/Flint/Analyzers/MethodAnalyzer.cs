@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Linq.Expressions;
 using System.Text;
 using Flint.Common;
 using Flint.Vm;
@@ -10,24 +9,44 @@ namespace Flint.Analyzers
 	internal class MethodAnalyzer
 	{
 		#region Interface
+		public static IEnumerable<(MethodReference, CilPoint)> GetCalls(MethodDefinition method)
+		{
+			var actualMethod = method.UnwrapAsyncMethod();
+
+			if (actualMethod.HasBody == false)
+				yield break;
+
+			// direct calls
+			foreach (var call in CilMachine.GetCalls(actualMethod))
+				yield return call;
+
+			// lambdas
+			foreach (var (lambda, _) in CilMachine.GetLambdas(actualMethod))
+			{
+				var lambdaImpl = lambda.Resolve();
+				foreach (var call in GetCalls(lambdaImpl))
+					yield return call;
+			}
+		}
+
 		public static IEnumerable<MethodDefinition> GetMethods(AssemblyInfo asm, string className = null, string methodName = null)
 		{
-			foreach (var method in asm.MethodExpressions.Keys)
+			foreach (var method in asm.MethodInnerCalls.Keys)
 			{
 				if (methodName != null && method.Name != methodName)
 					continue;
 				if (className != null && method.DeclaringType.Name != className)
 					continue;
-				yield return method;
+				yield return method.Resolve();
 			}
 		}
 
-		public static List<List<CallInfo>> GetCallChains(AssemblyInfo asm, MethodReference start, string methodFullName)
+		public static List<List<CallInfo>> GetCallChains(AssemblyInfo asm, MethodReference start, string methodLongName)
 		{
 			if (start == null)
 				return [];
 
-			var end = asm.MethodOuterCalls.Keys.Where(x => x.HasFullName(methodFullName)).ToList();
+			var end = asm.MethodOuterCalls.Keys.Where(x => AssemblyAnalyzer.MethodHasLongName(asm, x, methodLongName)).ToList();
 			if (end.Count == 0)
 				return [];
 
@@ -55,6 +74,11 @@ namespace Flint.Analyzers
 			return chains;
 		}
 
+		public static List<List<CallInfo>> GetCallChains(AssemblyInfo asm, MethodReference start, IEnumerable<MethodReference> ends)
+		{
+			return ends.Select(x => GetCallChains(asm, start, x)).SelectMany(x => x).ToList();
+		}
+
 		public static ImmutableArray<Ast> EvalRaw(MethodDefinition method)
 		{
 			var actualMethod = method.UnwrapAsyncMethod();
@@ -64,14 +88,15 @@ namespace Flint.Analyzers
 
 			var expressions = new List<Ast>();
 
-			var methodExpressions = CilMachine.Run(actualMethod);
+			var methodExpressions = CilMachine.Eval(actualMethod);
 			expressions.AddRange(methodExpressions);
 			foreach (var ftn in methodExpressions.OfFtn())
 			{
-				if (Are.Equal(method, ftn.MethodImpl))
+				var ftnImpl = ftn.Method.Resolve();
+				if (Are.Equal(method, ftnImpl))
 					continue; // avoid stack overflow in endless recursion
 
-				var lambdaExpressions = EvalRaw(ftn.MethodImpl);
+				var lambdaExpressions = EvalRaw(ftnImpl);
 				expressions.AddRange(lambdaExpressions);
 			}
 
@@ -80,9 +105,12 @@ namespace Flint.Analyzers
 
 		public static ImmutableArray<Ast> Eval(AssemblyInfo asm, MethodDefinition method)
 		{
-			if (asm.MethodExpressions.TryGetValue(method, out var expr))
-				return expr;
-			return [];
+			if (asm.MethodExpressions.TryGetValue(method, out var expr) == false)
+			{
+				expr = EvalRaw(method);
+				asm.MethodExpressions.Add(method, expr);
+			}
+			return expr;
 		}
 
 		public static void PrettyPrintMethod(StringBuilder sb, MethodDefinition method, CilPoint pt)
