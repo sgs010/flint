@@ -39,7 +39,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void InterfaceImplementations()
 		{
-			ASM.InterfaceImplementations
+			ASM.InterfaceClasses
 				.Where(x => x.Key.FullName == "Samples.IRepository")
 				.SelectMany(x => x.Value)
 				.Where(x => x.FullName == "Samples.Repository")

@@ -7,7 +7,7 @@ using Mono.Cecil;
 namespace Flint.Analyzers
 {
 	#region CallInfo
-	record CallInfo(MethodReference Method, CilPoint CilPoint);
+	record struct CallInfo(MethodReference Method, CilPoint CilPoint);
 	#endregion
 
 	#region AssemblyInfo
@@ -17,12 +17,13 @@ namespace Flint.Analyzers
 		public required FrozenSet<TypeDefinition> EntityTypes { get; init; }
 		public required FrozenSet<PropertyDefinition> EntityCollections { get; init; }
 		public required FrozenSet<MethodReference> EntityGetSetMethods { get; init; }
-		public required FrozenDictionary<TypeReference, ImmutableArray<TypeDefinition>> InterfaceImplementations { get; init; }
+		public required FrozenDictionary<TypeReference, ImmutableArray<TypeDefinition>> InterfaceClasses { get; init; }
 		public required Dictionary<TypeReference, string> TypeFullNameIndex { get; init; }
 		public required Dictionary<MethodReference, string> MethodFullNameIndex { get; init; }
 		public required Dictionary<MethodReference, string> MethodLongNameIndex { get; init; }
 		public required Dictionary<MethodDefinition, ImmutableArray<Ast>> MethodExpressions { get; init; }
 		public required Dictionary<MethodReference, bool> MethodEFCoreRootIndex { get; init; }
+		public required Dictionary<MethodReference, ImmutableArray<MethodDefinition>> InterfaceMethods { get; init; }
 
 		// methods called in a key method
 		public required FrozenDictionary<MethodReference, ImmutableArray<CallInfo>> MethodInnerCalls { get; init; }
@@ -105,7 +106,7 @@ namespace Flint.Analyzers
 				EntityTypes = entityMap.ToFrozenSet(TypeDefinitionEqualityComparer.Instance),
 				EntityCollections = entityPropMap.ToFrozenSet(PropertyDefinitionEqualityComparer.Instance),
 				EntityGetSetMethods = entityGetSetMap.ToFrozenSet(MethodReferenceEqualityComparer.Instance),
-				InterfaceImplementations = interfaceMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray(), TypeReferenceEqualityComparer.Instance),
+				InterfaceClasses = interfaceMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray(), TypeReferenceEqualityComparer.Instance),
 				MethodInnerCalls = innerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray(), MethodReferenceEqualityComparer.Instance),
 				MethodOuterCalls = outerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray(), MethodReferenceEqualityComparer.Instance),
 				EFCoreRoots = efCoreRoots,
@@ -114,6 +115,7 @@ namespace Flint.Analyzers
 				MethodLongNameIndex = methodLongNameIndex,
 				MethodExpressions = new(MethodReferenceEqualityComparer.Instance),
 				MethodEFCoreRootIndex = new(MethodReferenceEqualityComparer.Instance),
+				InterfaceMethods = new(MethodReferenceEqualityComparer.Instance),
 			};
 		}
 
@@ -137,7 +139,7 @@ namespace Flint.Analyzers
 			if (asm.MethodEFCoreRootIndex.TryGetValue(method, out var hasRoots) == false)
 			{
 				var roots = MethodAnalyzer.GetCallChains(asm, method, asm.EFCoreRoots);
-				hasRoots = (roots.Count > 0);
+				hasRoots = (roots.Length > 0);
 				asm.MethodEFCoreRootIndex.Add(method, hasRoots);
 			}
 			return hasRoots;

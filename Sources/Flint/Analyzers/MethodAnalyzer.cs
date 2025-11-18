@@ -41,7 +41,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		public static List<List<CallInfo>> GetCallChains(AssemblyInfo asm, MethodReference start, string methodLongName)
+		public static ImmutableArray<ImmutableArray<CallInfo>> GetCallChains(AssemblyInfo asm, MethodReference start, string methodLongName)
 		{
 			if (start == null)
 				return [];
@@ -50,33 +50,39 @@ namespace Flint.Analyzers
 			if (end.Count == 0)
 				return [];
 
-			List<List<CallInfo>> chains = [];
+			List<ImmutableArray<CallInfo>> chains = [];
 			var root = new CallInfo(start, null);
 			var visitedMethods = new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance);
 			foreach (var m in end)
 			{
 				PopulateCallChains(asm, m, 0, root, null, visitedMethods, chains);
 			}
-			return chains;
+			return [.. chains];
 		}
 
-		public static List<List<CallInfo>> GetCallChains(AssemblyInfo asm, MethodReference start, MethodReference end)
+		public static ImmutableArray<ImmutableArray<CallInfo>> GetCallChains(AssemblyInfo asm, MethodReference start, MethodReference end)
 		{
 			if (start == null)
 				return [];
 			if (end == null)
 				return [];
 
-			List<List<CallInfo>> chains = [];
+			List<ImmutableArray<CallInfo>> chains = [];
 			var root = new CallInfo(start, null);
 			var visitedMethods = new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance);
 			PopulateCallChains(asm, end, 0, root, null, visitedMethods, chains);
-			return chains;
+			return [.. chains];
 		}
 
-		public static List<List<CallInfo>> GetCallChains(AssemblyInfo asm, MethodReference start, IEnumerable<MethodReference> ends)
+		public static ImmutableArray<ImmutableArray<CallInfo>> GetCallChains(AssemblyInfo asm, MethodReference start, IReadOnlyCollection<MethodReference> ends)
 		{
-			return ends.Select(x => GetCallChains(asm, start, x)).SelectMany(x => x).ToList();
+			var result = new List<ImmutableArray<CallInfo>>(ends.Count * 2);
+			foreach (var end in ends)
+			{
+				var chains = GetCallChains(asm, start, end);
+				result.AddRange(chains);
+			}
+			return [.. result];
 		}
 
 		public static ImmutableArray<Ast> EvalRaw(MethodDefinition method)
@@ -132,7 +138,7 @@ namespace Flint.Analyzers
 		#region Implementation
 		record CallChainNode(CallChainNode Parent, CallInfo Call);
 
-		private static void PopulateCallChains(AssemblyInfo asm, MethodReference target, int level, CallInfo call, CallChainNode parent, HashSet<MethodReference> visitedMethods, List<List<CallInfo>> chains)
+		private static void PopulateCallChains(AssemblyInfo asm, MethodReference target, int level, CallInfo call, CallChainNode parent, HashSet<MethodReference> visitedMethods, List<ImmutableArray<CallInfo>> chains)
 		{
 			if (Are.Equal(call.Method, target))
 			{
@@ -142,7 +148,7 @@ namespace Flint.Analyzers
 					chain.Add(x.Call);
 				}
 				chain.Reverse();
-				chains.Add(chain);
+				chains.Add([.. chain]);
 			}
 			else
 			{
@@ -155,11 +161,10 @@ namespace Flint.Analyzers
 						continue;
 					visitedMethods.Add(innerCall.Method);
 
-					if (asm.InterfaceImplementations.TryGetValue(innerCall.Method.DeclaringType, out var implTypes))
+					if (asm.InterfaceClasses.TryGetValue(innerCall.Method.DeclaringType, out var implTypes))
 					{
 						// this is an interface method, substitute it with implementations
-						var implMethods = implTypes.SelectMany(x => x.Methods.Where(m => m.SignatureEquals(innerCall.Method)));
-						foreach (var impl in implMethods)
+						foreach (var impl in GetImplMethods(asm, implTypes, innerCall.Method))
 						{
 							var implCall = new CallInfo(impl, innerCall.CilPoint);
 							PopulateCallChains(asm, target, level + 1, implCall, new CallChainNode(parent, implCall), visitedMethods, chains);
@@ -172,6 +177,23 @@ namespace Flint.Analyzers
 					}
 				}
 			}
+		}
+
+		private static ImmutableArray<MethodDefinition> GetImplMethods(AssemblyInfo asm, ImmutableArray<TypeDefinition> implTypes, MethodReference method)
+		{
+			if (asm.InterfaceMethods.TryGetValue(method, out var implMethods) == false)
+			{
+				var buf = new List<MethodDefinition>();
+
+				foreach (var t in implTypes)
+					foreach (var m in t.Methods)
+						if (m.SignatureEquals(method))
+							buf.Add(m);
+
+				implMethods = [.. buf];
+				asm.InterfaceMethods.Add(method, implMethods);
+			}
+			return implMethods;
 		}
 		#endregion
 	}

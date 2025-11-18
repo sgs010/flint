@@ -25,11 +25,11 @@ namespace Flint.Analyzers
 			// if 1,2 are true and 3 is false - suggest Outbox pattern
 
 			var saveChangesAsync = MethodAnalyzer.GetCallChains(asm, method, "Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync");
-			if (saveChangesAsync.Count == 0)
+			if (saveChangesAsync.Length == 0)
 				return; // SaveChangesAsync is not found
 
 			var sendMessageAsync = MethodAnalyzer.GetCallChains(asm, method, "Azure.Messaging.ServiceBus.ServiceBusSender.SendMessageAsync");
-			if (sendMessageAsync.Count == 0)
+			if (sendMessageAsync.Length == 0)
 				return; // SendMessageAsync is not found
 
 			// check if message is added to outbox
@@ -37,7 +37,7 @@ namespace Flint.Analyzers
 			{
 				var outboxName = AssemblyAnalyzer.GetTypeFullName(asm, outbox);
 				var add = MethodAnalyzer.GetCallChains(asm, method, $"Microsoft.EntityFrameworkCore.DbSet`1<{outboxName}>.Add");
-				if (add.Count > 0)
+				if (add.Length > 0)
 					return; // message added to outbox
 			}
 
@@ -45,12 +45,12 @@ namespace Flint.Analyzers
 			var getEntitiesExceptOutbox = asm.EntityCollections
 				.Where(x => x.Name.Contains("Outbox") == false)
 				.Select(x => MethodAnalyzer.GetCallChains(asm, method, x.GetMethod))
-				.Any(x => x.Count > 0);
+				.Any(x => x.Length > 0);
 			if (getEntitiesExceptOutbox == false)
 				return; // only outbox is accessed
 
 			// report issue
-			var debug = sendMessageAsync.SelectMany(x => x).FirstOrDefault()?.CilPoint;
+			var debug = sendMessageAsync.SelectMany(x => x).FirstOrDefault().CilPoint;
 			var sb = new StringBuilder();
 			sb.Append("consider using Outbox pattern in method ");
 			MethodAnalyzer.PrettyPrintMethod(sb, method, debug);
