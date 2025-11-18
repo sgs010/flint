@@ -9,24 +9,30 @@ namespace Flint.Analyzers
 	internal class MethodAnalyzer
 	{
 		#region Interface
+		//public static IEnumerable<(MethodReference, CilPoint)> GetCalls(MethodDefinition method)
+		//{
+		//	var actualMethod = method.UnwrapAsyncMethod();
+
+		//	if (actualMethod.HasBody == false)
+		//		yield break;
+
+		//	// direct calls
+		//	foreach (var call in CilMachine.GetCalls(actualMethod))
+		//		yield return call;
+
+		//	// lambdas
+		//	foreach (var (lambda, _) in CilMachine.GetLambdas(actualMethod))
+		//	{
+		//		var lambdaImpl = lambda.Resolve();
+		//		foreach (var call in GetCalls(lambdaImpl))
+		//			yield return call;
+		//	}
+		//}
+
 		public static IEnumerable<(MethodReference, CilPoint)> GetCalls(MethodDefinition method)
 		{
-			var actualMethod = method.UnwrapAsyncMethod();
-
-			if (actualMethod.HasBody == false)
-				yield break;
-
-			// direct calls
-			foreach (var call in CilMachine.GetCalls(actualMethod))
-				yield return call;
-
-			// lambdas
-			foreach (var (lambda, _) in CilMachine.GetLambdas(actualMethod))
-			{
-				var lambdaImpl = lambda.Resolve();
-				foreach (var call in GetCalls(lambdaImpl))
-					yield return call;
-			}
+			var visitedMethods = new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance);
+			return GetCalls(method, visitedMethods);
 		}
 
 		public static IEnumerable<MethodDefinition> GetMethods(AssemblyInfo asm, string className = null, string methodName = null)
@@ -137,6 +143,37 @@ namespace Flint.Analyzers
 
 		#region Implementation
 		record CallChainNode(CallChainNode Parent, CallInfo Call);
+
+		private static IEnumerable<(MethodReference, CilPoint)> GetCalls(MethodDefinition method, HashSet<MethodReference> visitedMethods)
+		{
+			if (visitedMethods.Contains(method))
+				yield break;
+			visitedMethods.Add(method);
+
+			var actualMethod = method.UnwrapAsyncMethod();
+
+			if (Are.Equal(method, actualMethod) == false)
+			{
+				if (visitedMethods.Contains(actualMethod))
+					yield break;
+				visitedMethods.Add(actualMethod);
+			}
+
+			if (actualMethod.HasBody == false)
+				yield break;
+
+			// direct calls
+			foreach (var call in CilMachine.GetCalls(actualMethod))
+				yield return call;
+
+			// lambdas
+			foreach (var (lambda, _) in CilMachine.GetLambdas(actualMethod))
+			{
+				var lambdaImpl = lambda.Resolve();
+				foreach (var call in GetCalls(lambdaImpl, visitedMethods))
+					yield return call;
+			}
+		}
 
 		private static void PopulateCallChains(AssemblyInfo asm, MethodReference target, int level, CallInfo call, CallChainNode parent, HashSet<MethodReference> visitedMethods, List<ImmutableArray<CallInfo>> chains)
 		{
