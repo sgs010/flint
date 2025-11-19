@@ -10,7 +10,7 @@ namespace FlintTests.FlintCore
 		[ClassInitialize]
 		public static void Setup(TestContext ctx)
 		{
-			ASM = AssemblyAnalyzer.Load(new AnalyzerContext(), "Samples.dll");
+			ASM = AssemblyAnalyzer.Load("Samples.dll");
 		}
 
 		[ClassCleanup(ClassCleanupBehavior.EndOfClass)]
@@ -39,7 +39,7 @@ namespace FlintTests.FlintCore
 		[TestMethod]
 		public void InterfaceImplementations()
 		{
-			ASM.InterfaceImplementations
+			ASM.InterfaceClasses
 				.Where(x => x.Key.FullName == "Samples.IRepository")
 				.SelectMany(x => x.Value)
 				.Where(x => x.FullName == "Samples.Repository")

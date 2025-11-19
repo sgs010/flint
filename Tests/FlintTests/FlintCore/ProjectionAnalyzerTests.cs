@@ -10,7 +10,7 @@ namespace FlintTests.FlintCore
 		[ClassInitialize]
 		public static void Setup(TestContext ctx)
 		{
-			ASM = AssemblyAnalyzer.Load(new AnalyzerContext(), "Samples.dll");
+			ASM = AssemblyAnalyzer.Load("Samples.dll");
 		}
 
 		[ClassCleanup(ClassCleanupBehavior.EndOfClass)]

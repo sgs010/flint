@@ -1,7 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
-using System.Net.Security;
-using System.Security.Cryptography;
 using FlintWeb.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -12,12 +10,10 @@ namespace FlintWeb.Pages
 	{
 		private readonly ILogger<IndexModel> _logger;
 		private readonly IFlintService _flint;
-		private readonly IStorageService _storage;
-		public IndexModel(ILogger<IndexModel> logger, IFlintService flint, IStorageService storage)
+		public IndexModel(ILogger<IndexModel> logger, IFlintService flint)
 		{
 			_logger = logger;
 			_flint = flint;
-			_storage = storage;
 		}
 
 		[BindProperty]
@@ -49,7 +45,7 @@ namespace FlintWeb.Pages
 			var watch = Stopwatch.StartNew();
 			try
 			{
-				Result = await ProcessFileAsync(DllFile, PdbFile, _flint, _storage, _logger, ct);
+				Result = await ProcessFileAsync(DllFile, PdbFile, _flint, _logger, ct);
 			}
 			catch (Exception ex)
 			{
@@ -74,16 +70,7 @@ namespace FlintWeb.Pages
 			return "Internal error";
 		}
 
-		private static async Task<string> ComputeHashAsync(Stream stream, CancellationToken ct)
-		{
-			using var sha256 = SHA256.Create();
-			stream.Position = 0;
-			var hashBytes = await sha256.ComputeHashAsync(stream, ct);
-			var hash = Convert.ToHexStringLower(hashBytes);
-			return hash;
-		}
-
-		private static async Task<IReadOnlyList<string>> ProcessFileAsync(IFormFile dllFile, IFormFile pdbFile, IFlintService flint, IStorageService storage, ILogger log, CancellationToken ct)
+		private static async Task<IReadOnlyList<string>> ProcessFileAsync(IFormFile dllFile, IFormFile pdbFile, IFlintService flint, ILogger log, CancellationToken ct)
 		{
 			using var dllStream = new MemoryStream();
 			await dllFile.CopyToAsync(dllStream, ct);
@@ -94,12 +81,6 @@ namespace FlintWeb.Pages
 			using var pdbStream = new MemoryStream();
 			if (pdbFile != null)
 				await pdbFile.CopyToAsync(pdbStream, ct);
-
-			string hash = await ComputeHashAsync(dllStream, ct);
-			log.LogInformation("hash {hash}", hash);
-
-			dllStream.Position = 0;
-			await storage.UploadAsync(hash, dllStream, ct);
 
 			dllStream.Position = 0;
 			pdbStream.Position = 0;

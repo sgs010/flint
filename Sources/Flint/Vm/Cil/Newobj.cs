@@ -7,22 +7,11 @@ namespace Flint.Vm.Cil
 	{
 		public readonly TypeReference Type;
 		public readonly MethodReference Ctor;
-		public readonly MethodDefinition CtorImpl;
 		public readonly Ast[] Args;
-
 		public Newobj(CilPoint pt, TypeReference type, MethodReference ctor, Ast[] args) : base(pt)
 		{
 			Type = type;
 			Ctor = ctor;
-			CtorImpl = ctor.Resolve();
-			Args = args;
-		}
-
-		private Newobj(CilPoint pt, TypeReference type, MethodReference ctor, MethodDefinition ctorImpl, Ast[] args) : base(pt)
-		{
-			Type = type;
-			Ctor = ctor;
-			CtorImpl = ctorImpl;
 			Args = args;
 		}
 
@@ -62,7 +51,7 @@ namespace Flint.Vm.Cil
 				if (argsMr == MergeResult.NotMerged)
 					return NotMerged();
 
-				return OkMerged(new Newobj(CilPoint, Type, Ctor, CtorImpl, args));
+				return OkMerged(new Newobj(CilPoint, Type, Ctor, args));
 			}
 			return NotMerged();
 		}

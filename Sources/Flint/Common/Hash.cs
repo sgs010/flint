@@ -31,5 +31,12 @@ namespace Flint.Common
 				return 0;
 			return x.MetadataToken.GetHashCode();
 		}
+
+		public static int Code(PropertyReference x)
+		{
+			if (x == null)
+				return 0;
+			return x.MetadataToken.GetHashCode();
+		}
 	}
 }

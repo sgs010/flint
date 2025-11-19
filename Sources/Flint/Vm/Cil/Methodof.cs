@@ -6,11 +6,9 @@ namespace Flint.Vm.Cil
 	class Methodof : Ast
 	{
 		public readonly MethodReference Method;
-		public readonly MethodDefinition MethodImpl;
 		public Methodof(CilPoint pt, MethodReference method) : base(pt)
 		{
 			Method = method;
-			MethodImpl = method.Resolve();
 		}
 
 		public override IEnumerable<Ast> GetChildren()

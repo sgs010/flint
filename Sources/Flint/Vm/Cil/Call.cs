@@ -8,7 +8,6 @@ namespace Flint.Vm.Cil
 		public readonly Ast Instance;
 		public string MethodFullName;
 		public readonly MethodReference Method;
-		public readonly MethodDefinition MethodImpl;
 		public readonly Ast[] Args;
 
 		public Call(CilPoint pt, Ast instance, MethodReference method, Ast[] args, string methodFullName = null) : base(pt)
@@ -16,16 +15,14 @@ namespace Flint.Vm.Cil
 			Instance = instance;
 			MethodFullName = methodFullName ?? method.FullName;
 			Method = method;
-			MethodImpl = method.Resolve();
 			Args = args;
 		}
 
-		private Call(CilPoint pt, Ast instance, string methodFullName, MethodReference method, MethodDefinition methodImpl, Ast[] args) : base(pt)
+		private Call(CilPoint pt, Ast instance, string methodFullName, MethodReference method, Ast[] args) : base(pt)
 		{
 			Instance = instance;
 			MethodFullName = methodFullName;
 			Method = method;
-			MethodImpl = methodImpl;
 			Args = args;
 		}
 
@@ -67,7 +64,7 @@ namespace Flint.Vm.Cil
 				if (argsMr == MergeResult.NotMerged)
 					return NotMerged();
 
-				return OkMerged(new Call(CilPoint, instance, MethodFullName, Method, MethodImpl, args));
+				return OkMerged(new Call(CilPoint, instance, MethodFullName, Method, args));
 			}
 			return NotMerged();
 		}
