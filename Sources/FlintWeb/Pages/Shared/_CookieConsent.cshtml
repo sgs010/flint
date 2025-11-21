@@ -1,0 +1,41 @@
+﻿@using Microsoft.AspNetCore.Http.Features
+@{
+	var consentFeature = Context.Features.Get<ITrackingConsentFeature>();
+	var showBanner = !consentFeature?.CanTrack ?? true;
+	var cookieString = consentFeature?.CreateConsentCookie();
+}
+
+@if (showBanner)
+{
+	<div id="cookieConsent" class="cookie-consent-banner fixed-bottom bg-dark text-white p-3">
+		<div class="container">
+			<div class="row align-items-center">
+				<div class="col-md-8">
+					This website uses cookies to ensure you get the best experience and for analytics.
+				</div>
+				<div class="col-md-4 text-md-end mt-3 mt-md-0">
+					<button type="button" class="btn btn-outline-light me-2" onclick="acceptCookies('@cookieString')">Accept</button>
+					<button type="button" class="btn btn-outline-light" onclick="denyCookies()">Deny</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		function acceptCookies(cookie) {
+			document.cookie = cookie;
+			document.getElementById("cookieConsent").remove();
+		}
+
+		function denyCookies() {
+			document.getElementById("cookieConsent").remove();
+		}
+	</script>
+
+	<style>
+		.cookie-consent-banner {
+			z-index: 1050;
+			opacity: 0.95;
+		}
+	</style>
+}

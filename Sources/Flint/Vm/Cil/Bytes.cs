@@ -1,11 +1,11 @@
-﻿using Mono.Cecil.Cil;
+﻿using Flint.Common;
 
 namespace Flint.Vm.Cil
 {
 	class Bytes : Ast
 	{
 		public readonly Ast Count;
-		public Bytes(SequencePoint sp, Ast count) : base(sp)
+		public Bytes(CilPoint pt, Ast count) : base(pt)
 		{
 			Count = count;
 		}
@@ -24,9 +24,22 @@ namespace Flint.Vm.Cil
 		{
 			if (other is Bytes bytes)
 			{
-				return Count.Equals(bytes.Count);
+				return Are.Equal(Count, bytes.Count);
 			}
 			return false;
+		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			if (other is Bytes bytes)
+			{
+				var (count, countMr) = Merge(Count, bytes.Count);
+				if (countMr == MergeResult.NotMerged)
+					return NotMerged();
+
+				return OkMerged(new Bytes(CilPoint, count));
+			}
+			return NotMerged();
 		}
 	}
 }

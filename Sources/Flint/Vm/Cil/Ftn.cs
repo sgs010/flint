@@ -1,37 +1,52 @@
-﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
+﻿using Flint.Common;
+using Mono.Cecil;
 
 namespace Flint.Vm.Cil
 {
 	class Ftn : Ast
 	{
 		public readonly Ast Instance;
-		public readonly MethodDefinition Method;
-		public Ftn(SequencePoint sp, Ast instance, MethodDefinition mtd) : base(sp)
+		public readonly MethodReference Method;
+		public Ftn(CilPoint pt, Ast instance, MethodReference method) : base(pt)
 		{
 			Instance = instance;
-			Method = mtd;
+			Method = method;
 		}
 
 		public override IEnumerable<Ast> GetChildren()
 		{
-			if (Instance != null)
-				yield return Instance;
+			yield return Instance;
 		}
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Ftn), Instance, Method);
+			return HashCode.Combine(typeof(Ftn), Instance, Hash.Code(Method));
 		}
 
 		public override bool Equals(Ast other)
 		{
 			if (other is Ftn ftn)
 			{
-				return (Instance != null ? Instance.Equals(ftn.Instance) : ftn.Instance is null)
-					&& Method.Equals(ftn.Method);
+				return Are.Equal(Instance, ftn.Instance)
+					&& Are.Equal(Method, ftn.Method);
 			}
 			return false;
+		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			if (other is Ftn ftn)
+			{
+				if (Are.Equal(Method, ftn.Method) == false)
+					return NotMerged();
+
+				var (instance, instanceMr) = Merge(Instance, ftn.Instance);
+				if (instanceMr == MergeResult.NotMerged)
+					return NotMerged();
+
+				return OkMerged(new Ftn(CilPoint, instance, Method));
+			}
+			return NotMerged();
 		}
 	}
 }

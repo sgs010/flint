@@ -1,11 +1,11 @@
-﻿using Mono.Cecil.Cil;
+﻿using Flint.Common;
 
 namespace Flint.Vm.Cil
 {
 	class Refanytype : Ast
 	{
 		public readonly Ast Reference;
-		public Refanytype(SequencePoint sp, Ast reference) : base(sp)
+		public Refanytype(CilPoint pt, Ast reference) : base(pt)
 		{
 			Reference = reference;
 		}
@@ -24,9 +24,22 @@ namespace Flint.Vm.Cil
 		{
 			if (other is Refanytype @ref)
 			{
-				return Reference.Equals(@ref.Reference);
+				return Are.Equal(Reference, @ref.Reference);
 			}
 			return false;
+		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			if (other is Refanytype @ref)
+			{
+				var (reference, referenceMr) = Merge(Reference, @ref.Reference);
+				if (referenceMr == MergeResult.NotMerged)
+					return NotMerged();
+
+				return OkMerged(new Refanytype(CilPoint, reference));
+			}
+			return NotMerged();
 		}
 	}
 }

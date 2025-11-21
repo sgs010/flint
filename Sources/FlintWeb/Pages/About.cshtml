@@ -1,0 +1,15 @@
+﻿@page
+@model AboutModel
+@{
+    ViewData["Title"] = "About Flint AI";
+}
+<h1>@ViewData["Title"]</h1>
+<p>Flint AI is a tool to check your .NET solution for typical EF Core errors:</p>
+<ul>
+    <li>Consider using projection {...} - avoid SELECT * FROM issue.</li>
+    <li>Add Include(...) - avoid N+1 problem.</li>
+    <li>Add AsNoTracking() - reduce memory usage.</li>
+    <li>Consider adding AsSplitQuery() - avoid cartesian explosion.</li>
+    <li>Consider using Outbox pattern.</li>
+</ul>
+<p>Flint processes compiled assemblies, no source code is required.</p>

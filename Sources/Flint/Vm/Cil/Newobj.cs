@@ -1,17 +1,17 @@
-﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
+﻿using Flint.Common;
+using Mono.Cecil;
 
 namespace Flint.Vm.Cil
 {
 	class Newobj : Ast
 	{
 		public readonly TypeReference Type;
-		public readonly MethodReference Constructor;
+		public readonly MethodReference Ctor;
 		public readonly Ast[] Args;
-		public Newobj(SequencePoint sp, TypeReference type, MethodReference ctor, Ast[] args) : base(sp)
+		public Newobj(CilPoint pt, TypeReference type, MethodReference ctor, Ast[] args) : base(pt)
 		{
 			Type = type;
-			Constructor = ctor;
+			Ctor = ctor;
 			Args = args;
 		}
 
@@ -23,18 +23,37 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Newobj), Type, Constructor, Args);
+			return HashCode.Combine(typeof(Newobj), Hash.Code(Type), Hash.Code(Ctor), Args);
 		}
 
 		public override bool Equals(Ast other)
 		{
 			if (other is Newobj newobj)
 			{
-				return Type.Equals(newobj.Type)
-					&& Constructor.Equals(newobj.Constructor)
+				return Are.Equal(Type, newobj.Type)
+					&& Are.Equal(Ctor, newobj.Ctor)
 					&& Args.SequenceEqual(newobj.Args);
 			}
 			return false;
+		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			if (other is Newobj newobj)
+			{
+				if (Are.Equal(Type, newobj.Type) == false)
+					return NotMerged();
+
+				if (Are.Equal(Ctor, newobj.Ctor) == false)
+					return NotMerged();
+
+				var (args, argsMr) = Merge(Args, newobj.Args);
+				if (argsMr == MergeResult.NotMerged)
+					return NotMerged();
+
+				return OkMerged(new Newobj(CilPoint, Type, Ctor, args));
+			}
+			return NotMerged();
 		}
 	}
 }

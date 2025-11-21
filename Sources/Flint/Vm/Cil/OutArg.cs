@@ -1,4 +1,4 @@
-﻿using Mono.Cecil.Cil;
+﻿using Flint.Common;
 
 namespace Flint.Vm.Cil
 {
@@ -6,7 +6,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly Call Call;
 		public readonly int Index;
-		public OutArg(SequencePoint sp, Call call, int index) : base(sp)
+		public OutArg(CilPoint pt, Call call, int index) : base(pt)
 		{
 			Call = call;
 			Index = index;
@@ -26,10 +26,26 @@ namespace Flint.Vm.Cil
 		{
 			if (other is OutArg arg)
 			{
-				return Call.Equals(arg.Call)
-					&& Index.Equals(arg.Index);
+				return Are.Equal(Call, arg.Call)
+					&& Index == arg.Index;
 			}
 			return false;
+		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			if (other is OutArg arg)
+			{
+				if (Index != arg.Index)
+					return NotMerged();
+
+				var (call, callMr) = Merge(Call, arg.Call);
+				if (callMr == MergeResult.NotMerged)
+					return NotMerged();
+
+				return OkMerged(new OutArg(CilPoint, (Call)call, Index));
+			}
+			return NotMerged();
 		}
 	}
 }

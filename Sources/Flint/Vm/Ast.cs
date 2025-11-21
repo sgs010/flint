@@ -1,18 +1,85 @@
-﻿using Mono.Cecil.Cil;
+﻿using System.Runtime.CompilerServices;
 
 namespace Flint.Vm
 {
 	abstract class Ast : IEquatable<Ast>
 	{
-		public readonly SequencePoint SequencePoint;
-		protected Ast(SequencePoint sp)
+		public readonly CilPoint CilPoint;
+		protected Ast(CilPoint pt)
 		{
-			SequencePoint = sp;
+			CilPoint = pt;
 		}
 
 		public abstract IEnumerable<Ast> GetChildren();
 		public abstract bool Equals(Ast other);
 		public virtual void Capture(Ast other, IDictionary<string, Ast> captures) { }
+		protected virtual (Ast, MergeResult) Merge(Ast other) { return NotMerged(); }
+
+		public enum MergeResult { NotMerged = 0, OkMerged = 1, Equal = 2 }
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		protected static (Ast, MergeResult) NotMerged()
+		{
+			return (null, MergeResult.NotMerged);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		protected static (Ast, MergeResult) OkMerged(Ast ast)
+		{
+			return (ast, MergeResult.OkMerged);
+		}
+
+		public static (Ast, MergeResult) Merge(Ast x, Ast y)
+		{
+			if (x == null && y == null)
+				return (null, MergeResult.Equal);
+			if (x != null && y == null)
+				return (x, MergeResult.OkMerged);
+			if (x == null && y != null)
+				return (y, MergeResult.OkMerged);
+
+			if (x.Equals(y))
+				return (x, MergeResult.Equal);
+
+			var (m, r) = x.Merge(y);
+			if (r != MergeResult.NotMerged)
+				return (m, r);
+
+			(m, r) = y.Merge(x);
+			if (r != MergeResult.NotMerged)
+				return (m, r);
+
+			return (null, MergeResult.NotMerged);
+		}
+
+		public static (Ast[], MergeResult) Merge(Ast[] x, Ast[] y)
+		{
+			if (x == null && y == null)
+				return (null, MergeResult.Equal);
+			if (x != null && y == null)
+				return (x, MergeResult.OkMerged);
+			if (x == null && y != null)
+				return (y, MergeResult.OkMerged);
+
+			if (x.Length == 0 && y.Length == 0)
+				return (x, MergeResult.Equal);
+
+			if (x.Length != y.Length)
+				return (null, MergeResult.NotMerged);
+
+			var merged = new Ast[x.Length];
+			var mergeResult = (int)MergeResult.Equal;
+			for (var i = 0; i < x.Length; ++i)
+			{
+				var (m, r) = Merge(x[i], y[i]);
+				if (r == MergeResult.NotMerged)
+					return (null, MergeResult.NotMerged);
+
+				merged[i] = m;
+				mergeResult = Math.Min(mergeResult, (int)r);
+			}
+			return (merged, (MergeResult)mergeResult);
+		}
 
 		public override int GetHashCode()
 		{
@@ -52,54 +119,42 @@ namespace Flint.Vm
 
 		private static void Capture(Ast root, IDictionary<string, Ast> captures, Ast pattern)
 		{
-			var patternNodes = Traverse(pattern, -1);
-			var rootNodes = Traverse(root, patternNodes.Count);
+			var patternNodes = BFS(pattern, -1);
+			var rootNodes = BFS(root, patternNodes.Count);
 			for (var i = 0; i < patternNodes.Count; ++i)
 			{
 				var p = patternNodes[i];
 				var r = rootNodes[i];
-				p.Capture(r, captures);
+				if (p != null)
+					p.Capture(r, captures);
 			}
 		}
 
-		private static List<Ast> Traverse(Ast root, int maxCount)
+		private static List<Ast> BFS(Ast root, int maxCount)
 		{
 			var nodes = new List<Ast>(maxCount > 0 ? maxCount : 0);
-			Traverse(root, nodes, maxCount);
+			BFS(root, nodes, maxCount);
 			return nodes;
 		}
 
-		private static void Traverse(Ast root, List<Ast> nodes, int maxCount)
+		private static void BFS(Ast root, List<Ast> nodes, int maxCount)
 		{
-			if (root == null)
-				return;
-			if (maxCount == 0)
+			if (maxCount >= 0 && nodes.Count >= maxCount)
 				return;
 
 			nodes.Add(root);
-			--maxCount;
-			if (maxCount == 0)
+			if (maxCount >= 0 && nodes.Count >= maxCount)
+				return;
+
+			if (root == null)
 				return;
 
 			foreach (var child in root.GetChildren())
 			{
-				Traverse(child, nodes, maxCount);
-				--maxCount;
-				if (maxCount == 0)
+				BFS(child, nodes, maxCount);
+				if (maxCount >= 0 && nodes.Count >= maxCount)
 					return;
 			}
-		}
-	}
-
-	static class AstExtensions
-	{
-		public static void Capture(this Ast[] col, Ast[] other, IDictionary<string, Ast> captures)
-		{
-			if (col.Length != other.Length)
-				throw new InvalidOperationException();
-
-			for (var i = 0; i < col.Length; ++i)
-				col[i].Capture(other[i], captures);
 		}
 	}
 }

@@ -1,36 +1,13 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
-	class Ceq : Ast
+	class Ceq : BinaryOperator<Ceq>
 	{
-		public readonly Ast Left;
-		public readonly Ast Right;
-		public Ceq(SequencePoint sp, Ast left, Ast right) : base(sp)
-		{
-			Left = left;
-			Right = right;
-		}
+		public Ceq(CilPoint pt, Ast left, Ast right)
+			: base(pt, left, right) { }
 
-		public override IEnumerable<Ast> GetChildren()
+		protected override Ceq CreateInstance(CilPoint pt, Ast left, Ast right)
 		{
-			yield return Left;
-			yield return Right;
-		}
-
-		public override int GetHashCode()
-		{
-			return HashCode.Combine(typeof(Ceq), Left, Right);
-		}
-
-		public override bool Equals(Ast other)
-		{
-			if (other is Ceq ceq)
-			{
-				return Left.Equals(ceq.Left)
-					&& Right.Equals(ceq.Right);
-			}
-			return false;
+			return new Ceq(pt, left, right);
 		}
 	}
 }

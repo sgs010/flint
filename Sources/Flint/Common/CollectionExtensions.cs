@@ -1,4 +1,6 @@
-﻿namespace Flint.Common
+﻿using System.Collections.Immutable;
+
+namespace Flint.Common
 {
 	static class CollectionExtensions
 	{
@@ -27,6 +29,16 @@
 		public static bool IsNullOrEmpty<T>(this ICollection<T> collection)
 		{
 			return collection == null || collection.Count == 0;
+		}
+
+		public static ImmutableArray<T> Concat<T>(this ImmutableArray<T> head, IReadOnlyCollection<ImmutableArray<T>> tail)
+		{
+			var totalLength = head.Length + tail.Sum(x => x.Length);
+			var builder = ImmutableArray.CreateBuilder<T>(totalLength);
+			builder.AddRange(head);
+			foreach (var x in tail)
+				builder.AddRange(x);
+			return builder.ToImmutable();
 		}
 	}
 }

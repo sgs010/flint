@@ -1,12 +1,12 @@
-﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
+﻿using Flint.Common;
+using Mono.Cecil;
 
 namespace Flint.Vm.Cil
 {
 	class Typeof : Ast
 	{
 		public readonly TypeReference Type;
-		public Typeof(SequencePoint sp, TypeReference type) : base(sp)
+		public Typeof(CilPoint pt, TypeReference type) : base(pt)
 		{
 			Type = type;
 		}
@@ -18,14 +18,14 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Typeof), Type);
+			return HashCode.Combine(typeof(Typeof), Hash.Code(Type));
 		}
 
 		public override bool Equals(Ast other)
 		{
 			if (other is Typeof type)
 			{
-				return Type.Equals(type.Type);
+				return Are.Equal(Type, type.Type);
 			}
 			return false;
 		}

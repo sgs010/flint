@@ -1,4 +1,4 @@
-﻿using Mono.Cecil.Cil;
+﻿using Flint.Common;
 
 namespace Flint.Vm.Cil
 {
@@ -6,7 +6,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly Ast Array;
 		public readonly Ast Index;
-		public Elemptr(SequencePoint sp, Ast array, Ast index) : base(sp)
+		public Elemptr(CilPoint pt, Ast array, Ast index) : base(pt)
 		{
 			Array = array;
 			Index = index;
@@ -27,10 +27,27 @@ namespace Flint.Vm.Cil
 		{
 			if (other is Elemptr ptr)
 			{
-				return Array.Equals(ptr.Array)
-					&& Index.Equals(ptr.Index);
+				return Are.Equal(Array, ptr.Array)
+					&& Are.Equal(Index, ptr.Index);
 			}
 			return false;
+		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			if (other is Elemptr elem)
+			{
+				var (array, arrayMr) = Merge(Array, elem.Array);
+				if (arrayMr == MergeResult.NotMerged)
+					return NotMerged();
+
+				var (index, indexMr) = Merge(Index, elem.Index);
+				if (indexMr == MergeResult.NotMerged)
+					return NotMerged();
+
+				return OkMerged(new Elemptr(CilPoint, array, index));
+			}
+			return NotMerged();
 		}
 	}
 }

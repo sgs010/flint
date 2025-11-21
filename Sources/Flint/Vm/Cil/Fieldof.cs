@@ -1,12 +1,12 @@
-﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
+﻿using Flint.Common;
+using Mono.Cecil;
 
 namespace Flint.Vm.Cil
 {
 	class Fieldof : Ast
 	{
 		public readonly FieldReference Field;
-		public Fieldof(SequencePoint sp, FieldReference fld) : base(sp)
+		public Fieldof(CilPoint pt, FieldReference fld) : base(pt)
 		{
 			Field = fld;
 		}
@@ -18,14 +18,14 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Fieldof), Field);
+			return HashCode.Combine(typeof(Fieldof), Hash.Code(Field));
 		}
 
 		public override bool Equals(Ast other)
 		{
 			if (other is Fieldof f)
 			{
-				return Field.Equals(f.Field);
+				return Are.Equal(Field, f.Field);
 			}
 			return false;
 		}

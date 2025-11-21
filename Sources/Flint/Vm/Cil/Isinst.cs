@@ -1,5 +1,5 @@
-﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
+﻿using Flint.Common;
+using Mono.Cecil;
 
 namespace Flint.Vm.Cil
 {
@@ -7,7 +7,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly TypeReference Type;
 		public readonly Ast Instance;
-		public Isinst(SequencePoint sp, TypeReference type, Ast instance) : base(sp)
+		public Isinst(CilPoint pt, TypeReference type, Ast instance) : base(pt)
 		{
 			Type = type;
 			Instance = instance;
@@ -20,17 +20,33 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Isinst), Type, Instance);
+			return HashCode.Combine(typeof(Isinst), Hash.Code(Type), Instance);
 		}
 
 		public override bool Equals(Ast other)
 		{
 			if (other is Isinst inst)
 			{
-				return Type.Equals(inst.Type)
-					&& Instance.Equals(inst.Instance);
+				return Are.Equal(Type, inst.Type)
+					&& Are.Equal(Instance, inst.Instance);
 			}
 			return false;
+		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			if (other is Isinst inst)
+			{
+				if (Are.Equal(Type, inst.Type) == false)
+					return NotMerged();
+
+				var (instance, instanceMr) = Merge(Instance, inst.Instance);
+				if (instanceMr == MergeResult.NotMerged)
+					return NotMerged();
+
+				return OkMerged(new Isinst(CilPoint, Type, instance));
+			}
+			return NotMerged();
 		}
 	}
 }

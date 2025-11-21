@@ -1,23 +1,27 @@
 ﻿using System.Text;
-using Mono.Cecil;
+using Flint.Vm;
 
 namespace Flint.Analyzers
 {
 	internal class AsNoTrackingAnalyzer
 	{
 		#region Interface
-		public static void Run(IAnalyzerContext ctx, ModuleDefinition asm, HashSet<TypeReference> entityTypes, string className = null, string methodName = null)
+		public static void Run(IAnalyzerContext ctx, AssemblyInfo asm, string className = null, string methodName = null)
 		{
-			var entities = EntityAnalyzer.Analyze(asm, entityTypes, className, methodName);
-			foreach (var entity in entities)
+			var queries = QueryAnalyzer.Analyze(asm, className, methodName);
+			foreach (var query in queries)
 			{
-				if (EntityAnalyzer.SomePropertiesAreChanged(entity))
+				if (QueryAnalyzer.SomePropertiesAreChanged(query.Entity))
 					continue; // entity is changed, do not advise to add AsNoTracking
+
+				var hasAsNoTracking = query.Roots.OfCall("Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AsNoTracking").Any();
+				if (hasAsNoTracking)
+					continue; // AsNoTracking is already present
 
 				// report issue
 				var sb = new StringBuilder();
 				sb.Append("add AsNoTracking() in method ");
-				EntityAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.SequencePoint);
+				MethodAnalyzer.PrettyPrintMethod(sb, query.Method, query.CilPoint);
 				ctx.Log(sb.ToString());
 			}
 		}

@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace Samples
 {
@@ -49,6 +48,8 @@ namespace Samples
 	public class Post
 	{
 		public int Id { get; set; }
+		public int BlogId { get; set; }
+		public Blog Blog { get; set; }
 		public string Text { get; set; }
 		public User Author { get; set; }
 	}
@@ -57,6 +58,13 @@ namespace Samples
 	{
 		public int Id { get; set; }
 		public string Name { get; set; }
+	}
+
+	public class Outbox
+	{
+		public int Id { get; set; }
+		public string Message { get; set; }
+		public bool IsProcessed { get; set; }
 	}
 
 	public class DB : DbContext
@@ -69,5 +77,6 @@ namespace Samples
 		public DbSet<Blog> Blogs => Set<Blog>();
 		public DbSet<Post> Posts => Set<Post>();
 		public DbSet<Tag> Tags => Set<Tag>();
+		public DbSet<Outbox> Outbox => Set<Outbox>();
 	}
 }

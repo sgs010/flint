@@ -1,5 +1,5 @@
-﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
+﻿using Flint.Common;
+using Mono.Cecil;
 
 namespace Flint.Vm.Cil
 {
@@ -7,7 +7,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly Ast Instance;
 		public readonly FieldReference Field;
-		public Fld(SequencePoint sp, Ast instance, FieldReference fld) : base(sp)
+		public Fld(CilPoint pt, Ast instance, FieldReference fld) : base(pt)
 		{
 			Instance = instance;
 			Field = fld;
@@ -15,23 +15,27 @@ namespace Flint.Vm.Cil
 
 		public override IEnumerable<Ast> GetChildren()
 		{
-			if (Instance != null)
-				yield return Instance;
+			yield return Instance;
 		}
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Fld), Instance, Field);
+			return HashCode.Combine(typeof(Fld), Instance, Hash.Code(Field));
 		}
 
 		public override bool Equals(Ast other)
 		{
 			if (other is Fld fld)
 			{
-				return (Instance != null ? Instance.Equals(fld.Instance) : fld.Instance is null)
-					&& Field.Equals(fld.Field);
+				return Are.Equal(Instance, fld.Instance)
+					&& Are.Equal(Field, fld.Field);
 			}
 			return false;
+		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			return OkMerged(other);
 		}
 	}
 }

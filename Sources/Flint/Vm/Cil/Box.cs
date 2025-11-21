@@ -1,32 +1,13 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
-	class Box : Ast
+	class Box : UnaryOperator<Box>
 	{
-		public readonly Ast Value;
-		public Box(SequencePoint sp, Ast value) : base(sp)
-		{
-			Value = value;
-		}
+		public Box(CilPoint pt, Ast value)
+			: base(pt, value) { }
 
-		public override IEnumerable<Ast> GetChildren()
+		protected override Box CreateInstance(CilPoint pt, Ast value)
 		{
-			yield return Value;
-		}
-
-		public override int GetHashCode()
-		{
-			return HashCode.Combine(typeof(Box), Value);
-		}
-
-		public override bool Equals(Ast other)
-		{
-			if (other is Box box)
-			{
-				return Value.Equals(box.Value);
-			}
-			return false;
+			return new Box(pt, value);
 		}
 	}
 }

@@ -16,8 +16,7 @@ namespace Flint.Vm.Match
 
 		public override IEnumerable<Ast> GetChildren()
 		{
-			if (Instance != null)
-				yield return Instance;
+			yield return Instance;
 			foreach (var arg in Args)
 				yield return arg;
 		}
@@ -40,9 +39,9 @@ namespace Flint.Vm.Match
 
 		private static bool InstanceEquals(Match.Call m, Cil.Call c)
 		{
-			if (m.Instance == null && c.Instance == null)
+			if (m.Instance == Any.Instance)
 				return true;
-			if (m.Instance == Any.Instance && c.Instance != null)
+			if (m.Instance == null && c.Instance == null)
 				return true;
 			if (m.Instance != null && c.Instance != null && m.Instance.Equals(c.Instance))
 				return true;
@@ -51,7 +50,9 @@ namespace Flint.Vm.Match
 
 		private static bool MethodEquals(Match.Call m, Cil.Call c)
 		{
-			if (m.Method.Equals(c.Method.FullName))
+			if (m.Method == null)
+				return true;
+			if (m.Method.Equals(c.MethodFullName))
 				return true;
 			if (m.Method.Equals(c.Method.DeclaringType.FullName + "." + c.Method.Name))
 				return true;
@@ -62,8 +63,8 @@ namespace Flint.Vm.Match
 
 		public override void Capture(Ast other, IDictionary<string, Ast> captures)
 		{
-			if (other is Cil.Call)
-				captures.AddOrReplace(Method, other);
+			if (other is Cil.Call call)
+				captures.AddOrReplace(Method ?? call.MethodFullName, call);
 		}
 	}
 }

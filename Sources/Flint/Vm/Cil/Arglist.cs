@@ -1,12 +1,12 @@
-﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
+﻿using Flint.Common;
+using Mono.Cecil;
 
 namespace Flint.Vm.Cil
 {
 	class Arglist : Ast
 	{
 		public readonly MethodDefinition Method;
-		public Arglist(SequencePoint sp, MethodDefinition method) : base(sp)
+		public Arglist(CilPoint pt, MethodDefinition method) : base(pt)
 		{
 			Method = method;
 		}
@@ -18,14 +18,14 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Arglist), Method);
+			return HashCode.Combine(typeof(Arglist), Hash.Code(Method));
 		}
 
 		public override bool Equals(Ast other)
 		{
 			if (other is Arglist arglist)
 			{
-				return Method.Equals(arglist.Method);
+				return Are.Equal(Method, arglist.Method);
 			}
 			return false;
 		}

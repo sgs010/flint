@@ -1,16 +1,16 @@
-﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
+﻿using Flint.Common;
+using Mono.Cecil;
 
 namespace Flint.Vm.Cil
 {
 	class Arg : Ast
 	{
 		public readonly int Number;
-		public readonly ParameterReference Reference;
-		public Arg(SequencePoint sp, int number, ParameterReference reference) : base(sp)
+		public readonly ParameterDefinition Parameter;
+		public Arg(CilPoint pt, int number, ParameterDefinition parameter) : base(pt)
 		{
 			Number = number;
-			Reference = reference;
+			Parameter = parameter;
 		}
 
 		public override IEnumerable<Ast> GetChildren()
@@ -20,17 +20,22 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Arg), Number, Reference);
+			return HashCode.Combine(typeof(Arg), Number, Hash.Code(Parameter));
 		}
 
 		public override bool Equals(Ast other)
 		{
 			if (other is Arg arg)
 			{
-				return Number.Equals(arg.Number)
-					&& Reference.Equals(arg.Reference);
+				return Number == arg.Number
+					&& Are.Equal(Parameter, arg.Parameter);
 			}
 			return false;
+		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			return OkMerged(other);
 		}
 	}
 }

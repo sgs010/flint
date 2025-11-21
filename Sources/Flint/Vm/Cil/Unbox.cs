@@ -1,5 +1,5 @@
-﻿using Mono.Cecil;
-using Mono.Cecil.Cil;
+﻿using Flint.Common;
+using Mono.Cecil;
 
 namespace Flint.Vm.Cil
 {
@@ -7,7 +7,7 @@ namespace Flint.Vm.Cil
 	{
 		public TypeReference Type;
 		public readonly Ast Value;
-		public Unbox(SequencePoint sp, TypeReference type, Ast value) : base(sp)
+		public Unbox(CilPoint pt, TypeReference type, Ast value) : base(pt)
 		{
 			Type = type;
 			Value = value;
@@ -20,17 +20,33 @@ namespace Flint.Vm.Cil
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(typeof(Unbox), Type, Value);
+			return HashCode.Combine(typeof(Unbox), Hash.Code(Type), Value);
 		}
 
 		public override bool Equals(Ast other)
 		{
 			if (other is Unbox unbox)
 			{
-				return Type.Equals(unbox.Type)
-					&& Value.Equals(unbox.Value);
+				return Are.Equal(Type, unbox.Type)
+					&& Are.Equal(Value, unbox.Value);
 			}
 			return false;
+		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			if (other is Unbox unbox)
+			{
+				if (Are.Equal(Type, unbox.Type) == false)
+					return NotMerged();
+
+				var (value, valueMr) = Merge(Value, unbox.Value);
+				if (valueMr == MergeResult.NotMerged)
+					return NotMerged();
+
+				return OkMerged(new Unbox(CilPoint, Type, value));
+			}
+			return NotMerged();
 		}
 	}
 }

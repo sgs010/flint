@@ -1,11 +1,11 @@
-﻿using Mono.Cecil.Cil;
+﻿using Flint.Common;
 
 namespace Flint.Vm.Cil
 {
 	class Len : Ast
 	{
 		public readonly Ast Array;
-		public Len(SequencePoint sp, Ast array) : base(sp)
+		public Len(CilPoint pt, Ast array) : base(pt)
 		{
 			Array = array;
 		}
@@ -24,9 +24,22 @@ namespace Flint.Vm.Cil
 		{
 			if (other is Len len)
 			{
-				return Array.Equals(len.Array);
+				return Are.Equal(Array, len.Array);
 			}
 			return false;
+		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			if (other is Len len)
+			{
+				var (array, arrayMr) = Merge(Array, len.Array);
+				if (arrayMr == MergeResult.NotMerged)
+					return NotMerged();
+
+				return OkMerged(new Len(CilPoint, array));
+			}
+			return NotMerged();
 		}
 	}
 }

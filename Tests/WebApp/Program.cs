@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace WebApp
@@ -40,7 +41,7 @@ namespace WebApp
 
 			app.MapGet("/blog/{id}", async (int id, DB db) =>
 			{
-				var blog = await db.Blogs.FirstOrDefaultAsync(b => b.Id == 42);
+				var blog = await db.Blogs.FirstOrDefaultAsync(b => b.Id == id);
 				return new
 				{
 					Posts = blog.Posts.Select(post => new { post.Author.FirstName, post.Author.LastName }),
@@ -48,7 +49,29 @@ namespace WebApp
 				};
 			});
 
+			app.MapPost("/post/{id}", async (int id, [FromBody] string text, IRepository repo, IEventBus bus) =>
+			{
+				var post = new Post { BlogId = id, Text = text };
+				repo.Posts.Add(post);
+				await repo.SaveChangesAsync();
+
+				await bus.PublishAsync($"new post {post.Id}");
+
+				return Results.NoContent();
+			});
+
 			app.Run();
+		}
+
+		internal static async Task ProcessOutbox(IRepository repo, IEventBus bus)
+		{
+			var messages = await repo.Outbox.Where(m => m.IsProcessed == false).Take(10).ToListAsync();
+			foreach (var msg in messages)
+			{
+				await bus.PublishAsync(msg.Message);
+				msg.IsProcessed = true;
+			}
+			await repo.SaveChangesAsync();
 		}
 	}
 }

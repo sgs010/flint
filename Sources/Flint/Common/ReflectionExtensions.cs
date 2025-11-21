@@ -1,0 +1,202 @@
+﻿using Mono.Cecil;
+
+namespace Flint.Common
+{
+	#region TypeReferenceEqualityComparer
+	sealed class TypeReferenceEqualityComparer : IEqualityComparer<TypeReference>
+	{
+		public static TypeReferenceEqualityComparer Instance = new();
+
+		public bool Equals(TypeReference x, TypeReference y)
+		{
+			return Are.Equal(x, y);
+		}
+
+		public int GetHashCode(TypeReference obj)
+		{
+			return Hash.Code(obj);
+		}
+	}
+	#endregion
+
+	#region TypeDefinitionEqualityComparer
+	sealed class TypeDefinitionEqualityComparer : IEqualityComparer<TypeDefinition>
+	{
+		public static TypeDefinitionEqualityComparer Instance = new();
+
+		public bool Equals(TypeDefinition x, TypeDefinition y)
+		{
+			return Are.Equal(x, y);
+		}
+
+		public int GetHashCode(TypeDefinition obj)
+		{
+			return Hash.Code(obj);
+		}
+	}
+	#endregion
+
+	#region FieldReferenceEqualityComparer
+	sealed class FieldReferenceEqualityComparer : IEqualityComparer<FieldReference>
+	{
+		public static FieldReferenceEqualityComparer Instance = new();
+
+		public bool Equals(FieldReference x, FieldReference y)
+		{
+			return Are.Equal(x, y);
+		}
+
+		public int GetHashCode(FieldReference obj)
+		{
+			return Hash.Code(obj);
+		}
+	}
+	#endregion
+
+	#region MethodReferenceEqualityComparer
+	sealed class MethodReferenceEqualityComparer : IEqualityComparer<MethodReference>
+	{
+		public static MethodReferenceEqualityComparer Instance = new();
+
+		public bool Equals(MethodReference x, MethodReference y)
+		{
+			return Are.Equal(x, y);
+		}
+
+		public int GetHashCode(MethodReference obj)
+		{
+			return Hash.Code(obj);
+		}
+	}
+	#endregion
+
+	#region PropertyReferenceEqualityComparer
+	sealed class PropertyReferenceEqualityComparer : IEqualityComparer<PropertyReference>
+	{
+		public static PropertyReferenceEqualityComparer Instance = new();
+
+		public bool Equals(PropertyReference x, PropertyReference y)
+		{
+			return Are.Equal(x, y);
+		}
+
+		public int GetHashCode(PropertyReference obj)
+		{
+			return Hash.Code(obj);
+		}
+	}
+	#endregion
+
+	#region PropertyDefinitionEqualityComparer
+	sealed class PropertyDefinitionEqualityComparer : IEqualityComparer<PropertyDefinition>
+	{
+		public static PropertyDefinitionEqualityComparer Instance = new();
+
+		public bool Equals(PropertyDefinition x, PropertyDefinition y)
+		{
+			return Are.Equal(x, y);
+		}
+
+		public int GetHashCode(PropertyDefinition obj)
+		{
+			return Hash.Code(obj);
+		}
+	}
+	#endregion
+
+	#region ReflectionExtensions
+	static class ReflectionExtensions
+	{
+		#region Interface
+		public static MethodDefinition UnwrapAsyncMethod(this MethodDefinition method)
+		{
+			// check if method is async and return actual implementation
+			MethodDefinition asyncMethod = null;
+			if (method.HasCustomAttributes)
+			{
+				var asyncAttr = method.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.AsyncStateMachineAttribute");
+				if (asyncAttr != null)
+				{
+					var stmType = (TypeDefinition)asyncAttr.ConstructorArguments[0].Value;
+					asyncMethod = stmType.Methods.First(x => x.Name == "MoveNext");
+				}
+			}
+			return asyncMethod ?? method;
+		}
+
+		public static bool SignatureEquals(this MethodReference left, MethodReference right)
+		{
+			return left.Name.Equals(right.Name)
+				&& Are.Equal(left.ReturnType, right.ReturnType)
+				&& left.Parameters.SequenceEqual(right.Parameters, ParameterTypeEqualityComparer.Instance);
+		}
+
+		public static bool IsGenericCollection(this TypeReference type, out TypeDefinition itemType, ISet<TypeDefinition> allowedTypes = null)
+		{
+			// check if type is a System.Collections.Generic.ICollection<T>
+
+			itemType = null;
+
+			if (type.IsGenericInstance == false)
+				return false;
+			if (type.Namespace != "System.Collections.Generic")
+				return false;
+			if (type.Name != "ICollection`1")
+				return false;
+
+			// get T from System.Collections.Generic.ICollection<T>
+			var t = ((GenericInstanceType)type).GenericArguments.First();
+			if (allowedTypes != null && allowedTypes.Contains(t) == false)
+				return false;
+
+			itemType = t.Resolve();
+			return true;
+		}
+
+		public static bool IsGenericCollection(this TypeReference type)
+		{
+			return IsGenericCollection(type, out var _);
+		}
+
+		public static bool IsDbSet(this TypeReference type, out TypeDefinition itemType, ISet<TypeDefinition> allowedTypes = null)
+		{
+			// check if type is a Microsoft.EntityFrameworkCore.DbSet<T>
+
+			itemType = null;
+
+			if (type.IsGenericInstance == false)
+				return false;
+			if (type.Namespace != "Microsoft.EntityFrameworkCore")
+				return false;
+			if (type.Name != "DbSet`1")
+				return false;
+
+			// get T from DbSet<T>
+			var t = ((GenericInstanceType)type).GenericArguments.First();
+			if (allowedTypes != null && allowedTypes.Contains(t) == false)
+				return false;
+
+			itemType = t.Resolve();
+			return true;
+		}
+		#endregion
+
+		#region Implementation
+		class ParameterTypeEqualityComparer : IEqualityComparer<ParameterDefinition>
+		{
+			public static ParameterTypeEqualityComparer Instance = new();
+
+			public bool Equals(ParameterDefinition x, ParameterDefinition y)
+			{
+				return Are.Equal(x.ParameterType, y.ParameterType);
+			}
+
+			public int GetHashCode(ParameterDefinition obj)
+			{
+				return Hash.Code(obj.ParameterType);
+			}
+		}
+		#endregion
+	}
+	#endregion
+}

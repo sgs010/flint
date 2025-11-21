@@ -1,4 +1,4 @@
-﻿using Mono.Cecil.Cil;
+﻿using Flint.Common;
 
 namespace Flint.Vm.Cil
 {
@@ -6,7 +6,7 @@ namespace Flint.Vm.Cil
 	{
 		public readonly Ast Value;
 		public readonly Ast Count;
-		public Shr(SequencePoint sp, Ast value, Ast count) : base(sp)
+		public Shr(CilPoint pt, Ast value, Ast count) : base(pt)
 		{
 			Value = value;
 			Count = count;
@@ -27,10 +27,27 @@ namespace Flint.Vm.Cil
 		{
 			if (other is Shr shr)
 			{
-				return Value.Equals(shr.Value)
-					&& Count.Equals(shr.Count);
+				return Are.Equal(Value, shr.Value)
+					&& Are.Equal(Count, shr.Count);
 			}
 			return false;
+		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			if (other is Shr shr)
+			{
+				var (value, valueMr) = Merge(Value, shr.Value);
+				if (valueMr == MergeResult.NotMerged)
+					return NotMerged();
+
+				var (count, countMr) = Merge(Count, shr.Count);
+				if (countMr == MergeResult.NotMerged)
+					return NotMerged();
+
+				return OkMerged(new Shr(CilPoint, value, count));
+			}
+			return NotMerged();
 		}
 	}
 }

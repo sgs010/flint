@@ -1,32 +1,13 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
-	class Conv_U4 : Ast
+	class Conv_U4 : UnaryOperator<Conv_U4>
 	{
-		public readonly Ast Value;
-		public Conv_U4(SequencePoint sp, Ast value) : base(sp)
-		{
-			Value = value;
-		}
+		public Conv_U4(CilPoint pt, Ast value)
+			: base(pt, value) { }
 
-		public override IEnumerable<Ast> GetChildren()
+		protected override Conv_U4 CreateInstance(CilPoint pt, Ast value)
 		{
-			yield return Value;
-		}
-
-		public override int GetHashCode()
-		{
-			return HashCode.Combine(typeof(Conv_U4), Value);
-		}
-
-		public override bool Equals(Ast other)
-		{
-			if (other is Conv_U4 conv)
-			{
-				return Value.Equals(conv.Value);
-			}
-			return false;
+			return new Conv_U4(pt, value);
 		}
 	}
 }

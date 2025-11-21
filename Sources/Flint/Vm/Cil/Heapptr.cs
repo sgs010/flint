@@ -1,11 +1,11 @@
-﻿using Mono.Cecil.Cil;
+﻿using Flint.Common;
 
 namespace Flint.Vm.Cil
 {
 	class Heapptr : Ast
 	{
 		public readonly Ast Address;
-		public Heapptr(SequencePoint sp, Ast address) : base(sp)
+		public Heapptr(CilPoint pt, Ast address) : base(pt)
 		{
 			Address = address;
 		}
@@ -24,9 +24,22 @@ namespace Flint.Vm.Cil
 		{
 			if (other is Heapptr ptr)
 			{
-				return Address.Equals(ptr.Address);
+				return Are.Equal(Address, ptr.Address);
 			}
 			return false;
+		}
+
+		protected override (Ast, MergeResult) Merge(Ast other)
+		{
+			if (other is Heapptr ptr)
+			{
+				var (address, addressMr) = Merge(Address, ptr.Address);
+				if (addressMr == MergeResult.NotMerged)
+					return NotMerged();
+
+				return OkMerged(new Heapptr(CilPoint, address));
+			}
+			return NotMerged();
 		}
 	}
 }

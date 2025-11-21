@@ -1,0 +1,65 @@
+﻿@page
+@model IndexModel
+@{
+	ViewData["Title"] = "Home page";
+}
+
+@section Scripts
+{
+	<partial name="_ValidationScriptsPartial" />
+	<script>
+    $(document).ready(function () {
+
+		$('#uploadForm').on('submit', function (e) {
+            var $form = $(this);
+            if ($form.valid()) {
+				$('#result').hide();
+				$('#uploadBtn').prop('disabled', true).text('Processing...');
+            } else {
+                e.preventDefault();
+            }
+        });
+
+	});
+	</script>
+}
+
+<div>
+	<h1>Upload .NET library to check</h1>
+	<p>You can also upload a related PDB file to get line numbers in output.</p>
+	<form id="uploadForm" method="post" enctype="multipart/form-data" asp-antiforgery="true">
+		<div class="mb-3">
+			<label asp-for="DllFile" class="form-label">Select DLL file:</label>
+			<span asp-validation-for="DllFile" class="text-danger"></span>
+			<input id="dllFile" type="file" asp-for="DllFile" class="form-control" accept=".dll"/>
+		</div>
+		<div class="mb-3">
+			<label asp-for="PdbFile" class="form-label">Select PDB file (optional):</label>
+			<input id="pdbFile" type="file" asp-for="PdbFile" class="form-control" accept=".pdb"/>
+		</div>
+		<button id="uploadBtn" type="submit" class="btn btn-primary">Upload</button>
+	</form>
+</div>
+@if (Model.ShowResult)
+{
+	<div id="result" class="check-result">
+		@if (Model.Error != null)
+		{
+			<p>Failed to process file @Model.FileName</p>
+			<p class="text-error">@Model.Error</p>
+		}
+		else
+		{
+			<p>File @Model.FileName processed in @Model.ElapsedMilliseconds ms. Found @Model.Result.Count issues.</p>
+			@if (Model.Result.Count > 0)
+			{
+				<ol>
+					@foreach (var issue in Model.Result)
+					{
+						<li><code>@issue</code></li>
+					}
+				</ol>
+			}
+		}
+	</div>
+}

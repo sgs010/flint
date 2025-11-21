@@ -1,11 +1,9 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
 	class Argptr : Ast
 	{
 		public readonly int Number;
-		public Argptr(SequencePoint sp, int number) : base(sp)
+		public Argptr(CilPoint pt, int number) : base(pt)
 		{
 			Number = number;
 		}
@@ -24,7 +22,7 @@ namespace Flint.Vm.Cil
 		{
 			if (other is Argptr ptr)
 			{
-				return Number.Equals(ptr.Number);
+				return Number == ptr.Number;
 			}
 			return false;
 		}

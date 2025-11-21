@@ -1,5 +1,8 @@
-﻿using System.Text;
+﻿using System.Collections.Immutable;
+using System.Text;
+using Flint.Vm;
 using Mono.Cecil;
+using Cil = Flint.Vm.Cil;
 using Match = Flint.Vm.Match;
 
 namespace Flint.Analyzers
@@ -7,16 +10,16 @@ namespace Flint.Analyzers
 	internal class IncludeAnalyzer
 	{
 		#region Interface
-		public static void Run(IAnalyzerContext ctx, ModuleDefinition asm, HashSet<TypeReference> entityTypes, string className = null, string methodName = null)
+		public static void Run(IAnalyzerContext ctx, AssemblyInfo asm, string className = null, string methodName = null)
 		{
-			var entities = EntityAnalyzer.Analyze(asm, entityTypes, className, methodName);
-			foreach (var entity in entities)
+			var queries = QueryAnalyzer.Analyze(asm, className, methodName);
+			foreach (var query in queries)
 			{
-				if (entity.Properties.Length == 0)
+				if (query.Entity.Properties.Length == 0)
 					continue; // no properties accessed
 
 				var missingIncludes = new List<Include>();
-				Analyze(entity, true, missingIncludes);
+				Analyze(query.Roots, query.Entity, true, missingIncludes);
 
 				if (missingIncludes.Count == 0)
 					continue; // all is ok
@@ -29,7 +32,7 @@ namespace Flint.Analyzers
 					sb.Append("add ");
 					PrettyPrintIncludes(sb, chain);
 					sb.Append(" in method ");
-					EntityAnalyzer.PrettyPrintMethod(sb, entity.Method, entity.Root.SequencePoint);
+					MethodAnalyzer.PrettyPrintMethod(sb, query.Method, query.CilPoint);
 					ctx.Log(sb.ToString());
 				}
 			}
@@ -39,7 +42,7 @@ namespace Flint.Analyzers
 		#region Implementation
 		record struct Include(PropertyReference Property, bool TopLevel);
 
-		private static void Analyze(EntityDefinition entity, bool topLevel, List<Include> missingIncludes)
+		private static void Analyze(ImmutableArray<Cil.Call> roots, EntityInfo entity, bool topLevel, List<Include> missingIncludes)
 		{
 			foreach (var prop in entity.Properties)
 			{
@@ -50,13 +53,13 @@ namespace Flint.Analyzers
 					? "Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include"
 					: "Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ThenInclude";
 
-				var (_, ok) = entity.Root.Match(
+				var ok = roots.AnyMatch(
 					new Match.Call(null, methodName, Match.Any.Args),
 					true);
 				if (ok == false)
 					missingIncludes.Add(new Include(prop.Property, topLevel));
 
-				Analyze(prop.Entity, false, missingIncludes);
+				Analyze(roots, prop.Entity, false, missingIncludes);
 			}
 		}
 

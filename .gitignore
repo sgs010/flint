@@ -5,3 +5,10 @@ Tests/Flint.Tests/obj
 Tests/Samples/obj
 Tests/FlintTests/obj
 Tests/WebApp/obj
+Sources/FlintCLI/obj
+Sources/FlintAPI/obj
+Tests/FlintAPITests/obj
+Sources/FlintWeb/obj
+Sources/FlintWeb/Properties/PublishProfiles
+Sources/FlintWeb/Properties/ServiceDependencies/flint-playground - Zip Deploy
+Sources/FlintWeb/FlintWeb.csproj.user

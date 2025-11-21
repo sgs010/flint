@@ -1,36 +1,13 @@
-﻿using Mono.Cecil.Cil;
-
-namespace Flint.Vm.Cil
+﻿namespace Flint.Vm.Cil
 {
-	class Div : Ast
+	class Div : BinaryOperator<Div>
 	{
-		public readonly Ast Left;
-		public readonly Ast Right;
-		public Div(SequencePoint sp, Ast left, Ast right) : base(sp)
-		{
-			Left = left;
-			Right = right;
-		}
+		public Div(CilPoint pt, Ast left, Ast right)
+			: base(pt, left, right) { }
 
-		public override IEnumerable<Ast> GetChildren()
+		protected override Div CreateInstance(CilPoint pt, Ast left, Ast right)
 		{
-			yield return Left;
-			yield return Right;
-		}
-
-		public override int GetHashCode()
-		{
-			return HashCode.Combine(typeof(Div), Left, Right);
-		}
-
-		public override bool Equals(Ast other)
-		{
-			if (other is Div div)
-			{
-				return Left.Equals(div.Left)
-					&& Right.Equals(div.Right);
-			}
-			return false;
+			return new Div(pt, left, right);
 		}
 	}
 }
