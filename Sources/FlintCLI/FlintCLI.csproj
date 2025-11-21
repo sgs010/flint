@@ -9,6 +9,9 @@
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <RootNamespace>Flint</RootNamespace>
     <AssemblyName>FlintCLI</AssemblyName>
+    <AssemblyVersion>0.4</AssemblyVersion>
+    <Version>0.4</Version>
+    <FileVersion>0.4</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
