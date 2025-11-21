@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Flint.Vm;
 
 namespace Flint.Common
 {
@@ -41,7 +42,14 @@ namespace Flint.Common
 			return builder.ToImmutable();
 		}
 
-#if NETSTANDARD2_0
+		public static Stack<T> Clone<T>(this Stack<T> stack)
+		{
+			var items = stack.ToArray();
+			System.Array.Reverse(items);
+			return new Stack<T>(items);
+		}
+
+#if NET48
 		public static U GetValueOrDefault<T, U>(this IReadOnlyDictionary<T, U> dic, T key)
 		{
 			if (dic.TryGetValue(key, out var value))
@@ -54,7 +62,7 @@ namespace Flint.Common
 			if (dic.ContainsKey(key))
 				return false;
 
-			dic.Add(key,value);
+			dic.Add(key, value);
 			return true;
 		}
 #endif

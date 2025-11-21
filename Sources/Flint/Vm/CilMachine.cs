@@ -220,7 +220,7 @@ namespace Flint.Vm
 
 				Args = [.. src.Args];
 				Vars = [.. src.Vars];
-				Stack = new Stack<Ast>(src.Stack.ToArray().Reverse());
+				Stack = new Stack<Ast>(src.Stack.Clone());
 				Heap = new Dictionary<Ast, Ast>(src.Heap);
 				Arrays = new Dictionary<ArrayIndex, Ast>(src.Arrays);
 				Objects = new Dictionary<ObjectField, Ast>(src.Objects);

@@ -12,3 +12,6 @@ Sources/FlintWeb/obj
 Sources/FlintWeb/Properties/PublishProfiles
 Sources/FlintWeb/Properties/ServiceDependencies/flint-playground - Zip Deploy
 Sources/FlintWeb/FlintWeb.csproj.user
+Sources/FlintVSIX/bin
+Sources/FlintVSIX/obj
+Sources/FlintVSIX/FlintVSIX.csproj.user
