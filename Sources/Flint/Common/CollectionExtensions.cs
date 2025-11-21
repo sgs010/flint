@@ -40,5 +40,23 @@ namespace Flint.Common
 				builder.AddRange(x);
 			return builder.ToImmutable();
 		}
+
+#if NETSTANDARD2_0
+		public static U GetValueOrDefault<T, U>(this IReadOnlyDictionary<T, U> dic, T key)
+		{
+			if (dic.TryGetValue(key, out var value))
+				return value;
+			return default;
+		}
+
+		public static bool TryAdd<T, U>(this IDictionary<T, U> dic, T key, U value)
+		{
+			if (dic.ContainsKey(key))
+				return false;
+
+			dic.Add(key,value);
+			return true;
+		}
+#endif
 	}
 }
