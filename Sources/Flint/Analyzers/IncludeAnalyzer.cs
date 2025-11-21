@@ -114,7 +114,7 @@ namespace Flint.Analyzers
 			var sb = new StringBuilder();
 			foreach (var symbol in type.Name)
 			{
-				if (char.IsAsciiLetterUpper(symbol))
+				if (char.IsUpper(symbol))
 					sb.Append(char.ToLowerInvariant(symbol));
 			}
 			return sb.ToString();

@@ -4,7 +4,6 @@ using Flint.Common;
 using Flint.Vm;
 using Mono.Cecil;
 using Cil = Flint.Vm.Cil;
-using Match = Flint.Vm.Match;
 
 namespace Flint.Analyzers
 {

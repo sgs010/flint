@@ -238,7 +238,7 @@ namespace Flint.Analyzers
 			return methodLongName.Equals(longName, StringComparison.Ordinal);
 		}
 
-		private static bool MethodHasLongName(Dictionary<TypeReference, string> typeMap, Dictionary<MethodReference, string> methodMap, MethodReference method, IReadOnlySet<string> names)
+		private static bool MethodHasLongName(Dictionary<TypeReference, string> typeMap, Dictionary<MethodReference, string> methodMap, MethodReference method, FrozenSet<string> names)
 		{
 			var methodLongName = GetMethodLongName(typeMap, methodMap, method);
 			return names.Contains(methodLongName);
