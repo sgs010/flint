@@ -1,7 +1,19 @@
 ﻿using System.Diagnostics;
+using Flint.Vm;
+using Mono.Cecil;
 
 namespace Flint.Analyzers
 {
+	#region AnalyzerResult
+	internal readonly struct AnalyzerResult
+	{
+		public int Code { get; init; }
+		public string Message { get; init; }
+		public MethodReference Method { get; init; }
+		public CilPoint CilPoint { get; init; }
+	}
+	#endregion
+
 	#region ITraceToken
 	internal interface ITraceToken { }
 	#endregion
@@ -9,7 +21,7 @@ namespace Flint.Analyzers
 	#region IAnalyzerContext
 	internal interface IAnalyzerContext
 	{
-		void Log(string message);
+		void AddResult(int code, string message, MethodReference method, CilPoint pt);
 		ITraceToken BeginTrace(string message);
 		void EndTrace(ITraceToken token);
 	}
@@ -20,18 +32,18 @@ namespace Flint.Analyzers
 	{
 		#region Data
 		private int _traceOffset;
-		private List<string> _output = [];
+		private readonly List<AnalyzerResult> _result = [];
 		#endregion
 
 		#region Properties
 		public bool Trace { get; init; }
-		public IReadOnlyCollection<string> Output { get { return _output; } }
+		public IReadOnlyCollection<AnalyzerResult> Result { get { return _result; } }
 		#endregion
 
 		#region Interface
-		public void Log(string message)
+		public void AddResult(int code, string message, MethodReference method, CilPoint pt)
 		{
-			_output.Add(message);
+			_result.Add(new AnalyzerResult { Code = code, Message = message, Method = method, CilPoint = pt });
 		}
 
 		public ITraceToken BeginTrace(string message)

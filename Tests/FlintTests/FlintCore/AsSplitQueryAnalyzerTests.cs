@@ -27,7 +27,7 @@ namespace FlintTests.FlintCore
 
 			AsSplitQueryAnalyzer.Run(ctx, ASM, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.MultipleChains));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider adding AsSplitQuery() in method Samples.AsSplitQuerySamples.MultipleChains line 12"
 			]);
 		}
@@ -39,7 +39,7 @@ namespace FlintTests.FlintCore
 
 			AsSplitQueryAnalyzer.Run(ctx, ASM, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.MultipleChainsWithSplit));
 
-			ctx.Output.AssertEmpty();
+			ctx.Result.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -49,7 +49,7 @@ namespace FlintTests.FlintCore
 
 			AsSplitQueryAnalyzer.Run(ctx, ASM, nameof(Samples.AsSplitQuerySamples), nameof(Samples.AsSplitQuerySamples.SingleChain));
 
-			ctx.Output.AssertEmpty();
+			ctx.Result.AssertEmpty();
 		}
 	}
 }

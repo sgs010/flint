@@ -9,6 +9,10 @@ namespace Flint.Analyzers
 {
 	internal class IncludeAnalyzer
 	{
+		#region Properties
+		public const int Code = 2;
+		#endregion
+
 		#region Interface
 		public static void Run(IAnalyzerContext ctx, AssemblyInfo asm, string className = null, string methodName = null)
 		{
@@ -31,9 +35,7 @@ namespace Flint.Analyzers
 					var sb = new StringBuilder();
 					sb.Append("add ");
 					PrettyPrintIncludes(sb, chain);
-					sb.Append(" in method ");
-					MethodAnalyzer.PrettyPrintMethod(sb, query.Method, query.CilPoint);
-					ctx.Log(sb.ToString());
+					ctx.AddResult(Code, sb.ToString(), query.Method, query.CilPoint);
 				}
 			}
 		}

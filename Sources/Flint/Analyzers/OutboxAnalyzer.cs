@@ -5,6 +5,10 @@ namespace Flint.Analyzers
 {
 	internal class OutboxAnalyzer
 	{
+		#region Properties
+		public const int Code = 5;
+		#endregion
+
 		#region Interface
 		public static void Run(IAnalyzerContext ctx, AssemblyInfo asm, string className = null, string methodName = null)
 		{
@@ -50,11 +54,8 @@ namespace Flint.Analyzers
 				return; // only outbox is accessed
 
 			// report issue
-			var debug = sendMessageAsync.SelectMany(x => x).FirstOrDefault().CilPoint;
-			var sb = new StringBuilder();
-			sb.Append("consider using Outbox pattern in method ");
-			MethodAnalyzer.PrettyPrintMethod(sb, method, debug);
-			ctx.Log(sb.ToString());
+			var pt = sendMessageAsync.SelectMany(x => x).FirstOrDefault().CilPoint;
+			ctx.AddResult(Code, "consider using Outbox pattern", method, pt);
 		}
 		#endregion
 	}

@@ -6,6 +6,10 @@ namespace Flint.Analyzers
 {
 	internal class AsSplitQueryAnalyzer
 	{
+		#region Properties
+		public const int Code = 4;
+		#endregion
+
 		#region Interface
 		public static void Run(IAnalyzerContext ctx, AssemblyInfo asm, string className = null, string methodName = null)
 		{
@@ -28,10 +32,7 @@ namespace Flint.Analyzers
 					continue; // AsSplitQuery is present
 
 				// report issue
-				var sb = new StringBuilder();
-				sb.Append("consider adding AsSplitQuery() in method ");
-				MethodAnalyzer.PrettyPrintMethod(sb, query.Method, query.CilPoint);
-				ctx.Log(sb.ToString());
+				ctx.AddResult(Code, "consider adding AsSplitQuery()", query.Method, query.CilPoint);
 			}
 		}
 		#endregion

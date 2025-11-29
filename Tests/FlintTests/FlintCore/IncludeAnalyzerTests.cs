@@ -27,7 +27,7 @@ namespace FlintTests.FlintCore
 
 			IncludeAnalyzer.Run(ctx, ASM, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.Lambda_NestedEntity));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"add Include(t => t.User) in method Samples.IncludeSamples.Lambda_NestedEntity line 16"
 			]);
 		}
@@ -39,7 +39,7 @@ namespace FlintTests.FlintCore
 
 			IncludeAnalyzer.Run(ctx, ASM, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.Lambda_NoNestedEntities));
 
-			ctx.Output.AssertEmpty();
+			ctx.Result.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -49,7 +49,7 @@ namespace FlintTests.FlintCore
 
 			IncludeAnalyzer.Run(ctx, ASM, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.ChainedEntities_NoInclude));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"add Include(o => o.Items).ThenInclude(oi => oi.Product) in method Samples.IncludeSamples.ChainedEntities_NoInclude line 47"
 			]);
 		}
@@ -61,7 +61,7 @@ namespace FlintTests.FlintCore
 
 			IncludeAnalyzer.Run(ctx, ASM, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.ChainedEntities_FullInclude));
 
-			ctx.Output.AssertEmpty();
+			ctx.Result.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -71,7 +71,7 @@ namespace FlintTests.FlintCore
 
 			IncludeAnalyzer.Run(ctx, ASM, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.ChainedEntities_PartialInclude));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"add ThenInclude(oi => oi.Product) in method Samples.IncludeSamples.ChainedEntities_PartialInclude line 77"
 			]);
 		}
@@ -83,7 +83,7 @@ namespace FlintTests.FlintCore
 
 			IncludeAnalyzer.Run(ctx, ASM, nameof(Samples.IncludeSamples), nameof(Samples.IncludeSamples.MultipleChains));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"add Include(b => b.Posts).ThenInclude(p => p.Author) in method Samples.IncludeSamples.MultipleChains line 93",
 				"add Include(b => b.Tags) in method Samples.IncludeSamples.MultipleChains line 93"
 			]);

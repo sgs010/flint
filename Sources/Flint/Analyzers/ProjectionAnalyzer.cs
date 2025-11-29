@@ -5,6 +5,10 @@ namespace Flint.Analyzers
 {
 	internal class ProjectionAnalyzer
 	{
+		#region Properties
+		public const int Code = 1;
+		#endregion
+
 		#region Interface
 		public static void Run(IAnalyzerContext ctx, AssemblyInfo asm, string className = null, string methodName = null)
 		{
@@ -22,9 +26,8 @@ namespace Flint.Analyzers
 				var sb = new StringBuilder();
 				sb.Append("consider using projection { ");
 				PrettyPrintEntity(sb, query.Entity, null);
-				sb.Append(" } in method ");
-				MethodAnalyzer.PrettyPrintMethod(sb, query.Method, query.CilPoint);
-				ctx.Log(sb.ToString());
+				sb.Append(" }");
+				ctx.AddResult(Code, sb.ToString(), query.Method, query.CilPoint);
 			}
 		}
 		#endregion

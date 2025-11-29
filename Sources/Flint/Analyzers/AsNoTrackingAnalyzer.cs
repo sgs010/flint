@@ -5,6 +5,10 @@ namespace Flint.Analyzers
 {
 	internal class AsNoTrackingAnalyzer
 	{
+		#region Properties
+		public const int Code = 3;
+		#endregion
+
 		#region Interface
 		public static void Run(IAnalyzerContext ctx, AssemblyInfo asm, string className = null, string methodName = null)
 		{
@@ -19,10 +23,7 @@ namespace Flint.Analyzers
 					continue; // AsNoTracking is already present
 
 				// report issue
-				var sb = new StringBuilder();
-				sb.Append("add AsNoTracking() in method ");
-				MethodAnalyzer.PrettyPrintMethod(sb, query.Method, query.CilPoint);
-				ctx.Log(sb.ToString());
+				ctx.AddResult(Code, "add AsNoTracking()", query.Method, query.CilPoint);
 			}
 		}
 		#endregion

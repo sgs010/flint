@@ -49,6 +49,23 @@ namespace Flint.Common
 			return new Stack<T>(items);
 		}
 
+		public static ImmutableArray<U> ToImmutableArray<T, U>(this IReadOnlyCollection<T> col, Func<T, U> convert)
+		{
+			if (col == null)
+				return [];
+			if (col.Count == 0)
+				return [];
+
+			var buf = new U[col.Count];
+			var index = 0;
+			foreach (var x in col)
+			{
+				buf[index] = convert(x);
+				++index;
+			}
+			return [.. buf];
+		}
+
 #if NET48
 		public static U GetValueOrDefault<T, U>(this IReadOnlyDictionary<T, U> dic, T key)
 		{

@@ -71,25 +71,11 @@ namespace FlintVSIX
 				if (sessionId == _buildSessionId)
 				{
 					await JoinableTaskFactory.SwitchToMainThreadAsync();
-					foreach (var item in result)
+					foreach (var x in result)
 					{
-						AddErrorListMessage(
-							item,
-							@"C:\Work\flint\Tests\Samples\OutboxSamples.cs",
-							38);
+						AddErrorListMessage(x.Code, x.Message, x.File, x.Line, x.Column);
 					}
 				}
-
-				//await Task.Delay(TimeSpan.FromSeconds(5));
-				//if (File.Exists(outputPath))
-				//{
-				//	string hash = ComputeHash(outputPath);
-				//	if (sessionId == _buildSessionId)
-				//	{
-				//		await JoinableTaskFactory.SwitchToMainThreadAsync();
-				//		AddErrorListMessage($"{Path.GetFileName(outputPath)} hash: {hash}", @"C:\Work\flint\Tests\Samples\OutboxSamples.cs", 38);
-				//	}
-				//}
 			}
 			catch (Exception ex)
 			{
@@ -117,14 +103,6 @@ namespace FlintVSIX
 			return string.Empty;
 		}
 
-		private string ComputeHash(string filePath)
-		{
-			using var sha256 = SHA256.Create();
-			using var stream = File.OpenRead(filePath);
-			byte[] hashBytes = sha256.ComputeHash(stream);
-			return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
-		}
-
 		private void WriteToBuildOutput(string message)
 		{
 			ThreadHelper.ThrowIfNotOnUIThread();
@@ -135,7 +113,7 @@ namespace FlintVSIX
 			pane.OutputString(Environment.NewLine);
 		}
 
-		private void AddErrorListMessage(string message, string filePath, int line)
+		private void AddErrorListMessage(string code, string message, string file, int line, int column)
 		{
 			ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -143,30 +121,32 @@ namespace FlintVSIX
 			{
 				Category = TaskCategory.BuildCompile,
 				ErrorCategory = TaskErrorCategory.Warning,
+				Priority = TaskPriority.Low,
 				Text = message,
-				Document = filePath,
+				Document = file,
 				Line = line - 1,
-				Priority = TaskPriority.Low
+				Column = column - 1,
 			};
-
-			task.Navigate += (_, _) => OpenDocument(filePath, line);
+			task.Navigate += OnNavidate;
 
 			_errorList.Tasks.Add(task);
 			_errorList.Show();
 		}
 
-		private void OpenDocument(string filePath, int line)
+		private void OnNavidate(object sender, EventArgs e)
 		{
+			if (sender is not ErrorTask task)
+				return;
+
 			ThreadHelper.ThrowIfNotOnUIThread();
 
-			VsShellUtilities.OpenDocument(this, filePath, Guid.Empty, out var _, out var _, out var _, out var view);
+			VsShellUtilities.OpenDocument(this, task.Document, Guid.Empty, out var _, out var _, out var _, out var view);
 			if (view == null)
 				return;
 
-			var ln = line - 1;
-			view.SetCaretPos(ln, 0);
-			view.CenterLines(ln, 1);
-			view.EnsureSpanVisible(new TextSpan { iStartLine = ln, iEndLine = ln });
+			view.SetCaretPos(task.Line, task.Column);
+			view.CenterLines(task.Line, 1);
+			view.EnsureSpanVisible(new TextSpan { iStartLine = task.Line, iStartIndex = task.Column });
 		}
 	}
 }
