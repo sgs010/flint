@@ -44,7 +44,7 @@ namespace Flint.Vm.Cil
 			{
 				return Are.Equal(Instance, call.Instance)
 					&& Are.Equal(Method, call.Method)
-					&& Args.SequenceEqual(call.Args);
+					&& Are.Equal(Args, call.Args);
 			}
 			return false;
 		}

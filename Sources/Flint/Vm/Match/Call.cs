@@ -32,7 +32,7 @@ namespace Flint.Vm.Match
 			{
 				return InstanceEquals(this, call)
 					&& MethodEquals(this, call)
-					&& (Args == Any.Args || Args.SequenceEqual(call.Args));
+					&& (Args == Any.Args || Are.Equal(Args, call.Args));
 			}
 			return false;
 		}

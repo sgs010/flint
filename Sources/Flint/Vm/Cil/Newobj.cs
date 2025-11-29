@@ -32,7 +32,7 @@ namespace Flint.Vm.Cil
 			{
 				return Are.Equal(Type, newobj.Type)
 					&& Are.Equal(Ctor, newobj.Ctor)
-					&& Args.SequenceEqual(newobj.Args);
+					&& Are.Equal(Args, newobj.Args);
 			}
 			return false;
 		}

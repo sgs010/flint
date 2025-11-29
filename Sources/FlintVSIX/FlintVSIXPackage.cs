@@ -67,23 +67,36 @@ namespace FlintVSIX
 		{
 			try
 			{
-				await Task.Delay(TimeSpan.FromSeconds(5));
-				if (File.Exists(outputPath))
+				var result = Flint.Api.Analyze(outputPath);
+				if (sessionId == _buildSessionId)
 				{
-					string hash = ComputeHash(outputPath);
-					if (sessionId == _buildSessionId)
+					await JoinableTaskFactory.SwitchToMainThreadAsync();
+					foreach (var item in result)
 					{
-						await JoinableTaskFactory.SwitchToMainThreadAsync();
-						AddErrorListMessage($"{Path.GetFileName(outputPath)} hash: {hash}", @"C:\Work\flint\Tests\Samples\OutboxSamples.cs", 38);
+						AddErrorListMessage(
+							item,
+							@"C:\Work\flint\Tests\Samples\OutboxSamples.cs",
+							38);
 					}
 				}
+
+				//await Task.Delay(TimeSpan.FromSeconds(5));
+				//if (File.Exists(outputPath))
+				//{
+				//	string hash = ComputeHash(outputPath);
+				//	if (sessionId == _buildSessionId)
+				//	{
+				//		await JoinableTaskFactory.SwitchToMainThreadAsync();
+				//		AddErrorListMessage($"{Path.GetFileName(outputPath)} hash: {hash}", @"C:\Work\flint\Tests\Samples\OutboxSamples.cs", 38);
+				//	}
+				//}
 			}
 			catch (Exception ex)
 			{
 				if (sessionId == _buildSessionId)
 				{
 					await JoinableTaskFactory.SwitchToMainThreadAsync();
-					WriteToBuildOutput($"ERROR: {ex.Message}");
+					WriteToBuildOutput($"ERROR: {ex}");
 				}
 			}
 		}
