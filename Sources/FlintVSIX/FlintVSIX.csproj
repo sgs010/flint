@@ -49,8 +49,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ErrorList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="FlintVSIXPackage.cs" />
+    <Compile Include="Package.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">

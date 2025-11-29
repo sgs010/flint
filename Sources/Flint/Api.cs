@@ -27,6 +27,12 @@ namespace Flint
 	public static class Api
 	{
 		#region Interface
+		public static void CheckValidImage(string path)
+		{
+			using var fs = File.OpenRead(path);
+			CheckValidImage(fs);
+		}
+
 		public static void CheckValidImage(Stream dllStream)
 		{
 			dllStream.Position = 0;
@@ -81,7 +87,7 @@ namespace Flint
 
 			return ctx.Result.ToImmutableArray(x => new ApiResult
 			{
-				Code = string.Intern($"FLINT{x.Code:2}"),
+				Code = string.Intern($"FLINT{x.Code:00}"),
 				Message = x.Message,
 				Method = string.Intern(MethodAnalyzer.PrettyPrintMethod(x.Method)),
 				File = x.CilPoint?.SequencePoint.Document.Url,
