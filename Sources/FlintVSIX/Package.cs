@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -9,7 +10,6 @@ using EnvDTE80;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Shell.TableManager;
 
 namespace FlintVSIX
 {
@@ -39,10 +39,7 @@ namespace FlintVSIX
 				return;
 			}
 
-			_errorList = new ErrorListDataSource();
-			var tableManagerProvider = componentModel.GetService<ITableManagerProvider>();
-			var tableManager = tableManagerProvider.GetTableManager(StandardTables.ErrorsTable);
-			tableManager.AddSource(_errorList, ErrorListDataSource.Columns);
+			_errorList = new ErrorListDataSource(componentModel);
 
 			_dte = dteObj;
 			_dte.Events.BuildEvents.OnBuildBegin += OnBuildBegin;
@@ -61,7 +58,7 @@ namespace FlintVSIX
 
 			ThreadHelper.ThrowIfNotOnUIThread();
 
-			if (TryGetProjectParameters(project, out var projectName, out var projectOutputPath) == false)
+			if (TryGetProjectParameters(project, out var projectId, out var projectName, out var projectOutputPath) == false)
 				return;
 
 			try
@@ -74,21 +71,23 @@ namespace FlintVSIX
 			}
 
 			var sessionId = _buildSessionId;
-			_ = JoinableTaskFactory.RunAsync(() => AnalyzeAsync(sessionId, projectName, projectOutputPath));
+			_ = JoinableTaskFactory.RunAsync(() => AnalyzeAsync(sessionId, projectId, projectName, projectOutputPath));
 		}
 
-		private async Task AnalyzeAsync(int sessionId, string projectName, string outputPath)
+		private async Task AnalyzeAsync(int sessionId, Guid projectId, string projectName, string outputPath)
 		{
 			try
 			{
+				var st = Stopwatch.StartNew();
 				var result = Flint.Api.Analyze(outputPath);
+				st.Stop();
+
 				if (sessionId == _buildSessionId)
 				{
 					await JoinableTaskFactory.SwitchToMainThreadAsync();
-					foreach (var x in result)
-					{
-						_errorList.AddEntry(new ErrorListEntry(x.Code, x.Message, projectName, x.File, x.Line, x.Column));
-					}
+					var entries = result.ToList(x => new ErrorListEntry(projectId, projectName, x.Code, x.Message, x.File, x.Line));
+					WriteToBuildOutput(projectName, st.ElapsedMilliseconds, entries);
+					_errorList.UpdateProjectEntries(projectId, entries);
 				}
 			}
 			catch (Exception ex)
@@ -101,10 +100,11 @@ namespace FlintVSIX
 			}
 		}
 
-		private bool TryGetProjectParameters(string project, out string projectName, out string projectOutputPath)
+		private bool TryGetProjectParameters(string project, out Guid projectId, out string projectName, out string projectOutputPath)
 		{
 			ThreadHelper.ThrowIfNotOnUIThread();
 
+			projectId = default;
 			projectName = default;
 			projectOutputPath = default;
 
@@ -112,8 +112,15 @@ namespace FlintVSIX
 			{
 				if (proj.UniqueName == project)
 				{
+					// project id
+					var solution = (IVsSolution)GetGlobalService(typeof(SVsSolution));
+					solution.GetProjectOfUniqueName(proj.FileName, out var hierarchy);
+					solution.GetGuidOfProject(hierarchy, out projectId);
+
+					// project name
 					projectName = proj.Name;
 
+					// project output path
 					var outputPath = proj.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString();
 					var outputFileName = proj.Properties.Item("OutputFileName").Value.ToString();
 					projectOutputPath = Path.Combine(Path.GetDirectoryName(proj.FullName), outputPath, outputFileName);
@@ -131,6 +138,25 @@ namespace FlintVSIX
 			var pane = _dte.ToolWindows.OutputWindow.OutputWindowPanes.Item("Build");
 			pane.OutputString("[Flint] ");
 			pane.OutputString(message);
+			pane.OutputString(Environment.NewLine);
+		}
+
+		private void WriteToBuildOutput(string projectName, long elapsedMilliseconds, IReadOnlyCollection<ErrorListEntry> entries)
+		{
+			ThreadHelper.ThrowIfNotOnUIThread();
+
+			var pane = _dte.ToolWindows.OutputWindow.OutputWindowPanes.Item("Build");
+
+			pane.OutputString($"========== [Flint] analysis started for project {projectName} ==========");
+			pane.OutputString(Environment.NewLine);
+
+			foreach (var x in entries)
+			{
+				pane.OutputString($"{x.File}({x.Line},1): {x.Message}");
+				pane.OutputString(Environment.NewLine);
+			}
+
+			pane.OutputString($"========== [Flint] found {entries.Count} issues in project {projectName}, took {elapsedMilliseconds} ms ==========");
 			pane.OutputString(Environment.NewLine);
 		}
 	}

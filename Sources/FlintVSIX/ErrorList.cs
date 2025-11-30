@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.TableControl;
 using Microsoft.VisualStudio.Shell.TableManager;
@@ -9,24 +10,33 @@ namespace FlintVSIX
 	#region ErrorListEntry
 	internal sealed class ErrorListEntry : ITableEntry
 	{
-		private readonly string _code;
-		private readonly string _message;
-		private readonly string _file;
-		private readonly int _line;
-		private readonly int _column;
-
 		public object Identity { get; }
+		public Guid ProjectId { get; }
 		public string Project { get; }
+		public string Code { get; }
+		public string Message { get; }
+		public string File { get; }
+		public int Line { get; }
 
-		public ErrorListEntry(string code, string message, string project, string file, int line, int column)
+		public static readonly string[] Columns =
+		[
+			StandardTableColumnDefinitions.ErrorSeverity,
+			StandardTableColumnDefinitions.ErrorCode,
+			StandardTableColumnDefinitions.Text,
+			StandardTableColumnDefinitions.ProjectName,
+			StandardTableColumnDefinitions.DocumentName,
+			StandardTableColumnDefinitions.Line
+		];
+
+		public ErrorListEntry(Guid projectId, string project, string code, string message, string file, int line)
 		{
-			_code = code;
-			_message = message;
-			_file = file;
-			_line = line;
-			_column = column;
+			Identity = Guid.NewGuid();
+			ProjectId = projectId;
 			Project = project;
-			Identity = $"{project}|{file}|{line}|{code}";
+			Code = code;
+			Message = message;
+			File = file;
+			Line = line;
 		}
 
 		public bool TryGetValue(string keyName, out object content)
@@ -36,23 +46,32 @@ namespace FlintVSIX
 				case StandardTableColumnDefinitions.ErrorSeverity:
 					content = __VSERRORCATEGORY.EC_WARNING;
 					return true;
-				case StandardTableColumnDefinitions.ErrorCode:
-					content = _code;
+				case StandardTableColumnDefinitions.BuildTool:
+					content = "Flint";
 					return true;
-				case StandardTableColumnDefinitions.Text:
-					content = _message;
+				case StandardTableColumnDefinitions.ErrorCategory:
+					content = "Linter";
+					return true;
+				case StandardTableColumnDefinitions.ErrorSource:
+					content = "Build";
 					return true;
 				case StandardTableColumnDefinitions.ProjectName:
 					content = Project;
 					return true;
+				case StandardTableColumnDefinitions.ErrorCode:
+					content = Code;
+					return true;
+				case StandardTableColumnDefinitions.Text:
+					content = Message;
+					return true;
 				case StandardTableColumnDefinitions.DocumentName:
-					content = _file;
+					content = File;
 					return true;
 				case StandardTableColumnDefinitions.Line:
-					content = _line;
+					content = Line - 1;
 					return true;
 				case StandardTableColumnDefinitions.Column:
-					content = _column;
+					content = 0;
 					return true;
 				default:
 					content = null;
@@ -74,15 +93,13 @@ namespace FlintVSIX
 		public string Identifier => "Flint";
 		public string DisplayName => "Flint";
 		public string SourceTypeIdentifier => StandardTableDataSources.ErrorTableDataSource;
-		public static readonly string[] Columns =
-		[
-			StandardTableColumnDefinitions.ErrorSeverity,
-			StandardTableColumnDefinitions.ErrorCode,
-			StandardTableColumnDefinitions.Text,
-			StandardTableColumnDefinitions.ProjectName,
-			StandardTableColumnDefinitions.DocumentName,
-			StandardTableColumnDefinitions.Line
-		];
+
+		public ErrorListDataSource(IComponentModel componentModel)
+		{
+			var provider = componentModel.GetService<ITableManagerProvider>();
+			var table = provider.GetTableManager(StandardTables.ErrorsTable);
+			table.AddSource(this, ErrorListEntry.Columns);
+		}
 
 		public IDisposable Subscribe(ITableDataSink sink)
 		{
@@ -91,39 +108,11 @@ namespace FlintVSIX
 			return new Subscription(this, sink);
 		}
 
-		//
-		// TODO: update all entries in a batch
-		//
-		//public void UpdateEntries(IEnumerable<MyErrorListEntry> newEntries, Guid projectGuid)
-		//{
-		//	// Remove old entries for this project
-		//	_entries.RemoveAll(e => e.ProjectGuid == projectGuid);
-
-		//	// Add new ones
-		//	var list = new List<MyErrorListEntry>(newEntries);
-		//	_entries.AddRange(list);
-
-		//	// Notify sinks: clear project’s rows, then re-add
-		//	foreach (var sink in _sinks)
-		//	{
-		//		// Clear everything, then re-add all entries (simplest approach)
-		//		sink.AddEntries(Array.Empty<ITableEntry>(), removeAllEntries: true);
-		//		sink.AddEntries(_entries, removeAllEntries: false);
-		//	}
-		//}
-
-		public void AddEntry(ErrorListEntry entry)
+		public void UpdateProjectEntries(Guid projectId, IReadOnlyCollection<ErrorListEntry> entries)
 		{
-			_entries.Add(entry);
-			foreach (var sink in _sinks)
-			{
-				sink.AddEntries([entry], removeAllEntries: false);
-			}
-		}
+			_entries.RemoveAll(e => e.ProjectId == projectId);
+			_entries.AddRange(entries);
 
-		public void ClearEntriesForProject(string project)
-		{
-			_entries.RemoveAll(x => x.Project == project);
 			foreach (var sink in _sinks)
 			{
 				sink.AddEntries([], removeAllEntries: true);
