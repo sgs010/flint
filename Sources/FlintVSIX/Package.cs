@@ -42,16 +42,61 @@ namespace FlintVSIX
 			_errorList = new ErrorListDataSource(componentModel);
 
 			_dte = dteObj;
-			_dte.Events.BuildEvents.OnBuildBegin += OnBuildBegin;
-			_dte.Events.BuildEvents.OnBuildProjConfigDone += OnBuildProjConfigDone;
+			_dte.Events.SolutionEvents.Opened += SolutionEvents_Opened;
+			_dte.Events.SolutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
+			_dte.Events.SolutionEvents.ProjectRenamed += SolutionEvents_ProjectRenamed;
+			_dte.Events.SolutionEvents.ProjectRemoved += SolutionEvents_ProjectRemoved;
+			_dte.Events.BuildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
+			_dte.Events.BuildEvents.OnBuildProjConfigBegin += BuildEvents_OnBuildProjConfigBegin;
+			_dte.Events.BuildEvents.OnBuildProjConfigDone += BuildEvents_OnBuildProjConfigDone;
 		}
 
-		private void OnBuildBegin(vsBuildScope Scope, vsBuildAction Action)
+		private void OnSolutionChanged()
+		{
+			Interlocked.Increment(ref _buildSessionId);
+			_errorList.ClearAll();
+		}
+
+		private void SolutionEvents_Opened()
+		{
+			ThreadHelper.ThrowIfNotOnUIThread();
+			OnSolutionChanged();
+		}
+
+		private void SolutionEvents_BeforeClosing()
+		{
+			ThreadHelper.ThrowIfNotOnUIThread();
+			OnSolutionChanged();
+		}
+
+		private void SolutionEvents_ProjectRenamed(Project project, string oldName)
+		{
+			ThreadHelper.ThrowIfNotOnUIThread();
+			OnSolutionChanged();
+		}
+
+		private void SolutionEvents_ProjectRemoved(Project Project)
+		{
+			ThreadHelper.ThrowIfNotOnUIThread();
+			OnSolutionChanged();
+		}
+
+		private void BuildEvents_OnBuildBegin(vsBuildScope Scope, vsBuildAction Action)
 		{
 			Interlocked.Increment(ref _buildSessionId);
 		}
 
-		private void OnBuildProjConfigDone(string project, string projectConfig, string platform, string solutionConfig, bool success)
+		private void BuildEvents_OnBuildProjConfigBegin(string project, string projectConfig, string platform, string solutionConfig)
+		{
+			ThreadHelper.ThrowIfNotOnUIThread();
+
+			if (TryGetProjectParameters(project, out var projectId, out var _, out var _) == false)
+				return;
+
+			_errorList.ClearProjectEntries(projectId);
+		}
+
+		private void BuildEvents_OnBuildProjConfigDone(string project, string projectConfig, string platform, string solutionConfig, bool success)
 		{
 			if (success == false)
 				return;
@@ -112,23 +157,35 @@ namespace FlintVSIX
 			{
 				if (proj.UniqueName == project)
 				{
-					// project id
-					var solution = (IVsSolution)GetGlobalService(typeof(SVsSolution));
-					solution.GetProjectOfUniqueName(proj.FileName, out var hierarchy);
-					solution.GetGuidOfProject(hierarchy, out projectId);
-
-					// project name
+					projectId = GetProjectId(proj);
 					projectName = proj.Name;
-
-					// project output path
-					var outputPath = proj.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString();
-					var outputFileName = proj.Properties.Item("OutputFileName").Value.ToString();
-					projectOutputPath = Path.Combine(Path.GetDirectoryName(proj.FullName), outputPath, outputFileName);
-
+					projectOutputPath = GetProjectOutputPath(proj);
 					return true;
 				}
 			}
 			return false;
+		}
+
+		private Guid GetProjectId(Project project)
+		{
+			ThreadHelper.ThrowIfNotOnUIThread();
+
+			var solution = (IVsSolution)GetGlobalService(typeof(SVsSolution));
+			solution.GetProjectOfUniqueName(project.FileName, out var hierarchy);
+			solution.GetGuidOfProject(hierarchy, out var projectId);
+
+			return projectId;
+		}
+
+		private string GetProjectOutputPath(Project project)
+		{
+			ThreadHelper.ThrowIfNotOnUIThread();
+
+			var outputPath = project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString();
+			var outputFileName = project.Properties.Item("OutputFileName").Value.ToString();
+			var projectOutputPath = Path.Combine(Path.GetDirectoryName(project.FullName), outputPath, outputFileName);
+
+			return projectOutputPath;
 		}
 
 		private void WriteToBuildOutput(string message)

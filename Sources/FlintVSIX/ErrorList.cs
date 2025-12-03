@@ -108,6 +108,20 @@ namespace FlintVSIX
 			return new Subscription(this, sink);
 		}
 
+		public void ClearAll()
+		{
+			_entries.Clear();
+			foreach (var sink in _sinks)
+				sink.AddEntries([], removeAllEntries: true);
+		}
+
+		public void ClearProjectEntries(Guid projectId)
+		{
+			_entries.RemoveAll(e => e.ProjectId == projectId);
+			foreach (var sink in _sinks)
+				sink.AddEntries([], removeAllEntries: true);
+		}
+
 		public void UpdateProjectEntries(Guid projectId, IReadOnlyCollection<ErrorListEntry> entries)
 		{
 			_entries.RemoveAll(e => e.ProjectId == projectId);
