@@ -15,10 +15,14 @@ namespace FlintVSIX
 {
 	[Guid("DDEFFBBA-ECBA-4A0E-B282-B953AE175015")]
 	[PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
+	[ProvideAutoLoad(UIContextGuids80.NoSolution, PackageAutoLoadFlags.BackgroundLoad)]
+	[ProvideAutoLoad(UIContextGuids80.EmptySolution, PackageAutoLoadFlags.BackgroundLoad)]
 	[ProvideAutoLoad(UIContextGuids80.SolutionHasSingleProject, PackageAutoLoadFlags.BackgroundLoad)]
 	[ProvideAutoLoad(UIContextGuids80.SolutionHasMultipleProjects, PackageAutoLoadFlags.BackgroundLoad)]
 	public sealed class Package : AsyncPackage
 	{
+		// TODO: write log to %AppData%\Flint\log.txt using NLOG https://github.com/NLog/NLog/wiki/Tutorial
+		private IVsActivityLog _log;
 		private DTE2 _dte;
 		private int _buildSessionId;
 		private ErrorListDataSource _errorList;
@@ -27,21 +31,29 @@ namespace FlintVSIX
 		{
 			await JoinableTaskFactory.SwitchToMainThreadAsync(ct);
 
-			if (await GetServiceAsync(typeof(DTE)) is not DTE2 dteObj)
+			if (await GetServiceAsync(typeof(SVsActivityLog)) is not IVsActivityLog logObj)
 			{
-				Debug.WriteLine("[Flint] ERROR: DTE service is not available.");
+				LogError("SVsActivityLog service is not available");
 				return;
 			}
+			_log = logObj;
+
+			LogInfo("initialization started");
+
+			if (await GetServiceAsync(typeof(DTE)) is not DTE2 dteObj)
+			{
+				LogError("DTE service is not available");
+				return;
+			}
+			_dte = dteObj;
 
 			if (await GetServiceAsync(typeof(SComponentModel)) is not IComponentModel componentModel)
 			{
-				Debug.WriteLine("[Flint] ERROR: SComponentModel service is not available.");
+				LogError("SComponentModel service is not available");
 				return;
 			}
-
 			_errorList = new ErrorListDataSource(componentModel);
 
-			_dte = dteObj;
 			_dte.Events.SolutionEvents.Opened += SolutionEvents_Opened;
 			_dte.Events.SolutionEvents.BeforeClosing += SolutionEvents_BeforeClosing;
 			_dte.Events.SolutionEvents.ProjectRenamed += SolutionEvents_ProjectRenamed;
@@ -49,6 +61,38 @@ namespace FlintVSIX
 			_dte.Events.BuildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
 			_dte.Events.BuildEvents.OnBuildProjConfigBegin += BuildEvents_OnBuildProjConfigBegin;
 			_dte.Events.BuildEvents.OnBuildProjConfigDone += BuildEvents_OnBuildProjConfigDone;
+
+			LogInfo("initialization complete");
+		}
+
+		private void LogMessage(__ACTIVITYLOG_ENTRYTYPE type, string message)
+		{
+			string typeStr = type switch
+			{
+				__ACTIVITYLOG_ENTRYTYPE.ALE_ERROR => "ERROR",
+				__ACTIVITYLOG_ENTRYTYPE.ALE_WARNING => "WARNING",
+				_ => "INFO",
+			};
+			var fullMessage = $"[Flint] {typeStr}: {message}";
+
+			Trace.WriteLine(fullMessage);
+
+			if (_log != null)
+			{
+				var hr = _log.LogEntry((uint)type, "Flint", fullMessage);
+				if (hr != Microsoft.VisualStudio.VSConstants.S_OK)
+					Trace.WriteLine("Failed to write to activity log.");
+			}
+		}
+
+		private void LogError(string message)
+		{
+			LogMessage(__ACTIVITYLOG_ENTRYTYPE.ALE_ERROR, message);
+		}
+
+		private void LogInfo(string message)
+		{
+			LogMessage(__ACTIVITYLOG_ENTRYTYPE.ALE_INFORMATION, message);
 		}
 
 		private void OnSolutionChanged()
@@ -103,8 +147,12 @@ namespace FlintVSIX
 
 			ThreadHelper.ThrowIfNotOnUIThread();
 
+			LogInfo($"processing output from project {project}");
 			if (TryGetProjectParameters(project, out var projectId, out var projectName, out var projectOutputPath) == false)
+			{
+				LogError($"failed to get parameters for project {project}");
 				return;
+			}
 
 			try
 			{
@@ -112,20 +160,24 @@ namespace FlintVSIX
 			}
 			catch (Exception)
 			{
+				LogInfo($"output from project {project} seems to be invalid for analysis");
 				return;
 			}
 
 			var sessionId = _buildSessionId;
 			_ = JoinableTaskFactory.RunAsync(() => AnalyzeAsync(sessionId, projectId, projectName, projectOutputPath));
+			LogInfo($"output from project {project} is scheduled for analysis");
 		}
 
 		private async Task AnalyzeAsync(int sessionId, Guid projectId, string projectName, string outputPath)
 		{
 			try
 			{
+				LogInfo($"analysis started for project {projectName}");
 				var st = Stopwatch.StartNew();
 				var result = Flint.Api.Analyze(outputPath);
 				st.Stop();
+				LogInfo($"analysis finished for project {projectName}");
 
 				if (sessionId == _buildSessionId)
 				{
@@ -134,9 +186,14 @@ namespace FlintVSIX
 					WriteToBuildOutput(projectName, st.ElapsedMilliseconds, entries);
 					_errorList.UpdateProjectEntries(projectId, entries);
 				}
+				else
+				{
+					LogInfo($"analysis session for project {projectName} has expired, ignore results");
+				}
 			}
 			catch (Exception ex)
 			{
+				LogError(ex.ToString());
 				if (sessionId == _buildSessionId)
 				{
 					await JoinableTaskFactory.SwitchToMainThreadAsync();
