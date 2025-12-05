@@ -21,7 +21,6 @@ namespace FlintVSIX
 	[ProvideAutoLoad(UIContextGuids80.SolutionHasMultipleProjects, PackageAutoLoadFlags.BackgroundLoad)]
 	public sealed class Package : AsyncPackage
 	{
-		// TODO: write log to %AppData%\Flint\log.txt using NLOG https://github.com/NLog/NLog/wiki/Tutorial
 		private IVsActivityLog _log;
 		private DTE2 _dte;
 		private int _buildSessionId;
@@ -69,11 +68,11 @@ namespace FlintVSIX
 		{
 			string typeStr = type switch
 			{
-				__ACTIVITYLOG_ENTRYTYPE.ALE_ERROR => "ERROR",
-				__ACTIVITYLOG_ENTRYTYPE.ALE_WARNING => "WARNING",
-				_ => "INFO",
+				__ACTIVITYLOG_ENTRYTYPE.ALE_ERROR => "ERROR: ",
+				__ACTIVITYLOG_ENTRYTYPE.ALE_WARNING => "WARNING: ",
+				_ => "",
 			};
-			var fullMessage = $"[Flint] {typeStr}: {message}";
+			var fullMessage = $"[Flint] {typeStr}{message}";
 
 			Trace.WriteLine(fullMessage);
 
@@ -134,10 +133,16 @@ namespace FlintVSIX
 		{
 			ThreadHelper.ThrowIfNotOnUIThread();
 
-			if (TryGetProjectParameters(project, out var projectId, out var _, out var _) == false)
-				return;
+			LogInfo($"cleaning ErrorList for project {project}");
 
+			if (TryGetProjectParameters(project, out var projectId, out var _, out var _) == false)
+			{
+				LogInfo($"failed to get parameters for project {project}");
+				return;
+			}
 			_errorList.ClearProjectEntries(projectId);
+
+			LogInfo($"successfully cleaned ErrorList for project {project}");
 		}
 
 		private void BuildEvents_OnBuildProjConfigDone(string project, string projectConfig, string platform, string solutionConfig, bool success)
@@ -147,10 +152,10 @@ namespace FlintVSIX
 
 			ThreadHelper.ThrowIfNotOnUIThread();
 
-			LogInfo($"processing output from project {project}");
+			LogInfo($"processing project {project}");
 			if (TryGetProjectParameters(project, out var projectId, out var projectName, out var projectOutputPath) == false)
 			{
-				LogError($"failed to get parameters for project {project}");
+				LogInfo($"failed to get parameters for project {project}");
 				return;
 			}
 
@@ -160,13 +165,13 @@ namespace FlintVSIX
 			}
 			catch (Exception)
 			{
-				LogInfo($"output from project {project} seems to be invalid for analysis");
+				LogInfo($"project {project} seems to be invalid for analysis");
 				return;
 			}
 
 			var sessionId = _buildSessionId;
 			_ = JoinableTaskFactory.RunAsync(() => AnalyzeAsync(sessionId, projectId, projectName, projectOutputPath));
-			LogInfo($"output from project {project} is scheduled for analysis");
+			LogInfo($"project {project} is scheduled for analysis");
 		}
 
 		private async Task AnalyzeAsync(int sessionId, Guid projectId, string projectName, string outputPath)
@@ -210,16 +215,23 @@ namespace FlintVSIX
 			projectName = default;
 			projectOutputPath = default;
 
+			LogInfo($"looking for project {project}");
 			foreach (Project proj in _dte.Solution.Projects)
 			{
 				if (proj.UniqueName == project)
 				{
+					LogInfo($"found project {proj.UniqueName}");
 					projectId = GetProjectId(proj);
 					projectName = proj.Name;
 					projectOutputPath = GetProjectOutputPath(proj);
 					return true;
 				}
+				else
+				{
+					LogInfo($"skip project {proj.UniqueName}");
+				}
 			}
+			LogInfo($"failed to find project {project}");
 			return false;
 		}
 
