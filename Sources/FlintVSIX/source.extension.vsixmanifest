@@ -3,8 +3,7 @@
     <Metadata>
         <Identity Id="FlintVSIX.DDEFFBBA-ECBA-4A0E-B282-B953AE175015" Version="0.41" Language="en-US" Publisher="Stanislav Sklyarov" />
         <DisplayName>Flint</DisplayName>
-        <Description xml:space="preserve">Extension that runs Flint EF Core linter on successful build.</Description>
-        <MoreInfo>https://github.com/sgs010/flint/</MoreInfo>
+        <Description xml:space="preserve">Integrates the Flint EF Core linter into Visual Studio.</Description>
         <Icon>logo.png</Icon>
         <Tags>Flint;EF Core;linter;free</Tags>
     </Metadata>
