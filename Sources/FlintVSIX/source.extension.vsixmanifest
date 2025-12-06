@@ -2,10 +2,11 @@
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
         <Identity Id="FlintVSIX.DDEFFBBA-ECBA-4A0E-B282-B953AE175015" Version="0.41" Language="en-US" Publisher="Stanislav Sklyarov" />
-        <DisplayName>FlintVSIX</DisplayName>
-        <Description xml:space="preserve">Extension that runs Flint analyzer on successful build.</Description>
+        <DisplayName>Flint</DisplayName>
+        <Description xml:space="preserve">Extension that runs Flint EF Core linter on successful build.</Description>
+        <MoreInfo>https://github.com/sgs010/flint/</MoreInfo>
         <Icon>logo.png</Icon>
-        <Tags>EF Core linter</Tags>
+        <Tags>Flint;EF Core;linter;free</Tags>
     </Metadata>
     <Prerequisites>
         <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,)"/>
