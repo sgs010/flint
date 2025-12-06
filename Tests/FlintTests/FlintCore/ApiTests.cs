@@ -6,7 +6,7 @@
 		[TestMethod]
 		public void TestWebApp()
 		{
-			var result = Flint.Api.Analyze("WebApp.dll");
+			var result = Flint.Api.AnalyzeCLI("WebApp.dll");
 
 			result.AssertSame([
 				"consider using projection { Id, Name, User.FirstName, User.LastName } in method WebApp.Program.Main line 19",

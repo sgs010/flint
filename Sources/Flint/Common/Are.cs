@@ -77,5 +77,25 @@ namespace Flint.Common
 				return x.Equals(y);
 			return false;
 		}
+
+		public static bool Equal(Ast[] x, Ast[] y)
+		{
+			if (x == null && y == null)
+				return true;
+			if (x == null && y != null)
+				return false;
+			if (x != null && y == null)
+				return false;
+			if (x.Length != y.Length)
+				return false;
+
+			for (var i = 0; i < x.Length; ++i)
+			{
+				if (Are.Equal(x[i], y[i]) == false)
+					return false;
+			}
+			return true;
+
+		}
 	}
 }

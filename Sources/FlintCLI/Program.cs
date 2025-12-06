@@ -23,7 +23,7 @@
 				{
 					Trace = parameters.Trace
 				};
-				var result = Api.Analyze(parameters.Input, options);
+				var result = Api.AnalyzeCLI(parameters.Input, options);
 				foreach (var item in result)
 				{
 					Console.WriteLine(item);

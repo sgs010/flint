@@ -1,4 +1,5 @@
-﻿using Mono.Cecil;
+﻿using System.Collections.Frozen;
+using Mono.Cecil;
 
 namespace Flint.Vm
 {
@@ -31,7 +32,7 @@ namespace Flint.Vm
 			}
 		}
 
-		public static IEnumerable<Cil.Call> OfCall(this Ast expression, IReadOnlySet<MethodReference> methods)
+		public static IEnumerable<Cil.Call> OfCall(this Ast expression, FrozenSet<MethodReference> methods)
 		{
 			if (expression is Cil.Call call)
 			{

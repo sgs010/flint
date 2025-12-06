@@ -3,8 +3,8 @@
 		"FlintCLI": {
 			"commandName": "Project",
 			//"commandLineArgs": "--input=webapp.dll"
-			//"commandLineArgs": "--input=samples.dll",
-			"commandLineArgs": "--input=Microsoft.EntityFrameworkCore.dll --trace",
+			"commandLineArgs": "--input=samples.dll",
+			//"commandLineArgs": "--input=Microsoft.EntityFrameworkCore.dll --trace",
 			//"commandLineArgs": "--input=Azure.Storage.Blobs.dll --trace",
 			//"commandLineArgs": "--input=Azure.Core.dll --trace",
 		}

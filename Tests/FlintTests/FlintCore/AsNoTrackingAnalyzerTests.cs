@@ -27,7 +27,7 @@ namespace FlintTests.FlintCore
 
 			AsNoTrackingAnalyzer.Run(ctx, ASM, nameof(Samples.AsNoTrackingSamples), nameof(Samples.AsNoTrackingSamples.Read_NoAsNoTracking));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"add AsNoTracking() in method Samples.AsNoTrackingSamples.Read_NoAsNoTracking line 14"
 			]);
 		}
@@ -39,7 +39,7 @@ namespace FlintTests.FlintCore
 
 			AsNoTrackingAnalyzer.Run(ctx, ASM, nameof(Samples.AsNoTrackingSamples), nameof(Samples.AsNoTrackingSamples.Read_HasAsNoTracking));
 
-			ctx.Output.AssertEmpty();
+			ctx.Result.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -49,7 +49,7 @@ namespace FlintTests.FlintCore
 
 			AsNoTrackingAnalyzer.Run(ctx, ASM, nameof(Samples.AsNoTrackingSamples), nameof(Samples.AsNoTrackingSamples.Update));
 
-			ctx.Output.AssertEmpty();
+			ctx.Result.AssertEmpty();
 		}
 	}
 }

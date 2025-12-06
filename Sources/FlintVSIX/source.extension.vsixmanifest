@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+    <Metadata>
+        <Identity Id="FlintVSIX.DDEFFBBA-ECBA-4A0E-B282-B953AE175015" Version="0.41" Language="en-US" Publisher="Stanislav Sklyarov" />
+        <DisplayName>Flint</DisplayName>
+        <Description xml:space="preserve">Integrates the Flint EF Core linter into Visual Studio.</Description>
+        <Icon>logo.png</Icon>
+        <Tags>Flint;EF Core;linter;free</Tags>
+    </Metadata>
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,)"/>
+    </Prerequisites>
+    <Installation>
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0,)">
+            <ProductArchitecture>amd64</ProductArchitecture>
+        </InstallationTarget>
+    </Installation>
+    <Dependencies>
+        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.8]" d:InstallSource="Download" />
+    </Dependencies>
+    <Assets>
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+        <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="Flint" Path="|Flint|" AssemblyName="|Flint;AssemblyName|" />
+    </Assets>
+</PackageManifest>

@@ -21,7 +21,7 @@ namespace FlintWeb.Services
 
 		public ImmutableArray<string> Analyze(Stream dllFile, Stream pdbFile)
 		{
-			return Api.Analyze(dllFile, pdbFile);
+			return Api.AnalyzeCLI(dllFile, pdbFile);
 		}
 	}
 	#endregion

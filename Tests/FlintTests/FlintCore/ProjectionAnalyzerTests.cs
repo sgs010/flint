@@ -27,7 +27,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadWholeObject));
 
-			ctx.Output.AssertEmpty();
+			ctx.Result.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -37,7 +37,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadAllProperties));
 
-			ctx.Output.AssertEmpty();
+			ctx.Result.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -47,7 +47,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadSomeProperties));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider using projection { Id, FirstName } in method Samples.ProjectionSamples.ReadSomeProperties line 36"
 			]);
 		}
@@ -59,7 +59,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.MultipleQueries));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider using projection { Id, FirstName } in method Samples.ProjectionSamples.MultipleQueries line 49",
 				"consider using projection { Id, Email } in method Samples.ProjectionSamples.MultipleQueries line 55",
 			]);
@@ -72,7 +72,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ComplexProjection));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider using projection { Number, Items = { Product.Name } } in method Samples.ProjectionSamples.ComplexProjection line 68",
 			]);
 		}
@@ -84,7 +84,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadAllChainedProperties));
 
-			ctx.Output.AssertEmpty();
+			ctx.Result.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -94,7 +94,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.SimpleCRUD));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider using projection { Name, Price } in method Samples.ProjectionSamples.SimpleCRUD line 111",
 			]);
 		}
@@ -106,7 +106,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ToListAsync));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider using projection { FirstName } in method Samples.ProjectionSamples.ToListAsync line 142"
 			]);
 		}
@@ -118,7 +118,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ToArrayAsync));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider using projection { FirstName } in method Samples.ProjectionSamples.ToArrayAsync line 154"
 			]);
 		}
@@ -130,7 +130,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ToHashSetAsync));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider using projection { FirstName } in method Samples.ProjectionSamples.ToHashSetAsync line 166"
 			]);
 		}
@@ -142,7 +142,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ToDictionaryAsync));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider using projection { Id, FirstName } in method Samples.ProjectionSamples.ToDictionaryAsync line 178"
 			]);
 		}
@@ -154,7 +154,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.FirstAsync));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider using projection { FirstName } in method Samples.ProjectionSamples.FirstAsync line 190"
 			]);
 		}
@@ -166,7 +166,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.FirstOrDefaultAsync));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider using projection { FirstName } in method Samples.ProjectionSamples.FirstOrDefaultAsync line 199"
 			]);
 		}
@@ -178,7 +178,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.LastAsync));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider using projection { FirstName } in method Samples.ProjectionSamples.LastAsync line 209"
 			]);
 		}
@@ -190,7 +190,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.LastOrDefaultAsync));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider using projection { FirstName } in method Samples.ProjectionSamples.LastOrDefaultAsync line 218"
 			]);
 		}
@@ -202,7 +202,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.SingleAsync));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider using projection { FirstName } in method Samples.ProjectionSamples.SingleAsync line 227"
 			]);
 		}
@@ -214,7 +214,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.SingleOrDefaultAsync));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider using projection { FirstName } in method Samples.ProjectionSamples.SingleOrDefaultAsync line 236"
 			]);
 		}
@@ -226,7 +226,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.AsAsyncEnumerable));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider using projection { FirstName } in method Samples.ProjectionSamples.AsAsyncEnumerable line 246"
 			]);
 		}
@@ -238,7 +238,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadForUpdate_ChangeProperty));
 
-			ctx.Output.AssertEmpty();
+			ctx.Result.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -248,7 +248,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadForUpdate_ChangeNestedProperty));
 
-			ctx.Output.AssertEmpty();
+			ctx.Result.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -258,7 +258,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadForUpdate_CollectionAdd));
 
-			ctx.Output.AssertEmpty();
+			ctx.Result.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -268,7 +268,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadForUpdate_CollectionRemove));
 
-			ctx.Output.AssertEmpty();
+			ctx.Result.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -278,7 +278,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.ReadForUpdate_CollectionIterate));
 
-			ctx.Output.AssertEmpty();
+			ctx.Result.AssertEmpty();
 		}
 
 		[TestMethod]
@@ -288,7 +288,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.LambdaRead));
 
-			ctx.Output.AssertSame([
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
 				"consider using projection { Id, Name, User.FirstName, User.LastName } in method Samples.ProjectionSamples.LambdaRead line 330"
 			]);
 		}
@@ -300,7 +300,7 @@ namespace FlintTests.FlintCore
 
 			ProjectionAnalyzer.Run(ctx, ASM, nameof(Samples.ProjectionSamples), nameof(Samples.ProjectionSamples.LambdaWrite));
 
-			ctx.Output.AssertEmpty();
+			ctx.Result.AssertEmpty();
 		}
 	}
 }

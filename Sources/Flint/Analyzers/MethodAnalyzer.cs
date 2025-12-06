@@ -9,26 +9,6 @@ namespace Flint.Analyzers
 	internal class MethodAnalyzer
 	{
 		#region Interface
-		//public static IEnumerable<(MethodReference, CilPoint)> GetCalls(MethodDefinition method)
-		//{
-		//	var actualMethod = method.UnwrapAsyncMethod();
-
-		//	if (actualMethod.HasBody == false)
-		//		yield break;
-
-		//	// direct calls
-		//	foreach (var call in CilMachine.GetCalls(actualMethod))
-		//		yield return call;
-
-		//	// lambdas
-		//	foreach (var (lambda, _) in CilMachine.GetLambdas(actualMethod))
-		//	{
-		//		var lambdaImpl = lambda.Resolve();
-		//		foreach (var call in GetCalls(lambdaImpl))
-		//			yield return call;
-		//	}
-		//}
-
 		public static IEnumerable<(MethodReference, CilPoint)> GetCalls(MethodDefinition method)
 		{
 			var visitedMethods = new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance);
@@ -125,13 +105,28 @@ namespace Flint.Analyzers
 			return expr;
 		}
 
-		public static void PrettyPrintMethod(StringBuilder sb, MethodDefinition method, CilPoint pt)
+		public static string PrettyPrintMethod(MethodReference method)
 		{
+			var sb = new StringBuilder();
+			PrettyPrintMethod(sb, method);
+			return sb.ToString();
+		}
+
+		public static void PrettyPrintMethod(StringBuilder sb, MethodReference method)
+		{
+			if (method == null)
+				return;
+
 			sb.Append(method.DeclaringType.Namespace);
 			sb.Append('.');
 			sb.Append(method.DeclaringType.Name);
 			sb.Append('.');
 			sb.Append(method.Name);
+		}
+
+		public static void PrettyPrintMethod(StringBuilder sb, MethodReference method, CilPoint pt)
+		{
+			PrettyPrintMethod(sb, method);
 
 			if (pt.SequencePoint != null)
 			{

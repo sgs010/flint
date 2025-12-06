@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Flint.Vm;
 
 namespace Flint.Common
 {
@@ -40,5 +41,47 @@ namespace Flint.Common
 				builder.AddRange(x);
 			return builder.ToImmutable();
 		}
+
+		public static Stack<T> Clone<T>(this Stack<T> stack)
+		{
+			var items = stack.ToArray();
+			System.Array.Reverse(items);
+			return new Stack<T>(items);
+		}
+
+		public static ImmutableArray<U> ToImmutableArray<T, U>(this IReadOnlyCollection<T> col, Func<T, U> convert)
+		{
+			if (col == null)
+				return [];
+			if (col.Count == 0)
+				return [];
+
+			var buf = new U[col.Count];
+			var index = 0;
+			foreach (var x in col)
+			{
+				buf[index] = convert(x);
+				++index;
+			}
+			return [.. buf];
+		}
+
+#if NET48
+		public static U GetValueOrDefault<T, U>(this IReadOnlyDictionary<T, U> dic, T key)
+		{
+			if (dic.TryGetValue(key, out var value))
+				return value;
+			return default;
+		}
+
+		public static bool TryAdd<T, U>(this IDictionary<T, U> dic, T key, U value)
+		{
+			if (dic.ContainsKey(key))
+				return false;
+
+			dic.Add(key, value);
+			return true;
+		}
+#endif
 	}
 }
