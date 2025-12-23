@@ -57,11 +57,11 @@ namespace FlintTests.FlintCore
 		{
 			var ctx = new AnalyzerContext();
 
-			LoopAnalyzer.Run(ctx, ASM, nameof(Samples.LoopSamples), nameof(Samples.LoopSamples.Loop));
+			LoopAnalyzer.Run(ctx, ASM, nameof(Samples.LoopSamples), nameof(Samples.LoopSamples.Mixed));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"avoid making queries in a loop in method Samples.LoopSamples.Mixed line 52",
-				"avoid making queries in a loop in method Samples.LoopSamples.Mixed line 61"
+				"avoid making queries in a loop in method Samples.LoopSamples.Mixed line 51",
+				"avoid making queries in a loop in method Samples.LoopSamples.Mixed line 60"
 			]);
 		}
 	}

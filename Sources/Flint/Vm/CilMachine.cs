@@ -1,5 +1,5 @@
-﻿using System.Collections.Immutable;
-using System.Data;
+﻿using System.Collections.Frozen;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using Flint.Common;
 using Flint.Vm.Cil;
@@ -19,38 +19,19 @@ namespace Flint.Vm
 	static class CilMachine
 	{
 		#region Interface
-		public static IEnumerable<(MethodReference, CilPoint)> GetCalls(MethodDefinition mtd)
-		{
-			var ctx = new RoutineContext(mtd);
-			foreach (var instruction in mtd.Body.Instructions)
-			{
-				switch (instruction.OpCode.Code)
-				{
-					case Code.Call:
-					case Code.Callvirt:
-						var m = (MethodReference)instruction.Operand;
-						var pt = GetCilPoint(ctx, instruction);
-						yield return (m, pt);
-						break;
-					default: break;
-				}
-			}
-		}
+		public static readonly FrozenSet<Code> BranchInstructions = [Code.Br, Code.Br_S, Code.Brfalse, Code.Brfalse_S, Code.Brtrue, Code.Brtrue_S];
+		public static readonly FrozenSet<Code> CallInstructions = [Code.Call, Code.Callvirt];
+		public static readonly FrozenSet<Code> LambdaInstructions = [Code.Ldftn, Code.Ldvirtftn];
 
-		public static IEnumerable<(MethodReference, CilPoint)> GetLambdas(MethodDefinition mtd)
+		public static IEnumerable<(Instruction, CilPoint)> GetInstructions(MethodDefinition mtd, FrozenSet<Code> codes)
 		{
 			var ctx = new RoutineContext(mtd);
 			foreach (var instruction in mtd.Body.Instructions)
 			{
-				switch (instruction.OpCode.Code)
+				if (codes.Contains(instruction.OpCode.Code))
 				{
-					case Code.Ldftn:
-					case Code.Ldvirtftn:
-						var m = (MethodReference)instruction.Operand;
-						var pt = GetCilPoint(ctx, instruction);
-						yield return (m, pt);
-						break;
-					default: break;
+					var pt = GetCilPoint(ctx, instruction);
+					yield return (instruction, pt);
 				}
 			}
 		}

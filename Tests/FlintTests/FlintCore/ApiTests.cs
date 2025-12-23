@@ -12,14 +12,13 @@
 				"consider using projection { Id, Name, User.FirstName, User.LastName } in method WebApp.Program.Main line 19",
 				"add Include(t => t.User) in method WebApp.Program.Main line 19",
 				"add AsNoTracking() in method WebApp.Program.Main line 19",
-
 				"consider using projection { Posts = { Author.FirstName, Author.LastName }, Tags = { Name } } in method WebApp.Program.Main line 44",
 				"add Include(b => b.Posts).ThenInclude(p => p.Author) in method WebApp.Program.Main line 44",
 				"add Include(b => b.Tags) in method WebApp.Program.Main line 44",
 				"add AsNoTracking() in method WebApp.Program.Main line 44",
 				"consider adding AsSplitQuery() in method WebApp.Program.Main line 44",
-
 				"consider using Outbox pattern in method WebApp.Program.Main line 58",
+				"avoid making queries in a loop in method WebApp.Program.Main line 71",
 			]);
 		}
 

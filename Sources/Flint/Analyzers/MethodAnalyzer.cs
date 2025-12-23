@@ -1,18 +1,28 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Frozen;
+using System.Collections.Immutable;
 using System.Text;
 using Flint.Common;
 using Flint.Vm;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Flint.Analyzers
 {
 	internal class MethodAnalyzer
 	{
 		#region Interface
+		public static IEnumerable<(Instruction, CilPoint)> GetBrs(MethodDefinition method)
+		{
+			var visitedMethods = new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance);
+			foreach (var (br, pt) in GetInstructions(method, CilMachine.BranchInstructions, visitedMethods))
+				yield return ((Instruction)br.Operand, pt);
+		}
+
 		public static IEnumerable<(MethodReference, CilPoint)> GetCalls(MethodDefinition method)
 		{
 			var visitedMethods = new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance);
-			return GetCalls(method, visitedMethods);
+			foreach (var (call, pt) in GetInstructions(method, CilMachine.CallInstructions, visitedMethods))
+				yield return ((MethodReference)call.Operand, pt);
 		}
 
 		public static IEnumerable<MethodDefinition> GetMethods(AssemblyInfo asm, string className = null, string methodName = null)
@@ -139,7 +149,7 @@ namespace Flint.Analyzers
 		#region Implementation
 		record CallChainNode(CallChainNode Parent, CallInfo Call);
 
-		private static IEnumerable<(MethodReference, CilPoint)> GetCalls(MethodDefinition method, HashSet<MethodReference> visitedMethods)
+		private static IEnumerable<(Instruction, CilPoint)> GetInstructions(MethodDefinition method, FrozenSet<Code> codes, HashSet<MethodReference> visitedMethods)
 		{
 			if (visitedMethods.Contains(method))
 				yield break;
@@ -157,15 +167,15 @@ namespace Flint.Analyzers
 			if (actualMethod.HasBody == false)
 				yield break;
 
-			// direct calls
-			foreach (var call in CilMachine.GetCalls(actualMethod))
-				yield return call;
+			// method
+			foreach (var x in CilMachine.GetInstructions(actualMethod, codes))
+				yield return x;
 
 			// lambdas
-			foreach (var (lambda, _) in CilMachine.GetLambdas(actualMethod))
+			foreach (var (lambda, _) in CilMachine.GetInstructions(actualMethod, CilMachine.LambdaInstructions))
 			{
-				var lambdaImpl = lambda.Resolve();
-				foreach (var call in GetCalls(lambdaImpl, visitedMethods))
+				var lambdaImpl = ((MethodReference)lambda.Operand).Resolve();
+				foreach (var call in GetInstructions(lambdaImpl, codes, visitedMethods))
 					yield return call;
 			}
 		}

@@ -60,6 +60,21 @@ namespace WebApp
 				return Results.NoContent();
 			});
 
+			app.MapGet("/completedtodos", async (DB db) =>
+			{
+				var data = await db.Todos.Select(x => new { x.IsCompleted, x.Id }).ToListAsync();
+				var result = new List<Todo>();
+				foreach (var item in data)
+				{
+					if (item.IsCompleted)
+					{
+						var todo = await db.Todos.AsNoTracking().FirstOrDefaultAsync(x => x.Id == item.Id);
+						result.Add(todo);
+					}
+				}
+				return result;
+			});
+
 			app.Run();
 		}
 
