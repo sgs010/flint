@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Flint.Vm;
+﻿using Flint.Vm;
 using Match = Flint.Vm.Match;
 
 namespace Flint.Analyzers
