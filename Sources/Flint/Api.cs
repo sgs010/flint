@@ -84,6 +84,7 @@ namespace Flint
 			AsNoTrackingAnalyzer.Run(ctx, asm);
 			AsSplitQueryAnalyzer.Run(ctx, asm);
 			OutboxAnalyzer.Run(ctx, asm);
+			LoopAnalyzer.Run(ctx, asm);
 
 			return ctx.Result.ToImmutableArray(x => new ApiResult
 			{
