@@ -7,10 +7,10 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>disable</Nullable>
 		<BaseOutputPath>..\..\Solution\bin</BaseOutputPath>
-		<AssemblyVersion>0.41</AssemblyVersion>
+		<AssemblyVersion>0.5</AssemblyVersion>
 		<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
-		<Version>0.41</Version>
-		<FileVersion>0.41</FileVersion>
+		<Version>0.5</Version>
+		<FileVersion>0.5</FileVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

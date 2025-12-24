@@ -6,6 +6,7 @@ Supported checks so far:
 3. Add AsNoTracking() - reduce memory usage.
 4. Consider adding AsSplitQuery() - avoid cartesian explosion.
 5. Consider using Outbox pattern.
+6. Avoid making queries in a loop.
 
 Flint processes compiled assemblies, no source code is required.
 
