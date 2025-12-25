@@ -91,7 +91,7 @@ namespace Samples
 			Console.WriteLine($"{order.Id} {order.Number}");
 			foreach (var item in order.Items)
 			{
-				Console.WriteLine($"{item.Id} {item.Product.Id} {item.Product.Name} {item.Product.Price}");
+				Console.WriteLine($"{item.Id} {item.Product.Id} {item.Product.Name} {item.Product.Price} {item.Total}");
 			}
 		}
 

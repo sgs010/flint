@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Samples
 {
@@ -8,6 +9,25 @@ namespace Samples
 		public string FirstName { get; set; }
 		public string LastName { get; set; }
 		public string Email { get; set; }
+	}
+
+	public class UserDataPKKey
+	{
+		[Key] public int UserId { get; set; }
+		public string Data { get; set; }
+	}
+
+	[PrimaryKey(nameof(UserId))]
+	public class UserDataPKPrimaryKey
+	{
+		public int UserId { get; set; }
+		public string Data { get; set; }
+	}
+
+	public class UserDataPKFluent
+	{
+		public int UserId { get; set; }
+		public string Data1 { get; set; }
 	}
 
 	public class Order
@@ -21,6 +41,7 @@ namespace Samples
 	{
 		public int Id { get; set; }
 		public Product Product { get; set; }
+		public decimal Total { get; set; }
 	}
 
 	public class Product
@@ -70,6 +91,9 @@ namespace Samples
 	public class DB : DbContext
 	{
 		public DbSet<User> Users => Set<User>();
+		public DbSet<UserDataPKKey> UserDataPKKey => Set<UserDataPKKey>();
+		public DbSet<UserDataPKPrimaryKey> UserDataPKPrimaryKey => Set<UserDataPKPrimaryKey>();
+		public DbSet<UserDataPKFluent> UserDataPKFluent => Set<UserDataPKFluent>();
 		public DbSet<Order> Orders => Set<Order>();
 		public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 		public DbSet<Product> Products => Set<Product>();
@@ -78,5 +102,10 @@ namespace Samples
 		public DbSet<Post> Posts => Set<Post>();
 		public DbSet<Tag> Tags => Set<Tag>();
 		public DbSet<Outbox> Outbox => Set<Outbox>();
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		{
+			modelBuilder.Entity<UserDataPKFluent>().HasKey(x => x.UserId);
+		}
 	}
 }
