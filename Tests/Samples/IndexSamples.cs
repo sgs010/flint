@@ -32,6 +32,21 @@ namespace Samples
 				Console.WriteLine(user);
 		}
 
+		public static async void NestedWhere()
+		{
+			// should advise index on Email and FirstName columns
+
+			using var db = new DB();
+			var users = await db.Users
+				.AsNoTracking()
+				.Where(u => u.Email != null)
+				.Where(u => u.FirstName.StartsWith("A"))
+				.ToListAsync();
+
+			foreach (var user in users)
+				Console.WriteLine(user);
+		}
+
 		public static async void FirstOrDefaultAsync()
 		{
 			// should advise index on Email column

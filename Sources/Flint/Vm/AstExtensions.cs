@@ -113,5 +113,21 @@ namespace Flint.Vm
 				foreach (var ftn in expr.OfFtn())
 					yield return ftn;
 		}
+
+		public static IEnumerable<Cil.Methodof> OfMethodof(this Ast expression, FrozenSet<MethodReference> methods)
+		{
+			if (expression is Cil.Methodof mtd)
+			{
+				if (methods.Contains(mtd.Method))
+					yield return mtd;
+			}
+
+			foreach (var child in expression.GetChildren())
+			{
+				if (child != null)
+					foreach (var childMtd in child.OfMethodof(methods))
+						yield return childMtd;
+			}
+		}
 	}
 }

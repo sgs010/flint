@@ -34,6 +34,12 @@ namespace Flint.Analyzers
 		// roots are methods where IQueryable monad is unwrapped (ToListAsync and so on)
 		public required FrozenSet<MethodReference> EFCoreRoots { get; init; }
 
+		// methods where IQueryable is filtered (Where and so on)
+		public required FrozenSet<MethodReference> LinqFilters { get; init; }
+
+		// methods where linq expression is constucted
+		public required FrozenSet<MethodReference> LinqExpressions { get; init; }
+
 		protected override void BaseDispose(bool disposing)
 		{
 			if (disposing)
@@ -100,6 +106,14 @@ namespace Flint.Analyzers
 				.Where(x => MethodHasLongName(typeFullNameIndex, methodLongNameIndex, x, EF_CORE_ROOTS))
 				.ToFrozenSet(MethodReferenceEqualityComparer.Instance);
 
+			var linqFilters = outerCallMap.Keys
+				.Where(x => MethodHasLongName(typeFullNameIndex, methodLongNameIndex, x, LINQ_FILTERS))
+				.ToFrozenSet(MethodReferenceEqualityComparer.Instance);
+
+			var linqExpressions = outerCallMap.Keys
+				.Where(x => MethodHasLongName(typeFullNameIndex, methodLongNameIndex, x, LINQ_LAMBDA))
+				.ToFrozenSet(MethodReferenceEqualityComparer.Instance);
+
 			return new AssemblyInfo
 			{
 				Module = module,
@@ -110,6 +124,8 @@ namespace Flint.Analyzers
 				MethodInnerCalls = innerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray(), MethodReferenceEqualityComparer.Instance),
 				MethodOuterCalls = outerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray(), MethodReferenceEqualityComparer.Instance),
 				EFCoreRoots = efCoreRoots,
+				LinqFilters = linqFilters,
+				LinqExpressions = linqExpressions,
 				TypeFullNameIndex = typeFullNameIndex,
 				MethodFullNameIndex = methodFullNameIndex,
 				MethodLongNameIndex = methodLongNameIndex,
@@ -175,6 +191,12 @@ namespace Flint.Analyzers
 			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleAsync",
 			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleOrDefaultAsync",
 		];
+
+		private static readonly FrozenSet<string> LINQ_FILTERS = [
+			"System.Linq.Queryable.Where",
+		];
+
+		private static readonly string LINQ_LAMBDA = "System.Linq.Expressions.Expression.Lambda";
 
 		private static TypeReference COMPILER_GENERATED_ATTRIBUTE_TYPE;
 

@@ -45,6 +45,18 @@ namespace FlintTests.FlintCore
 		}
 
 		[TestMethod]
+		public void NestedWhere()
+		{
+			var ctx = new AnalyzerContext();
+
+			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.NestedWhere));
+
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
+				"consider adding index (FirstName,Email) on table Users for query in method Samples.IndexSamples.NestedWhere line 40"
+			]);
+		}
+
+		[TestMethod]
 		public void FirstOrDefaultAsync()
 		{
 			var ctx = new AnalyzerContext();
