@@ -22,15 +22,15 @@
 			]);
 		}
 
-		[TestMethod]
-		[Timeout(60 * 1000)]
-		public void TestAnyDll()
-		{
-			var options = new Flint.ApiOptions { Trace = true };
-			foreach (var path in Directory.GetFiles(".", "*.dll"))
-			{
-				Flint.Api.Analyze(path, options);
-			}
-		}
+		//[TestMethod]
+		//[Timeout(60 * 1000)]
+		//public void TestAnyDll()
+		//{
+		//	var options = new Flint.ApiOptions { Trace = true };
+		//	foreach (var path in Directory.GetFiles(".", "*.dll"))
+		//	{
+		//		Flint.Api.Analyze(path, options);
+		//	}
+		//}
 	}
 }

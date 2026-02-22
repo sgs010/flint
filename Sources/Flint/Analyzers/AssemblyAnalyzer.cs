@@ -14,6 +14,7 @@ namespace Flint.Analyzers
 	sealed class AssemblyInfo : Disposable
 	{
 		public required ModuleDefinition Module { get; init; }
+		public required FrozenSet<MethodReference> DbGetMethods { get; init; }
 		public required FrozenSet<TypeDefinition> EntityTypes { get; init; }
 		public required FrozenSet<PropertyDefinition> EntityCollections { get; init; }
 		public required FrozenSet<MethodReference> EntityGetSetMethods { get; init; }
@@ -117,6 +118,7 @@ namespace Flint.Analyzers
 			return new AssemblyInfo
 			{
 				Module = module,
+				DbGetMethods = entityPropMap.Select(x => x.GetMethod).ToFrozenSet(MethodReferenceEqualityComparer.Instance),
 				EntityTypes = entityMap.ToFrozenSet(TypeDefinitionEqualityComparer.Instance),
 				EntityCollections = entityPropMap.ToFrozenSet(PropertyDefinitionEqualityComparer.Instance),
 				EntityGetSetMethods = entityGetSetMap.ToFrozenSet(MethodReferenceEqualityComparer.Instance),
@@ -300,11 +302,13 @@ namespace Flint.Analyzers
 			if (type.BaseType.Name != "DbContext")
 				return;
 
+			// type is DbContext here
 			foreach (var prop in type.Properties)
 			{
 				if (prop.PropertyType.IsDbSet(out var entityType) == false)
 					continue;
 
+				// prop is DbSet<T> here
 				entityMap.Add(entityType);
 				entityPropMap.Add(prop);
 
