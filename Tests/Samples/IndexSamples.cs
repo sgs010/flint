@@ -40,11 +40,26 @@ namespace Samples
 			var users = await db.Users
 				.AsNoTracking()
 				.Where(u => u.Email != null)
-				.Where(u => u.FirstName.StartsWith("A"))
+				.Where(u => u.FirstName.StartsWith('A'))
 				.ToListAsync();
 
 			foreach (var user in users)
 				Console.WriteLine(user);
+		}
+
+		public static async void MixedWhere()
+		{
+			// should advise index on Todos.IsCompleted
+			// should advise index on Users.FirstName
+
+			using var db = new DB();
+			var todos = await db.Todos
+				.AsNoTracking()
+				.Where(t => t.IsCompleted && t.User.FirstName.StartsWith('A'))
+				.ToListAsync();
+
+			foreach (var todo in todos)
+				Console.WriteLine(todo);
 		}
 
 		public static async void FirstOrDefaultAsync()

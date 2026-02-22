@@ -40,7 +40,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.Where));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Email) on table Users for query in method Samples.IndexSamples.Where line 26"
+				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.Where line 26"
 			]);
 		}
 
@@ -52,7 +52,20 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.NestedWhere));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (FirstName,Email) on table Users for query in method Samples.IndexSamples.NestedWhere line 40"
+				"consider adding index (FirstName,Email) on table Users for the query in method Samples.IndexSamples.NestedWhere line 40"
+			]);
+		}
+
+		[TestMethod]
+		public void MixedWhere()
+		{
+			var ctx = new AnalyzerContext();
+
+			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.MixedWhere));
+
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
+				"consider adding index (IsCompleted) on table Todos for the query in method Samples.IndexSamples.MixedWhere line 56",
+				"consider adding index (FirstName) on table Users for the query in method Samples.IndexSamples.Where line 56"
 			]);
 		}
 
