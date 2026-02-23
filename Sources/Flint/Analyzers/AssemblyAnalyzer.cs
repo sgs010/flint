@@ -36,7 +36,7 @@ namespace Flint.Analyzers
 		public required FrozenSet<MethodReference> EFCoreRoots { get; init; }
 
 		// methods where IQueryable is filtered (Where and so on)
-		public required FrozenSet<MethodReference> LinqFilters { get; init; }
+		public required FrozenSet<MethodReference> EFCoreFilters { get; init; }
 
 		// methods where linq expression is constucted
 		public required FrozenSet<MethodReference> LinqExpressions { get; init; }
@@ -107,8 +107,8 @@ namespace Flint.Analyzers
 				.Where(x => MethodHasLongName(typeFullNameIndex, methodLongNameIndex, x, EF_CORE_ROOTS))
 				.ToFrozenSet(MethodReferenceEqualityComparer.Instance);
 
-			var linqFilters = outerCallMap.Keys
-				.Where(x => MethodHasLongName(typeFullNameIndex, methodLongNameIndex, x, LINQ_FILTERS))
+			var efCoreFilters = outerCallMap.Keys
+				.Where(x => MethodHasLongName(typeFullNameIndex, methodLongNameIndex, x, EF_CORE_FILTERS))
 				.ToFrozenSet(MethodReferenceEqualityComparer.Instance);
 
 			var linqExpressions = outerCallMap.Keys
@@ -126,7 +126,7 @@ namespace Flint.Analyzers
 				MethodInnerCalls = innerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray(), MethodReferenceEqualityComparer.Instance),
 				MethodOuterCalls = outerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray(), MethodReferenceEqualityComparer.Instance),
 				EFCoreRoots = efCoreRoots,
-				LinqFilters = linqFilters,
+				EFCoreFilters = efCoreFilters,
 				LinqExpressions = linqExpressions,
 				TypeFullNameIndex = typeFullNameIndex,
 				MethodFullNameIndex = methodFullNameIndex,
@@ -194,8 +194,15 @@ namespace Flint.Analyzers
 			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleOrDefaultAsync",
 		];
 
-		private static readonly FrozenSet<string> LINQ_FILTERS = [
+		private static readonly FrozenSet<string> EF_CORE_FILTERS = [
 			"System.Linq.Queryable.Where",
+			"System.Linq.Queryable.OrderBy",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstAsync",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastAsync",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastOrDefaultAsync",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleAsync",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleOrDefaultAsync",
 		];
 
 		private static readonly string LINQ_LAMBDA = "System.Linq.Expressions.Expression.Lambda";

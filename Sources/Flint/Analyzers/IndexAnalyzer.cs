@@ -23,9 +23,11 @@ namespace Flint.Analyzers
 				// collect filter expressions
 				foreach (var root in query.Roots)
 				{
-					foreach (var filter in root.OfCall(asm.LinqFilters))
+					foreach (var filter in root.OfCall(asm.EFCoreFilters))
 					{
-						var tbl = GetDbTableName(asm, filter);
+						if (TryResolveEntity(asm, filter, out var entityType, out var tableName) == false)
+							continue;
+
 						foreach (var expr in filter.OfCall(asm.LinqExpressions))
 						{
 							foreach (var mtd in expr.OfMethodof(asm.EntityGetSetMethods))
@@ -33,7 +35,7 @@ namespace Flint.Analyzers
 								var t = mtd.Method.DeclaringType;
 								if (filters.TryGetValue(t, out var entity) == false)
 								{
-									entity = new XEntity(tbl, new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance));
+									entity = new XEntity(tableName, new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance));
 									filters.Add(t, entity);
 								}
 								entity.PropGet.Add(mtd.Method);
@@ -58,29 +60,35 @@ namespace Flint.Analyzers
 		#region Implementation
 		record XEntity(string Name, HashSet<MethodReference> PropGet);
 
-		private static string GetDbTableName(AssemblyInfo asm, Vm.Cil.Call filter)
+		private static bool TryResolveEntity(AssemblyInfo asm, Vm.Cil.Call filter, out TypeReference entityType, out string tableName)
 		{
+			entityType = null;
+			tableName = null;
+
 			// filter is a linq filter method like Where<T>(...)
-			var t = ((GenericInstanceMethod)filter.Method).GenericArguments.First();
+			// extract it's T
+			var filterEntityType = ((GenericInstanceMethod)filter.Method).GenericArguments.First();
 
 			// we need to define which dbset property is references in the filter
-			// i.e. db.User.Where(...) - property is Users and so on
+			// i.e. db.Users.Where(...) - property is Users and so on
 			// so we look for a call of get_PROP method in the filter ast
 			foreach (var getProp in filter.OfCall(asm.DbGetMethods))
 			{
-				if (getProp.Method.ReturnType.IsDbSet(out var entityType) == false)
-					continue;
-				if (Are.Equal(t, entityType) == false)
+				if (getProp.Method.ReturnType.IsDbSet(out var dbSetEntityType) == false)
+					continue; // this is not a DbSet<>
+				if (Are.Equal(filterEntityType, dbSetEntityType) == false)
 					continue; // this is not a dbset property we are looking for
 
-				// find a dbset property by given get_PROP method
-				var prop = asm.EntityCollections.FirstOrDefault(x => Are.Equal(x.GetMethod, getProp.Method));
-				if (prop == null)
+				// resolve a dbset property by given get_PROP method
+				var dbSetProp = asm.EntityCollections.FirstOrDefault(x => Are.Equal(x.GetMethod, getProp.Method));
+				if (dbSetProp == null)
 					continue;
 
-				return prop.Name;
+				entityType = dbSetEntityType;
+				tableName = dbSetProp.Name;
+				return true;
 			}
-			return null;
+			return false;
 		}
 
 		private static void PrettyPrintIndexColumns(StringBuilder sb, AssemblyInfo asm, TypeReference t, HashSet<MethodReference> propGet)
@@ -91,8 +99,6 @@ namespace Flint.Analyzers
 			{
 				if (propGet.Contains(p.GetMethod) == false)
 					continue; // property is not accessed
-				if (asm.EntityTypes.Contains(p.PropertyType))
-					continue; // property is an entity
 				if (needSeparator)
 					sb.Append(',');
 				sb.Append(p.Name);

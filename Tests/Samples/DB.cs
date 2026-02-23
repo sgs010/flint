@@ -88,6 +88,21 @@ namespace Samples
 		public bool IsProcessed { get; set; }
 	}
 
+	public class User2
+	{
+		public int Id { get; set; }
+		public ICollection<Order2> Orders { get; set; }
+	}
+
+	public class Order2
+	{
+		public int Id { get; set; }
+		public int UserId { get; set; }
+		public User2 User { get; set; }
+		public DateTime CreatedDate { get; set; }
+		public decimal TotalAmount { get; set; }
+	}
+
 	public class DB : DbContext
 	{
 		public DbSet<User> Users => Set<User>();
@@ -102,6 +117,7 @@ namespace Samples
 		public DbSet<Post> Posts => Set<Post>();
 		public DbSet<Tag> Tags => Set<Tag>();
 		public DbSet<Outbox> Outbox => Set<Outbox>();
+		public DbSet<User2> Users2 => Set<User2>();
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{

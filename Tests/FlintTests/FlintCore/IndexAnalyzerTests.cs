@@ -28,7 +28,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.OrderBy));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Email) on table Users for query in method Samples.IndexSamples.OrderBy line 12"
+				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.OrderBy line 12"
 			]);
 		}
 
@@ -57,15 +57,14 @@ namespace FlintTests.FlintCore
 		}
 
 		[TestMethod]
-		public void MixedWhere()
+		public void FirstAsync()
 		{
 			var ctx = new AnalyzerContext();
 
-			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.MixedWhere));
+			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.FirstAsync));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (IsCompleted) on table Todos for the query in method Samples.IndexSamples.MixedWhere line 56",
-				"consider adding index (FirstName) on table Users for the query in method Samples.IndexSamples.Where line 56"
+				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.FirstAsync line 55"
 			]);
 		}
 
@@ -77,7 +76,55 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.FirstOrDefaultAsync));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Email) on table Users for query in method Samples.IndexSamples.FirstOrDefaultAsync line 40"
+				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.FirstOrDefaultAsync line 66"
+			]);
+		}
+
+		[TestMethod]
+		public void LastAsync()
+		{
+			var ctx = new AnalyzerContext();
+
+			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.LastAsync));
+
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
+				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.LastAsync line 77"
+			]);
+		}
+
+		[TestMethod]
+		public void LastOrDefaultAsync()
+		{
+			var ctx = new AnalyzerContext();
+
+			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.LastOrDefaultAsync));
+
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
+				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.LastOrDefaultAsync line 88"
+			]);
+		}
+
+		[TestMethod]
+		public void SingleAsync()
+		{
+			var ctx = new AnalyzerContext();
+
+			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.SingleAsync));
+
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
+				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.SingleAsync line 99"
+			]);
+		}
+
+		[TestMethod]
+		public void SingleOrDefaultAsync()
+		{
+			var ctx = new AnalyzerContext();
+
+			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.SingleOrDefaultAsync));
+
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
+				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.SingleOrDefaultAsync line 110"
 			]);
 		}
 
@@ -129,8 +176,8 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.Mixed));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Email) on table Users for query in method Samples.IndexSamples.Mixed line 96",
-				"consider adding index (Name) on table Products for query in method Samples.IndexSamples.Mixed line 98"
+				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.Mixed line 166",
+				"consider adding index (Name) on table Products for the query in method Samples.IndexSamples.Mixed line 168"
 			]);
 		}
 
@@ -142,7 +189,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.NestedChain));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Price) on table Products for query in method Samples.IndexSamples.NestedChain line 107"
+				"consider adding index (Price) on table Products for the query in method Samples.IndexSamples.NestedChain line 107"
 			]);
 		}
 
@@ -154,8 +201,46 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.NestedAny));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Total) on table OrderItem for query in method Samples.IndexSamples.NestedAny line 116"
+				"consider adding index (Total) on table OrderItem for the query in method Samples.IndexSamples.NestedAny line 116"
 			]);
 		}
+
+		[TestMethod]
+		public void MixedWhere()
+		{
+			var ctx = new AnalyzerContext();
+
+			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.MixedWhere));
+
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
+				"consider adding index (IsCompleted) on table Todos for the query in method Samples.IndexSamples.MixedWhere line 196",
+				"consider adding index (FirstName) on table Users for the query in method Samples.IndexSamples.Where line 196"
+			]);
+		}
+
+		[TestMethod]
+		public void OrderByDescending()
+		{
+			var ctx = new AnalyzerContext();
+
+			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.OrderByDescending));
+
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
+				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.OrderByDescending line 210"
+			]);
+		}
+
+		[TestMethod]
+		public void FilteredInclude()
+		{
+			var ctx = new AnalyzerContext();
+
+			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.FilteredInclude));
+
+			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
+				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.FilteredInclude line 210"
+			]);
+		}
+
 	}
 }
