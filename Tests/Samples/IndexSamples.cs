@@ -159,8 +159,8 @@ namespace Samples
 
 		public static async void Mixed()
 		{
-			// should advise index on Users.Email
-			// should advise index on Products.Name
+			// should advise index on User.Email
+			// should advise index on Product.Name
 
 			using var db = new DB();
 			var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Email == "test");
@@ -171,7 +171,7 @@ namespace Samples
 
 		public static async void NestedChain()
 		{
-			// should advise index on Products.Price
+			// should advise index on Product.Price
 
 			using var db = new DB();
 			var order = await db.Orders.AsNoTracking().FirstOrDefaultAsync(o => o.Items.Any(i => i.Product.Price > 20));
@@ -180,7 +180,7 @@ namespace Samples
 
 		public static async void NestedAny()
 		{
-			// should advise index on OrderItems.Total
+			// should advise index on OrderItem.Total
 
 			using var db = new DB();
 			var order = await db.Orders.AsNoTracking().FirstOrDefaultAsync(o => o.Items.Any(i => i.Total < 100));
@@ -189,8 +189,8 @@ namespace Samples
 
 		public static async void MixedWhere()
 		{
-			// should advise index on Todos.IsCompleted
-			// should advise index on Users.FirstName
+			// should advise index on Todo.IsCompleted
+			// should advise index on User.FirstName
 
 			using var db = new DB();
 			var todos = await db.Todos
@@ -218,7 +218,7 @@ namespace Samples
 
 		public static async void FilteredInclude()
 		{
-			// should advise index on columns (CreatedDate,TotalAmount) of table Orders2
+			// should advise index (CreatedDate,TotalAmount) on Order2
 
 			using var db = new DB();
 			var usersWithRecentBigOrders = await db.Users2

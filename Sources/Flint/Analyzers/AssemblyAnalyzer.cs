@@ -1,5 +1,6 @@
 ﻿using System.Collections.Frozen;
 using System.Collections.Immutable;
+using System.Linq;
 using Flint.Common;
 using Flint.Vm;
 using Mono.Cecil;
@@ -94,9 +95,11 @@ namespace Flint.Analyzers
 
 			var innerCallMap = new Dictionary<MethodReference, HashSet<CallInfo>>(MethodReferenceEqualityComparer.Instance);
 			var outerCallMap = new Dictionary<MethodReference, HashSet<CallInfo>>(MethodReferenceEqualityComparer.Instance);
+			//var methodofMap = new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance);
 			foreach (var m in methodMap)
 			{
 				PopulateCalls(m, innerCallMap, outerCallMap);
+				//PopulateTokens(m, methodofMap);
 			}
 
 			var typeFullNameIndex = new Dictionary<TypeReference, string>(TypeReferenceEqualityComparer.Instance);
@@ -108,6 +111,7 @@ namespace Flint.Analyzers
 				.ToFrozenSet(MethodReferenceEqualityComparer.Instance);
 
 			var efCoreFilters = outerCallMap.Keys
+				//.Concat(methodofMap)
 				.Where(x => MethodHasLongName(typeFullNameIndex, methodLongNameIndex, x, EF_CORE_FILTERS))
 				.ToFrozenSet(MethodReferenceEqualityComparer.Instance);
 
@@ -195,8 +199,10 @@ namespace Flint.Analyzers
 		];
 
 		private static readonly FrozenSet<string> EF_CORE_FILTERS = [
+			"System.Linq.Enumerable.Any",
 			"System.Linq.Queryable.Where",
 			"System.Linq.Queryable.OrderBy",
+			"System.Linq.Queryable.OrderByDescending",
 			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstAsync",
 			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync",
 			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastAsync",
@@ -363,8 +369,6 @@ namespace Flint.Analyzers
 
 		private static void PopulateCalls(MethodDefinition method, Dictionary<MethodReference, HashSet<CallInfo>> innerCallMap, Dictionary<MethodReference, HashSet<CallInfo>> outerCallMap)
 		{
-			if (method.Name == "NoOutbox") { }
-
 			if (innerCallMap.TryGetValue(method, out var innerCalls) == false)
 			{
 				innerCalls = [];
@@ -381,6 +385,24 @@ namespace Flint.Analyzers
 					outerCallMap.Add(call, outerCalls);
 				}
 				outerCalls.Add(new CallInfo(method, pt));
+			}
+		}
+
+		private static void PopulateTokens(MethodDefinition method, HashSet<MethodReference> methodofMap)
+		{
+			foreach (var (token, _) in MethodAnalyzer.GetTokens(method))
+			{
+				if (token is TypeReference t)
+				{
+				}
+				else if (token is MethodReference m)
+				{
+					methodofMap.Add(m);
+				}
+				else if (token is FieldReference f)
+				{
+				}
+				else throw new NotImplementedException($"Unknown token {token}");
 			}
 		}
 		#endregion

@@ -28,7 +28,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.OrderBy));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.OrderBy line 12"
+				"consider adding index (Email) on entity Samples.User for the query in method Samples.IndexSamples.OrderBy line 12"
 			]);
 		}
 
@@ -40,7 +40,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.Where));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.Where line 26"
+				"consider adding index (Email) on entity Samples.User for the query in method Samples.IndexSamples.Where line 26"
 			]);
 		}
 
@@ -52,7 +52,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.NestedWhere));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (FirstName,Email) on table Users for the query in method Samples.IndexSamples.NestedWhere line 40"
+				"consider adding index (FirstName,Email) on entity Samples.User for the query in method Samples.IndexSamples.NestedWhere line 40"
 			]);
 		}
 
@@ -64,7 +64,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.FirstAsync));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.FirstAsync line 55"
+				"consider adding index (Email) on entity Samples.User for the query in method Samples.IndexSamples.FirstAsync line 55"
 			]);
 		}
 
@@ -76,7 +76,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.FirstOrDefaultAsync));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.FirstOrDefaultAsync line 66"
+				"consider adding index (Email) on entity Samples.User for the query in method Samples.IndexSamples.FirstOrDefaultAsync line 66"
 			]);
 		}
 
@@ -88,7 +88,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.LastAsync));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.LastAsync line 77"
+				"consider adding index (Email) on entity Samples.User for the query in method Samples.IndexSamples.LastAsync line 77"
 			]);
 		}
 
@@ -100,7 +100,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.LastOrDefaultAsync));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.LastOrDefaultAsync line 88"
+				"consider adding index (Email) on entity Samples.User for the query in method Samples.IndexSamples.LastOrDefaultAsync line 88"
 			]);
 		}
 
@@ -112,7 +112,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.SingleAsync));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.SingleAsync line 99"
+				"consider adding index (Email) on entity Samples.User for the query in method Samples.IndexSamples.SingleAsync line 99"
 			]);
 		}
 
@@ -124,7 +124,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.SingleOrDefaultAsync));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.SingleOrDefaultAsync line 110"
+				"consider adding index (Email) on entity Samples.User for the query in method Samples.IndexSamples.SingleOrDefaultAsync line 110"
 			]);
 		}
 
@@ -176,8 +176,8 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.Mixed));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.Mixed line 166",
-				"consider adding index (Name) on table Products for the query in method Samples.IndexSamples.Mixed line 168"
+				"consider adding index (Email) on entity Samples.User for the query in method Samples.IndexSamples.Mixed line 166",
+				"consider adding index (Name) on entity Samples.Product for the query in method Samples.IndexSamples.Mixed line 168"
 			]);
 		}
 
@@ -189,7 +189,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.NestedChain));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Price) on table Products for the query in method Samples.IndexSamples.NestedChain line 107"
+				"consider adding index (Price) on entity Samples.Product for the query in method Samples.IndexSamples.NestedChain line 107"
 			]);
 		}
 
@@ -201,7 +201,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.NestedAny));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Total) on table OrderItem for the query in method Samples.IndexSamples.NestedAny line 116"
+				"consider adding index (Total) on entity Samples.OrderItem for the query in method Samples.IndexSamples.NestedAny line 116"
 			]);
 		}
 
@@ -213,8 +213,8 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.MixedWhere));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (IsCompleted) on table Todos for the query in method Samples.IndexSamples.MixedWhere line 196",
-				"consider adding index (FirstName) on table Users for the query in method Samples.IndexSamples.Where line 196"
+				"consider adding index (IsCompleted) on entity Samples.Todo for the query in method Samples.IndexSamples.MixedWhere line 196",
+				"consider adding index (FirstName) on entity Samples.User for the query in method Samples.IndexSamples.MixedWhere line 196"
 			]);
 		}
 
@@ -226,7 +226,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.OrderByDescending));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.OrderByDescending line 210"
+				"consider adding index (Email) on entity Samples.User for the query in method Samples.IndexSamples.OrderByDescending line 210"
 			]);
 		}
 
@@ -238,9 +238,8 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.FilteredInclude));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Email) on table Users for the query in method Samples.IndexSamples.FilteredInclude line 210"
+				"consider adding index (Email) on entity Samples.User for the query in method Samples.IndexSamples.FilteredInclude line 210"
 			]);
 		}
-
 	}
 }

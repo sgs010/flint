@@ -22,6 +22,7 @@ namespace Flint.Vm
 		public static readonly FrozenSet<Code> BranchInstructions = [Code.Beq, Code.Beq_S, Code.Bge, Code.Bge_S, Code.Bge_Un, Code.Bge_Un_S, Code.Bgt, Code.Bgt_S, Code.Bgt_Un, Code.Bgt_Un_S, Code.Ble, Code.Ble_S, Code.Ble_Un, Code.Ble_Un_S, Code.Blt, Code.Blt_S, Code.Blt_Un, Code.Blt_Un_S, Code.Bne_Un, Code.Bne_Un_S, Code.Br, Code.Br_S, Code.Brfalse, Code.Brfalse_S, Code.Brtrue, Code.Brtrue_S];
 		public static readonly FrozenSet<Code> CallInstructions = [Code.Call, Code.Callvirt];
 		public static readonly FrozenSet<Code> LambdaInstructions = [Code.Ldftn, Code.Ldvirtftn];
+		public static readonly FrozenSet<Code> TokenInstructions = [Code.Ldtoken];
 
 		public static IEnumerable<(Instruction, CilPoint)> GetInstructions(MethodDefinition mtd, FrozenSet<Code> codes)
 		{
