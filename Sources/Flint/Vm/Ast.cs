@@ -14,6 +14,7 @@ namespace Flint.Vm
 		public abstract bool Equals(Ast other);
 		public virtual void Capture(Ast other, IDictionary<string, Ast> captures) { }
 		protected virtual (Ast, MergeResult) Merge(Ast other) { return NotMerged(); }
+		protected abstract Ast RewriteChildren(Func<Ast, (Ast, bool)> fn);
 
 		public enum MergeResult { NotMerged = 0, OkMerged = 1, Equal = 2 }
 
@@ -155,6 +156,30 @@ namespace Flint.Vm
 				if (maxCount >= 0 && nodes.Count >= maxCount)
 					return;
 			}
+		}
+
+		public static Ast Rewrite(Ast expr, Func<Ast, (Ast, bool)> rewrite)
+		{
+			var (val, ok) = rewrite(expr);
+			if (ok)
+				return val;
+
+			return expr.RewriteChildren(rewrite);
+		}
+
+		public static Ast[] Rewrite(Ast[] arr, Func<Ast, (Ast, bool)> rewrite)
+		{
+			if (arr == null)
+				return null;
+			if (arr.Length == 0)
+				return [];
+
+			var result = new Ast[arr.Length];
+			for (int i = 0; i < arr.Length; ++i)
+			{
+				result[i] = Rewrite(arr[i], rewrite);
+			}
+			return result;
 		}
 	}
 }

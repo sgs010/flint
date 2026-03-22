@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using Flint.Vm;
 
 namespace Flint.Common
 {
@@ -49,6 +48,23 @@ namespace Flint.Common
 			return new Stack<T>(items);
 		}
 
+		public static U[] ToArray<T, U>(this IReadOnlyCollection<T> col, Func<T, U> convert)
+		{
+			if (col == null)
+				return [];
+			if (col.Count == 0)
+				return [];
+
+			var buf = new U[col.Count];
+			var index = 0;
+			foreach (var x in col)
+			{
+				buf[index] = convert(x);
+				++index;
+			}
+			return [.. buf];
+		}
+
 		public static ImmutableArray<U> ToImmutableArray<T, U>(this IReadOnlyCollection<T> col, Func<T, U> convert)
 		{
 			if (col == null)
@@ -83,5 +99,10 @@ namespace Flint.Common
 			return true;
 		}
 #endif
+		public static void AddRange<T>(this HashSet<T> col, IEnumerable<T> seq)
+		{
+			foreach (var x in seq)
+				col.Add(x);
+		}
 	}
 }

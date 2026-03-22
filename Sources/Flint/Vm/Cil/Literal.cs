@@ -32,5 +32,10 @@
 		{
 			return OkMerged(other);
 		}
+
+		protected override Ast RewriteChildren(Func<Ast, (Ast, bool)> fn)
+		{
+			return this;
+		}
 	}
 }

@@ -29,5 +29,10 @@ namespace Flint.Vm.Cil
 			}
 			return false;
 		}
+
+		protected override Ast RewriteChildren(Func<Ast, (Ast, bool)> fn)
+		{
+			return this;
+		}
 	}
 }
