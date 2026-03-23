@@ -189,7 +189,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.NestedChain));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Price) on entity Samples.Product for the query in method Samples.IndexSamples.NestedChain line 107"
+				"consider adding index (Price) on entity Samples.Product for the query in method Samples.IndexSamples.NestedChain line 177"
 			]);
 		}
 
@@ -201,7 +201,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.NestedAny));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Total) on entity Samples.OrderItem for the query in method Samples.IndexSamples.NestedAny line 116"
+				"consider adding index (Total) on entity Samples.OrderItem for the query in method Samples.IndexSamples.NestedAny line 186"
 			]);
 		}
 
@@ -238,7 +238,7 @@ namespace FlintTests.FlintCore
 			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.FilteredInclude));
 
 			Flint.Api.PrettyPrint(ctx.Result).AssertSame([
-				"consider adding index (Email) on entity Samples.User for the query in method Samples.IndexSamples.FilteredInclude line 210"
+				"consider adding index (CreatedDate,TotalAmount) on entity Samples.Order2 for the query in method Samples.IndexSamples.FilteredInclude line 224"
 			]);
 		}
 	}

@@ -1,4 +1,5 @@
-﻿namespace Flint.Vm.Match
+﻿
+namespace Flint.Vm.Match
 {
 	class Any : Ast
 	{
@@ -15,6 +16,11 @@
 		public override bool Equals(Ast other)
 		{
 			return true;
+		}
+
+		protected override Ast RewriteChildren(Func<Ast, (Ast, bool)> fn)
+		{
+			return this;
 		}
 	}
 }

@@ -95,11 +95,9 @@ namespace Flint.Analyzers
 
 			var innerCallMap = new Dictionary<MethodReference, HashSet<CallInfo>>(MethodReferenceEqualityComparer.Instance);
 			var outerCallMap = new Dictionary<MethodReference, HashSet<CallInfo>>(MethodReferenceEqualityComparer.Instance);
-			//var methodofMap = new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance);
 			foreach (var m in methodMap)
 			{
 				PopulateCalls(m, innerCallMap, outerCallMap);
-				//PopulateTokens(m, methodofMap);
 			}
 
 			var typeFullNameIndex = new Dictionary<TypeReference, string>(TypeReferenceEqualityComparer.Instance);
@@ -111,7 +109,6 @@ namespace Flint.Analyzers
 				.ToFrozenSet(MethodReferenceEqualityComparer.Instance);
 
 			var efCoreFilters = outerCallMap.Keys
-				//.Concat(methodofMap)
 				.Where(x => MethodHasLongName(typeFullNameIndex, methodLongNameIndex, x, EF_CORE_FILTERS))
 				.ToFrozenSet(MethodReferenceEqualityComparer.Instance);
 

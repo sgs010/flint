@@ -160,6 +160,9 @@ namespace Flint.Vm
 
 		public static Ast Rewrite(Ast expr, Func<Ast, (Ast, bool)> rewrite)
 		{
+			if (expr == null)
+				return null;
+
 			var (val, ok) = rewrite(expr);
 			if (ok)
 				return val;

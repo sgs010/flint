@@ -41,5 +41,10 @@ namespace Flint.Vm.Match
 			if (other is Cil.Call call)
 				captures.AddOrReplace(call.MethodFullName, call);
 		}
+
+		protected override Ast RewriteChildren(Func<Ast, (Ast, bool)> fn)
+		{
+			return this;
+		}
 	}
 }

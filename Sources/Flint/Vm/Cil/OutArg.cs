@@ -4,9 +4,9 @@ namespace Flint.Vm.Cil
 {
 	class OutArg : Ast
 	{
-		public readonly Call Call;
+		public readonly Ast Call;
 		public readonly int Index;
-		public OutArg(CilPoint pt, Call call, int index) : base(pt)
+		public OutArg(CilPoint pt, Ast call, int index) : base(pt)
 		{
 			Call = call;
 			Index = index;
@@ -46,6 +46,11 @@ namespace Flint.Vm.Cil
 				return OkMerged(new OutArg(CilPoint, (Call)call, Index));
 			}
 			return NotMerged();
+		}
+
+		protected override Ast RewriteChildren(Func<Ast, (Ast, bool)> fn)
+		{
+			return new OutArg(CilPoint, Rewrite(Call, fn), Index);
 		}
 	}
 }
