@@ -118,6 +118,7 @@ namespace Samples
 		public DbSet<Tag> Tags => Set<Tag>();
 		public DbSet<Outbox> Outbox => Set<Outbox>();
 		public DbSet<User2> Users2 => Set<User2>();
+		public DbSet<Order2> Orders2 => Set<Order2>();
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{

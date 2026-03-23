@@ -206,6 +206,7 @@ namespace Flint.Analyzers
 			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.LastOrDefaultAsync",
 			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleAsync",
 			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleOrDefaultAsync",
+			"Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include",
 		];
 
 		private static readonly string LINQ_LAMBDA = "System.Linq.Expressions.Expression.Lambda";
