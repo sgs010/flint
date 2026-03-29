@@ -57,13 +57,19 @@ namespace Flint.Analyzers
 					}
 				}
 
-				// report issues
+				// report missing indexes
 				foreach (var x in entityMap)
 				{
+					var entityType = asm.EntityTypes.First(y => Are.Equal(x.Key, y));
+					var properties = CollectAccessedProperties(asm, entityType, x.Value);
+
+					if (IndexExists(asm, entityType, properties))
+						continue;
+
 					var sb = new StringBuilder();
 					sb.Append("consider adding index (");
-					PrettyPrintIndexColumns(sb, asm, x.Key, x.Value);
-					sb.Append(") on entity ").Append(x.Key.FullName).Append(" for the query");
+					PrettyPrintIndexColumns(sb, entityType, properties);
+					sb.Append(") on entity ").Append(entityType.FullName).Append(" for the query");
 					ctx.AddResult(Code, sb.ToString(), query.Method, query.CilPoint);
 				}
 			}
@@ -71,17 +77,43 @@ namespace Flint.Analyzers
 		#endregion
 
 		#region Implementation
-		private static void PrettyPrintIndexColumns(StringBuilder sb, AssemblyInfo asm, TypeReference t, HashSet<MethodReference> propGet)
+		private static HashSet<PropertyReference> CollectAccessedProperties(AssemblyInfo asm, TypeReference entityType, HashSet<MethodReference> propGet)
 		{
-			var td = asm.EntityTypes.First(x => Are.Equal(x, t));
-			var needSeparator = false;
-			foreach (var p in td.Properties)
+			var entityDefinition = asm.EntityTypes.First(x => Are.Equal(x, entityType));
+			var index = new HashSet<PropertyReference>(PropertyReferenceEqualityComparer.Instance);
+			foreach (var prop in entityDefinition.Properties)
 			{
-				if (propGet.Contains(p.GetMethod) == false)
-					continue; // property is not accessed
+				if (propGet.Contains(prop.GetMethod))
+					index.Add(prop);
+			}
+			return index;
+		}
+
+		private static bool IndexExists(AssemblyInfo asm, TypeDefinition entityType, HashSet<PropertyReference> properties)
+		{
+			if (asm.EntityIndexes.TryGetValue(entityType, out var indexList) == false)
+				return false;
+
+			foreach (var index in indexList)
+			{
+				if (properties.IsSubsetOf(index))
+					return true; // index found
+			}
+			return false;
+		}
+
+		private static void PrettyPrintIndexColumns(StringBuilder sb, TypeDefinition entityType, HashSet<PropertyReference> properties)
+		{
+			// we iterate through all properties to keep the order, because in a set order is not defined
+
+			var needSeparator = false;
+			foreach (var prop in entityType.Properties)
+			{
+				if (properties.Contains(prop) == false)
+					continue;
 				if (needSeparator)
 					sb.Append(',');
-				sb.Append(p.Name);
+				sb.Append(prop.Name);
 				needSeparator = true;
 			}
 		}

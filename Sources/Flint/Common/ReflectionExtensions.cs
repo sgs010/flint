@@ -179,6 +179,50 @@ namespace Flint.Common
 			itemType = t.Resolve();
 			return true;
 		}
+
+		public static bool TryGetAttribute(this TypeDefinition type, string fullName, out CustomAttribute attr)
+		{
+			attr = null;
+			if (type.HasCustomAttributes == false)
+				return false;
+
+			foreach (var x in type.CustomAttributes)
+			{
+				if (string.Equals(x.AttributeType.FullName, fullName, StringComparison.Ordinal) == false)
+					continue;
+
+				attr = x;
+				return true;
+			}
+			return false;
+		}
+
+		public static bool TryGetAttribute(this PropertyDefinition type, string fullName, out CustomAttribute attr)
+		{
+			attr = null;
+			if (type.HasCustomAttributes == false)
+				return false;
+
+			foreach (var x in type.CustomAttributes)
+			{
+				if (string.Equals(x.AttributeType.FullName, fullName, StringComparison.Ordinal) == false)
+					continue;
+
+				attr = x;
+				return true;
+			}
+			return false;
+		}
+
+		public static bool HasAttribute(this TypeDefinition type, string fullName)
+		{
+			return TryGetAttribute(type, fullName, out _);
+		}
+
+		public static bool HasAttribute(this PropertyDefinition type, string fullName)
+		{
+			return TryGetAttribute(type, fullName, out _);
+		}
 		#endregion
 
 		#region Implementation

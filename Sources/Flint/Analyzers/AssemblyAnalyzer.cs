@@ -1,6 +1,5 @@
 ﻿using System.Collections.Frozen;
 using System.Collections.Immutable;
-using System.Linq;
 using Flint.Common;
 using Flint.Vm;
 using Mono.Cecil;
@@ -19,6 +18,7 @@ namespace Flint.Analyzers
 		public required FrozenSet<TypeDefinition> EntityTypes { get; init; }
 		public required FrozenSet<PropertyDefinition> EntityCollections { get; init; }
 		public required FrozenSet<MethodReference> EntityGetSetMethods { get; init; }
+		public required FrozenDictionary<TypeReference, ImmutableArray<FrozenSet<PropertyReference>>> EntityIndexes { get; init; }
 		public required FrozenDictionary<TypeReference, ImmutableArray<TypeDefinition>> InterfaceClasses { get; init; }
 		public required Dictionary<TypeReference, string> TypeFullNameIndex { get; init; }
 		public required Dictionary<MethodReference, string> MethodFullNameIndex { get; init; }
@@ -85,12 +85,17 @@ namespace Flint.Analyzers
 			var entityGetSetMap = new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance);
 			var interfaceMap = new Dictionary<TypeReference, List<TypeDefinition>>(TypeReferenceEqualityComparer.Instance);
 			var methodMap = new HashSet<MethodDefinition>(MethodReferenceEqualityComparer.Instance);
-
+			var indexMap = new Dictionary<TypeReference, List<HashSet<PropertyReference>>>(TypeReferenceEqualityComparer.Instance);
 			foreach (var type in module.Types)
 			{
 				PopulateEntities(type, entityMap, entityPropMap, entityGetSetMap);
 				PopulateInterfaces(type, interfaceMap);
 				PopulateMethods(type, methodMap);
+			}
+
+			foreach (var type in entityMap)
+			{
+				PopulateIndexes(type, indexMap);
 			}
 
 			var innerCallMap = new Dictionary<MethodReference, HashSet<CallInfo>>(MethodReferenceEqualityComparer.Instance);
@@ -123,6 +128,10 @@ namespace Flint.Analyzers
 				EntityTypes = entityMap.ToFrozenSet(TypeDefinitionEqualityComparer.Instance),
 				EntityCollections = entityPropMap.ToFrozenSet(PropertyDefinitionEqualityComparer.Instance),
 				EntityGetSetMethods = entityGetSetMap.ToFrozenSet(MethodReferenceEqualityComparer.Instance),
+				EntityIndexes = indexMap.ToFrozenDictionary(
+					x => x.Key,
+					x => x.Value.ToImmutableArray(y => y.ToFrozenSet(PropertyReferenceEqualityComparer.Instance)),
+					TypeReferenceEqualityComparer.Instance),
 				InterfaceClasses = interfaceMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray(), TypeReferenceEqualityComparer.Instance),
 				MethodInnerCalls = innerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray(), MethodReferenceEqualityComparer.Instance),
 				MethodOuterCalls = outerCallMap.ToFrozenDictionary(x => x.Key, x => x.Value.ToImmutableArray(), MethodReferenceEqualityComparer.Instance),
@@ -402,6 +411,56 @@ namespace Flint.Analyzers
 				}
 				else throw new NotImplementedException($"Unknown token {token}");
 			}
+		}
+
+		private static void PopulateIndexes(TypeDefinition entityType, Dictionary<TypeReference, List<HashSet<PropertyReference>>> typeIndexMap)
+		{
+			var indexMap = new List<HashSet<PropertyReference>>();
+
+			var primaryKeyIndex = GetPrimaryKeyIndex(entityType);
+			if (primaryKeyIndex.IsNullOrEmpty() == false)
+				indexMap.Add(primaryKeyIndex);
+
+			if (indexMap.Count > 0)
+				typeIndexMap.Add(entityType, indexMap);
+		}
+
+		private static HashSet<PropertyReference> GetPrimaryKeyIndex(TypeDefinition entityType)
+		{
+			var primaryKeyIndex = new HashSet<PropertyReference>(PropertyReferenceEqualityComparer.Instance);
+
+			// property names from [PrimaryKey] class attribute
+			if (entityType.TryGetAttribute("Microsoft.EntityFrameworkCore.PrimaryKeyAttribute", out var attr))
+			{
+				if (attr.HasConstructorArguments)
+				{
+					foreach (var arg in attr.ConstructorArguments)
+					{
+						if (arg.Value is string propName)
+						{
+							var prop = entityType.Properties.FirstOrDefault(x => x.Name == propName);
+							if (prop != null)
+								primaryKeyIndex.Add(prop);
+						}
+					}
+				}
+			}
+
+			// properties marked with [Key] attribute
+			foreach (var prop in entityType.Properties.Where(x => x.HasAttribute("System.ComponentModel.DataAnnotations.KeyAttribute")))
+			{
+				primaryKeyIndex.Add(prop);
+			}
+
+			// default primary key
+			if (primaryKeyIndex.Count == 0)
+			{
+				var prop = entityType.Properties.FirstOrDefault(x => x.Name == "Id");
+				if (prop != null)
+					primaryKeyIndex.Add(prop);
+			}
+
+			return primaryKeyIndex;
 		}
 		#endregion
 	}
