@@ -85,17 +85,12 @@ namespace Flint.Analyzers
 			var entityGetSetMap = new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance);
 			var interfaceMap = new Dictionary<TypeReference, List<TypeDefinition>>(TypeReferenceEqualityComparer.Instance);
 			var methodMap = new HashSet<MethodDefinition>(MethodReferenceEqualityComparer.Instance);
-			var indexMap = new Dictionary<TypeReference, List<HashSet<PropertyReference>>>(TypeReferenceEqualityComparer.Instance);
+			var dbContextMap = new HashSet<TypeDefinition>(TypeReferenceEqualityComparer.Instance);
 			foreach (var type in module.Types)
 			{
-				PopulateEntities(type, entityMap, entityPropMap, entityGetSetMap);
+				PopulateEntities(type, entityMap, entityPropMap, entityGetSetMap, dbContextMap);
 				PopulateInterfaces(type, interfaceMap);
 				PopulateMethods(type, methodMap);
-			}
-
-			foreach (var type in entityMap)
-			{
-				PopulateIndexes(type, indexMap);
 			}
 
 			var innerCallMap = new Dictionary<MethodReference, HashSet<CallInfo>>(MethodReferenceEqualityComparer.Instance);
@@ -106,8 +101,10 @@ namespace Flint.Analyzers
 			}
 
 			var typeFullNameIndex = new Dictionary<TypeReference, string>(TypeReferenceEqualityComparer.Instance);
+			var typeNonGenericNameIndex = new Dictionary<TypeReference, string>(TypeReferenceEqualityComparer.Instance);
 			var methodFullNameIndex = new Dictionary<MethodReference, string>(MethodReferenceEqualityComparer.Instance);
 			var methodLongNameIndex = new Dictionary<MethodReference, string>(MethodReferenceEqualityComparer.Instance);
+			var methodNonGenericNameIndex = new Dictionary<MethodReference, string>(MethodReferenceEqualityComparer.Instance);
 
 			var efCoreRoots = outerCallMap.Keys
 				.Where(x => MethodHasLongName(typeFullNameIndex, methodLongNameIndex, x, EF_CORE_ROOTS))
@@ -121,13 +118,30 @@ namespace Flint.Analyzers
 				.Where(x => MethodHasLongName(typeFullNameIndex, methodLongNameIndex, x, LINQ_LAMBDA))
 				.ToFrozenSet(MethodReferenceEqualityComparer.Instance);
 
+			var entityTypes = entityMap.ToFrozenSet(TypeDefinitionEqualityComparer.Instance);
+			var entityGetSetMethods = entityGetSetMap.ToFrozenSet(MethodReferenceEqualityComparer.Instance);
+
+			var fluentBuilders = outerCallMap.Keys
+				.Where(x => MethodHasNonGenericName(typeNonGenericNameIndex, methodNonGenericNameIndex, x, EF_CORE_FLUENT_API))
+				.ToFrozenSet(MethodReferenceEqualityComparer.Instance);
+
+			var indexMap = new Dictionary<TypeReference, List<HashSet<PropertyReference>>>(TypeReferenceEqualityComparer.Instance);
+			foreach (var dbc in dbContextMap)
+			{
+				PopulateDbContextIndexes(dbc, fluentBuilders, linqExpressions, entityTypes, entityGetSetMethods, indexMap);
+			}
+			foreach (var type in entityMap)
+			{
+				PopulateEntityIndexes(type, indexMap);
+			}
+
 			return new AssemblyInfo
 			{
 				Module = module,
 				DbGetMethods = entityPropMap.Select(x => x.GetMethod).ToFrozenSet(MethodReferenceEqualityComparer.Instance),
-				EntityTypes = entityMap.ToFrozenSet(TypeDefinitionEqualityComparer.Instance),
+				EntityTypes = entityTypes,
 				EntityCollections = entityPropMap.ToFrozenSet(PropertyDefinitionEqualityComparer.Instance),
-				EntityGetSetMethods = entityGetSetMap.ToFrozenSet(MethodReferenceEqualityComparer.Instance),
+				EntityGetSetMethods = entityGetSetMethods,
 				EntityIndexes = indexMap.ToFrozenDictionary(
 					x => x.Key,
 					x => x.Value.ToImmutableArray(y => y.ToFrozenSet(PropertyReferenceEqualityComparer.Instance)),
@@ -220,6 +234,10 @@ namespace Flint.Analyzers
 
 		private static readonly string LINQ_LAMBDA = "System.Linq.Expressions.Expression.Lambda";
 
+		private static readonly FrozenSet<string> EF_CORE_FLUENT_API = [
+			"Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder`1.HasKey"
+		];
+
 		private static TypeReference COMPILER_GENERATED_ATTRIBUTE_TYPE;
 
 		private static ModuleDefinition LoadModule(Stream dllStream, Stream pdbStream)
@@ -256,6 +274,16 @@ namespace Flint.Analyzers
 			return fullName;
 		}
 
+		private static string GetTypeNonGenericName(Dictionary<TypeReference, string> typeMap, TypeReference type)
+		{
+			if (typeMap.TryGetValue(type, out var name) == false)
+			{
+				name = type.Namespace + "." + type.Name;
+				typeMap.Add(type, name);
+			}
+			return name;
+		}
+
 		private static string GetMethodFullName(Dictionary<MethodReference, string> methodMap, MethodReference method)
 		{
 			if (methodMap.TryGetValue(method, out var fullName) == false)
@@ -276,6 +304,16 @@ namespace Flint.Analyzers
 			return longName;
 		}
 
+		private static string GetMethodNonGenericName(Dictionary<TypeReference, string> typeMap, Dictionary<MethodReference, string> methodMap, MethodReference method)
+		{
+			if (methodMap.TryGetValue(method, out var methodName) == false)
+			{
+				methodName = GetTypeNonGenericName(typeMap, method.DeclaringType) + "." + method.Name;
+				methodMap.Add(method, methodName);
+			}
+			return methodName;
+		}
+
 		private static bool MethodHasLongName(Dictionary<TypeReference, string> typeMap, Dictionary<MethodReference, string> methodMap, MethodReference method, string longName)
 		{
 			var methodLongName = GetMethodLongName(typeMap, methodMap, method);
@@ -286,6 +324,12 @@ namespace Flint.Analyzers
 		{
 			var methodLongName = GetMethodLongName(typeMap, methodMap, method);
 			return names.Contains(methodLongName);
+		}
+
+		private static bool MethodHasNonGenericName(Dictionary<TypeReference, string> typeMap, Dictionary<MethodReference, string> methodMap, MethodReference method, FrozenSet<string> names)
+		{
+			var methodName = GetMethodNonGenericName(typeMap, methodMap, method);
+			return names.Contains(methodName);
 		}
 
 		private static bool IsCompilerGenerated(IEnumerable<CustomAttribute> attributes)
@@ -313,7 +357,7 @@ namespace Flint.Analyzers
 			return IsCompilerGenerated(method.CustomAttributes);
 		}
 
-		private static void PopulateEntities(TypeDefinition type, HashSet<TypeDefinition> entityMap, HashSet<PropertyDefinition> entityPropMap, HashSet<MethodReference> entityGetSetMap)
+		private static void PopulateEntities(TypeDefinition type, HashSet<TypeDefinition> entityMap, HashSet<PropertyDefinition> entityPropMap, HashSet<MethodReference> entityGetSetMap, HashSet<TypeDefinition> dbContextMap)
 		{
 			if (type.BaseType == null)
 				return;
@@ -322,13 +366,14 @@ namespace Flint.Analyzers
 			if (type.BaseType.Name != "DbContext")
 				return;
 
-			// type is DbContext here
+			// type is DbContext
+			dbContextMap.Add(type);
 			foreach (var prop in type.Properties)
 			{
 				if (prop.PropertyType.IsDbSet(out var entityType) == false)
 					continue;
 
-				// prop is DbSet<T> here
+				// prop is DbSet<T>
 				entityMap.Add(entityType);
 				entityPropMap.Add(prop);
 
@@ -413,19 +458,93 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void PopulateIndexes(TypeDefinition entityType, Dictionary<TypeReference, List<HashSet<PropertyReference>>> typeIndexMap)
+		private static void PopulateDbContextIndexes(
+			TypeDefinition dbContextType,
+			FrozenSet<MethodReference> fluentBuilders,
+			FrozenSet<MethodReference> linqExpressions,
+			FrozenSet<TypeDefinition> entityTypes,
+			FrozenSet<MethodReference> entityGetSetMethods,
+			Dictionary<TypeReference, List<HashSet<PropertyReference>>> typeIndexMap)
 		{
-			var indexMap = new List<HashSet<PropertyReference>>();
+			// evaluate OnModelCreating, inspect EF core fluent api calls, collect entity properties
 
-			var primaryKeyIndex = GetPrimaryKeyIndex(entityType);
+			if (dbContextType.HasMethods == false)
+				return;
+
+			var onModelCreating = dbContextType.Methods.FirstOrDefault(x => x.Name == "OnModelCreating");
+			if (onModelCreating == null)
+				return;
+
+			var body = MethodAnalyzer.EvalRaw(onModelCreating);
+			foreach (var path in body)
+			{
+				foreach (var builder in path.OfCall(fluentBuilders))
+				{
+					// builder is EF core fluent api method (i.e. modelBuilder.Entity<T>().HasKey(...))
+					// where T is entity type
+
+					if (builder.Method.DeclaringType.TryGetGenericArgument<TypeDefinition>(0, out var entityType) == false)
+						continue;
+					if (entityTypes.Contains(entityType) == false)
+						continue; // this is not an entity
+
+					var entityIndex = new HashSet<PropertyReference>(PropertyReferenceEqualityComparer.Instance);
+					foreach (var expr in builder.OfCall(linqExpressions))
+					{
+						foreach (var mtd in expr.OfMethodof(entityGetSetMethods))
+						{
+							// mtd is get_Property method
+							if (Are.Equal(mtd.Method.DeclaringType, entityType) == false)
+								continue; // this is not our entity's property
+
+							var propertyType = mtd.Method.ReturnType;
+							if (propertyType.IsGenericCollection(out var _, entityTypes))
+							{
+								// nested entity collection
+							}
+							else if (entityTypes.Contains(propertyType))
+							{
+								// nested entity
+							}
+							else
+							{
+								// simple property (int, string and so on)
+
+								// in ast we have a get_Property method call, but we need a property itself
+								// resolve property from get menthod, then add it to the index
+								var entityDefinition = entityTypes.First(x => Are.Equal(x, entityType));
+								var prop = entityDefinition.Properties.FirstOrDefault(x => Are.Equal(x.GetMethod, mtd.Method));
+								if (prop != null)
+									entityIndex.Add(prop);
+							}
+						}
+					}
+					if (entityIndex.Count > 0)
+					{
+						var indexMap = typeIndexMap.GetOrAddValue(entityType);
+						indexMap.Add(entityIndex);
+					}
+				}
+			}
+		}
+
+		private static void PopulateEntityIndexes(TypeDefinition entityType, Dictionary<TypeReference, List<HashSet<PropertyReference>>> typeIndexMap)
+		{
+			if (typeIndexMap.TryGetValue(entityType, out var indexMap) == false)
+				indexMap = [];
+
+			var primaryKeyIndex = GetEntityPrimaryKeyIndex(entityType);
 			if (primaryKeyIndex.IsNullOrEmpty() == false)
 				indexMap.Add(primaryKeyIndex);
 
 			if (indexMap.Count > 0)
-				typeIndexMap.Add(entityType, indexMap);
+			{
+				if (typeIndexMap.ContainsKey(entityType) == false)
+					typeIndexMap.Add(entityType, indexMap);
+			}
 		}
 
-		private static HashSet<PropertyReference> GetPrimaryKeyIndex(TypeDefinition entityType)
+		private static HashSet<PropertyReference> GetEntityPrimaryKeyIndex(TypeDefinition entityType)
 		{
 			var primaryKeyIndex = new HashSet<PropertyReference>(PropertyReferenceEqualityComparer.Instance);
 

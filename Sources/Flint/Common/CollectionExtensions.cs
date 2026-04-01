@@ -104,5 +104,10 @@ namespace Flint.Common
 			foreach (var x in seq)
 				col.Add(x);
 		}
+
+		public static bool IsOneOf<T>(this T value, ISet<T> options)
+		{
+			return options.Contains(value);
+		}
 	}
 }

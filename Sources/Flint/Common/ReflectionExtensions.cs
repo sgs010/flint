@@ -223,6 +223,30 @@ namespace Flint.Common
 		{
 			return TryGetAttribute(type, fullName, out _);
 		}
+
+		public static bool TryGetGenericArgument<T>(this TypeReference type, int index, out T result)
+		{
+			result = default;
+			var t = ((GenericInstanceType)type).GenericArguments[index];
+			if (t is T tt)
+			{
+				result = tt;
+				return true;
+			}
+			return false;
+		}
+
+		public static bool TryGetGenericArgument<T>(this MethodReference method, int index, out T result)
+		{
+			result = default;
+			var t = ((GenericInstanceMethod)method).GenericArguments[index];
+			if (t is T tt)
+			{
+				result = tt;
+				return true;
+			}
+			return false;
+		}
 		#endregion
 
 		#region Implementation
