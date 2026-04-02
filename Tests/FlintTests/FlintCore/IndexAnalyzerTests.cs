@@ -241,5 +241,25 @@ namespace FlintTests.FlintCore
 				"consider adding index (CreatedDate,TotalAmount) on entity Samples.Order2 for the query in method Samples.IndexSamples.FilteredInclude line 224"
 			]);
 		}
+
+		[TestMethod]
+		public void IndexFromFluentApi()
+		{
+			var ctx = new AnalyzerContext();
+
+			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.IndexFromFluentApi));
+
+			ctx.Result.AssertEmpty();
+		}
+
+		[TestMethod]
+		public void IndexFromDataAnnotations()
+		{
+			var ctx = new AnalyzerContext();
+
+			IndexAnalyzer.Run(ctx, ASM, nameof(Samples.IndexSamples), nameof(Samples.IndexSamples.IndexFromDataAnnotations));
+
+			ctx.Result.AssertEmpty();
+		}
 	}
 }

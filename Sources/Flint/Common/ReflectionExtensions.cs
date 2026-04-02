@@ -180,38 +180,40 @@ namespace Flint.Common
 			return true;
 		}
 
+		public static IEnumerable<CustomAttribute> GetAttributes(this TypeDefinition type, string fullName)
+		{
+			if (type.HasCustomAttributes == false)
+				yield break;
+
+			foreach (var attr in type.CustomAttributes)
+			{
+				if (string.Equals(attr.AttributeType.FullName, fullName, StringComparison.Ordinal))
+					yield return attr;
+			}
+		}
+
+		public static IEnumerable<CustomAttribute> GetAttributes(this PropertyDefinition type, string fullName)
+		{
+			if (type.HasCustomAttributes == false)
+				yield break;
+
+			foreach (var attr in type.CustomAttributes)
+			{
+				if (string.Equals(attr.AttributeType.FullName, fullName, StringComparison.Ordinal))
+					yield return attr;
+			}
+		}
+
 		public static bool TryGetAttribute(this TypeDefinition type, string fullName, out CustomAttribute attr)
 		{
-			attr = null;
-			if (type.HasCustomAttributes == false)
-				return false;
-
-			foreach (var x in type.CustomAttributes)
-			{
-				if (string.Equals(x.AttributeType.FullName, fullName, StringComparison.Ordinal) == false)
-					continue;
-
-				attr = x;
-				return true;
-			}
-			return false;
+			attr = GetAttributes(type, fullName).FirstOrDefault();
+			return attr != null;
 		}
 
 		public static bool TryGetAttribute(this PropertyDefinition type, string fullName, out CustomAttribute attr)
 		{
-			attr = null;
-			if (type.HasCustomAttributes == false)
-				return false;
-
-			foreach (var x in type.CustomAttributes)
-			{
-				if (string.Equals(x.AttributeType.FullName, fullName, StringComparison.Ordinal) == false)
-					continue;
-
-				attr = x;
-				return true;
-			}
-			return false;
+			attr = GetAttributes(type, fullName).FirstOrDefault();
+			return attr != null;
 		}
 
 		public static bool HasAttribute(this TypeDefinition type, string fullName)

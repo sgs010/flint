@@ -103,6 +103,21 @@ namespace Samples
 		public decimal TotalAmount { get; set; }
 	}
 
+	public class User3
+	{
+		public int Id { get; set; }
+		public string Name { get; set; }
+		public string Email { get; set; }
+	}
+
+	[Index(nameof(Name), nameof(Email))]
+	public class User4
+	{
+		public int Id { get; set; }
+		public string Name { get; set; }
+		public string Email { get; set; }
+	}
+
 	public class DB : DbContext
 	{
 		public DbSet<User> Users => Set<User>();
@@ -119,10 +134,13 @@ namespace Samples
 		public DbSet<Outbox> Outbox => Set<Outbox>();
 		public DbSet<User2> Users2 => Set<User2>();
 		public DbSet<Order2> Orders2 => Set<Order2>();
+		public DbSet<User3> Users3 => Set<User3>();
+		public DbSet<User4> Users4 => Set<User4>();
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			modelBuilder.Entity<UserDataPKFluent>().HasKey(x => x.UserId);
+			modelBuilder.Entity<User3>().HasIndex(x => new { x.Email, x.Name });
 		}
 	}
 }

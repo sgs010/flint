@@ -231,5 +231,33 @@ namespace Samples
 			foreach (var user in usersWithRecentBigOrders)
 				Console.WriteLine(user);
 		}
+
+		public static async void IndexFromFluentApi()
+		{
+			// should not advise index because User3 has fluent API index on (Email,Name)
+
+			using var db = new DB();
+			var users = await db.Users3
+				.AsNoTracking()
+				.Where(u => u.Email != null && u.Name.StartsWith('A'))
+				.ToListAsync();
+
+			foreach (var user in users)
+				Console.WriteLine(user);
+		}
+
+		public static async void IndexFromDataAnnotations()
+		{
+			// should not advise index because User3 has data annotiations index on (Email,Name)
+
+			using var db = new DB();
+			var users = await db.Users4
+				.AsNoTracking()
+				.Where(u => u.Email != null && u.Name.StartsWith('A'))
+				.ToListAsync();
+
+			foreach (var user in users)
+				Console.WriteLine(user);
+		}
 	}
 }

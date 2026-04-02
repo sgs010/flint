@@ -88,16 +88,16 @@ namespace Flint.Analyzers
 			var dbContextMap = new HashSet<TypeDefinition>(TypeReferenceEqualityComparer.Instance);
 			foreach (var type in module.Types)
 			{
-				PopulateEntities(type, entityMap, entityPropMap, entityGetSetMap, dbContextMap);
-				PopulateInterfaces(type, interfaceMap);
-				PopulateMethods(type, methodMap);
+				CollectEntities(type, entityMap, entityPropMap, entityGetSetMap, dbContextMap);
+				CollectInterfaces(type, interfaceMap);
+				CollectMethods(type, methodMap);
 			}
 
 			var innerCallMap = new Dictionary<MethodReference, HashSet<CallInfo>>(MethodReferenceEqualityComparer.Instance);
 			var outerCallMap = new Dictionary<MethodReference, HashSet<CallInfo>>(MethodReferenceEqualityComparer.Instance);
 			foreach (var m in methodMap)
 			{
-				PopulateCalls(m, innerCallMap, outerCallMap);
+				CollectCalls(m, innerCallMap, outerCallMap);
 			}
 
 			var typeFullNameIndex = new Dictionary<TypeReference, string>(TypeReferenceEqualityComparer.Instance);
@@ -128,11 +128,11 @@ namespace Flint.Analyzers
 			var indexMap = new Dictionary<TypeReference, List<HashSet<PropertyReference>>>(TypeReferenceEqualityComparer.Instance);
 			foreach (var dbc in dbContextMap)
 			{
-				PopulateDbContextIndexes(dbc, fluentBuilders, linqExpressions, entityTypes, entityGetSetMethods, indexMap);
+				CollectFluentApiIndexes(dbc, fluentBuilders, linqExpressions, entityTypes, entityGetSetMethods, indexMap);
 			}
 			foreach (var type in entityMap)
 			{
-				PopulateEntityIndexes(type, indexMap);
+				CollectDataAnnotationsIndexes(type, indexMap);
 			}
 
 			return new AssemblyInfo
@@ -235,7 +235,8 @@ namespace Flint.Analyzers
 		private static readonly string LINQ_LAMBDA = "System.Linq.Expressions.Expression.Lambda";
 
 		private static readonly FrozenSet<string> EF_CORE_FLUENT_API = [
-			"Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder`1.HasKey"
+			"Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder`1.HasKey",
+			"Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder`1.HasIndex",
 		];
 
 		private static TypeReference COMPILER_GENERATED_ATTRIBUTE_TYPE;
@@ -357,7 +358,7 @@ namespace Flint.Analyzers
 			return IsCompilerGenerated(method.CustomAttributes);
 		}
 
-		private static void PopulateEntities(TypeDefinition type, HashSet<TypeDefinition> entityMap, HashSet<PropertyDefinition> entityPropMap, HashSet<MethodReference> entityGetSetMap, HashSet<TypeDefinition> dbContextMap)
+		private static void CollectEntities(TypeDefinition type, HashSet<TypeDefinition> entityMap, HashSet<PropertyDefinition> entityPropMap, HashSet<MethodReference> entityGetSetMap, HashSet<TypeDefinition> dbContextMap)
 		{
 			if (type.BaseType == null)
 				return;
@@ -387,7 +388,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void PopulateInterfaces(TypeDefinition type, Dictionary<TypeReference, List<TypeDefinition>> interfaceMap)
+		private static void CollectInterfaces(TypeDefinition type, Dictionary<TypeReference, List<TypeDefinition>> interfaceMap)
 		{
 			if (type.IsInterface)
 				return;
@@ -404,7 +405,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void PopulateMethods(TypeDefinition type, HashSet<MethodDefinition> methods)
+		private static void CollectMethods(TypeDefinition type, HashSet<MethodDefinition> methods)
 		{
 			if (type.IsInterface)
 				return; // do not process interfaces
@@ -419,7 +420,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void PopulateCalls(MethodDefinition method, Dictionary<MethodReference, HashSet<CallInfo>> innerCallMap, Dictionary<MethodReference, HashSet<CallInfo>> outerCallMap)
+		private static void CollectCalls(MethodDefinition method, Dictionary<MethodReference, HashSet<CallInfo>> innerCallMap, Dictionary<MethodReference, HashSet<CallInfo>> outerCallMap)
 		{
 			if (innerCallMap.TryGetValue(method, out var innerCalls) == false)
 			{
@@ -440,7 +441,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void PopulateTokens(MethodDefinition method, HashSet<MethodReference> methodofMap)
+		private static void CollectTokens(MethodDefinition method, HashSet<MethodReference> methodofMap)
 		{
 			foreach (var (token, _) in MethodAnalyzer.GetTokens(method))
 			{
@@ -458,13 +459,7 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void PopulateDbContextIndexes(
-			TypeDefinition dbContextType,
-			FrozenSet<MethodReference> fluentBuilders,
-			FrozenSet<MethodReference> linqExpressions,
-			FrozenSet<TypeDefinition> entityTypes,
-			FrozenSet<MethodReference> entityGetSetMethods,
-			Dictionary<TypeReference, List<HashSet<PropertyReference>>> typeIndexMap)
+		private static void CollectFluentApiIndexes(TypeDefinition dbContextType, FrozenSet<MethodReference> fluentBuilders, FrozenSet<MethodReference> linqExpressions, FrozenSet<TypeDefinition> entityTypes, FrozenSet<MethodReference> entityGetSetMethods, Dictionary<TypeReference, List<HashSet<PropertyReference>>> typeIndexMap)
 		{
 			// evaluate OnModelCreating, inspect EF core fluent api calls, collect entity properties
 
@@ -528,14 +523,26 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static void PopulateEntityIndexes(TypeDefinition entityType, Dictionary<TypeReference, List<HashSet<PropertyReference>>> typeIndexMap)
+		private static void CollectDataAnnotationsIndexes(TypeDefinition entityType, Dictionary<TypeReference, List<HashSet<PropertyReference>>> typeIndexMap)
 		{
 			if (typeIndexMap.TryGetValue(entityType, out var indexMap) == false)
 				indexMap = [];
 
-			var primaryKeyIndex = GetEntityPrimaryKeyIndex(entityType);
-			if (primaryKeyIndex.IsNullOrEmpty() == false)
-				indexMap.Add(primaryKeyIndex);
+			// primary key
+			{
+				var index = GetDataAnnotationsPrimaryKeyIndex(entityType);
+				if (index.IsNullOrEmpty() == false)
+					indexMap.Add(index);
+			}
+
+			// nonclustered indexes
+			foreach (var attr in entityType.GetAttributes("Microsoft.EntityFrameworkCore.IndexAttribute"))
+			{
+				var index = new HashSet<PropertyReference>(PropertyReferenceEqualityComparer.Instance);
+				FillIndexFromDataAnnotationsAttribute(entityType, index, attr);
+				if (index.IsNullOrEmpty() == false)
+					indexMap.Add(index);
+			}
 
 			if (indexMap.Count > 0)
 			{
@@ -544,26 +551,13 @@ namespace Flint.Analyzers
 			}
 		}
 
-		private static HashSet<PropertyReference> GetEntityPrimaryKeyIndex(TypeDefinition entityType)
+		private static HashSet<PropertyReference> GetDataAnnotationsPrimaryKeyIndex(TypeDefinition entityType)
 		{
 			var primaryKeyIndex = new HashSet<PropertyReference>(PropertyReferenceEqualityComparer.Instance);
 
 			// property names from [PrimaryKey] class attribute
 			if (entityType.TryGetAttribute("Microsoft.EntityFrameworkCore.PrimaryKeyAttribute", out var attr))
-			{
-				if (attr.HasConstructorArguments)
-				{
-					foreach (var arg in attr.ConstructorArguments)
-					{
-						if (arg.Value is string propName)
-						{
-							var prop = entityType.Properties.FirstOrDefault(x => x.Name == propName);
-							if (prop != null)
-								primaryKeyIndex.Add(prop);
-						}
-					}
-				}
-			}
+				FillIndexFromDataAnnotationsAttribute(entityType, primaryKeyIndex, attr);
 
 			// properties marked with [Key] attribute
 			foreach (var prop in entityType.Properties.Where(x => x.HasAttribute("System.ComponentModel.DataAnnotations.KeyAttribute")))
@@ -580,6 +574,34 @@ namespace Flint.Analyzers
 			}
 
 			return primaryKeyIndex;
+		}
+
+		private static void FillIndexFromDataAnnotationsAttribute(TypeDefinition entityType, HashSet<PropertyReference> index, CustomAttribute attr)
+		{
+			if (attr.HasConstructorArguments == false)
+				return;
+
+			foreach (var arg in attr.ConstructorArguments)
+			{
+				if (arg.Value is string aval)
+				{
+					var prop = entityType.Properties.FirstOrDefault(x => x.Name == aval);
+					if (prop != null)
+						index.Add(prop);
+				}
+				else if (arg.Value is CustomAttributeArgument[] @params)
+				{
+					foreach (var p in @params)
+					{
+						if (p.Value is string pval)
+						{
+							var prop = entityType.Properties.FirstOrDefault(x => x.Name == pval);
+							if (prop != null)
+								index.Add(prop);
+						}
+					}
+				}
+			}
 		}
 		#endregion
 	}
