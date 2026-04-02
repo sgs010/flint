@@ -19,7 +19,7 @@ jobs:
           dotnet-version: '9.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore ./Solution/Flint.sln
+        run: dotnet restore ./Tests/FlintTests/FlintTests.csproj
 
       - name: Build
         run: dotnet build ./Tests/FlintTests/FlintTests.csproj --configuration Release --no-restore
