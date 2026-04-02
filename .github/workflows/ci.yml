@@ -22,7 +22,7 @@ jobs:
         run: dotnet restore ./Solution/Flint.sln
 
       - name: Build
-        run: dotnet build ./Solution/Flint.sln --no-restore
+        run: dotnet build ./Tests/FlintTests/FlintTests.csproj --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test ./Solution/Flint.sln --no-build --verbosity normal
+        run: dotnet test ./Solution/Flint.sln --configuration Release --no-build --verbosity normal
