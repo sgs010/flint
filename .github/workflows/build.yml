@@ -1,0 +1,60 @@
+name: Publish latest version
+
+on:
+  push:
+    branches:
+      - '**'   # run on push to every branch
+  workflow_dispatch:
+
+jobs:
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore ./Sources/FlintCLI/FlintCLI.csproj
+
+      - name: Build in Release mode
+        run: dotnet build ./Sources/FlintCLI/FlintCLI.csproj --configuration Release --no-restore
+
+      - name: Publish app
+        run: dotnet publish ./Sources/FlintCLI/FlintCLI.csproj -c Release -o out --no-build
+
+      - name: Get version from csproj
+        id: get_version
+        run: |
+          VERSION=$(grep -m1 '<Version>' ./Sources/FlintCLI/FlintCLI.csproj | sed -E 's/.*<Version>(.*)<\/Version>.*/\1/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Zip output with version
+        id: zip
+        run: |
+          FILENAME=Flint-${{ steps.get_version.outputs.version }}.zip
+          zip -r $FILENAME out/
+          echo "filename=$FILENAME" >> $GITHUB_OUTPUT
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ steps.zip.outputs.filename }}
+          path: ${{ steps.zip.outputs.filename }}
+
+      # - name: Upload to "latest" release
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     tag_name: latest
+      #     name: Latest Build
+      #     files: myapp-${{ steps.get_version.outputs.version }}.zip
+      #     draft: false
+      #     prerelease: false
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
