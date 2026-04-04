@@ -49,30 +49,25 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore ./Sources/FlintCLI/FlintCLI.csproj
 
-      - name: Build in Release mode
-        run: dotnet build ./Sources/FlintCLI/FlintCLI.csproj --configuration Release --no-restore
-
-      - name: Publish app
-        run: dotnet publish ./Sources/FlintCLI/FlintCLI.csproj -c Release -o out --no-build
-
       - name: Get version from csproj
         id: get_version
         run: |
           VERSION=$(grep -m1 '<Version>' ./Sources/FlintCLI/FlintCLI.csproj | sed -E 's/.*<Version>(.*)<\/Version>.*/\1/')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Zip output with version
-        id: zip
-        run: |
-          FILENAME=Flint-${{ steps.get_version.outputs.version }}.zip
-          cd out && zip -r ../$FILENAME *
-          echo "filename=$FILENAME" >> $GITHUB_OUTPUT
+      - name: Publish for Windows
+        run: dotnet publish ./Sources/FlintCLI/FlintCLI.csproj --no-restore -c Release -r win-x64 --self-contained true -o out-windows
 
-      # - name: Upload artifact
-      #   uses: actions/upload-artifact@v5
-      #   with:
-      #     name: ${{ steps.zip.outputs.filename }}
-      #     path: ${{ steps.zip.outputs.filename }}
+      - name: Zip Windows build
+        run: |
+          cd out-windows && zip -r ../flint-${{ steps.get_version.outputs.version }}-windows.zip *
+
+      - name: Publish for Linux
+        run: dotnet publish ./Sources/FlintCLI/FlintCLI.csproj --no-restore -c Release -r linux-x64 --self-contained true -o out-linux
+
+      - name: Zip Linux build
+        run: |
+          cd out-linux && zip -r ../flint-${{ steps.get_version.outputs.version }}-linux.zip *
 
       - name: Delete old assets from latest release
         run: |
@@ -80,13 +75,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload to "latest" release
+      - name: Upload new assets to latest release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
           name: Latest Build
-          files: ${{ steps.zip.outputs.filename }}
-          draft: false
-          prerelease: false
+          files: |
+            flint-${{ steps.get_version.outputs.version }}-windows.zip
+            flint-${{ steps.get_version.outputs.version }}-linux.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
