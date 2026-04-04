@@ -1,12 +1,34 @@
-name: Publish latest version
+name: Build and publish latest version
 
 on:
   push:
     branches:
+      #- main
       - '**'   # run on push to every branch
   workflow_dispatch:
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore ./Tests/FlintTests/FlintTests.csproj
+
+      - name: Build
+        run: dotnet build ./Tests/FlintTests/FlintTests.csproj --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test ./Tests/FlintTests/FlintTests.csproj --configuration Release --no-build --verbosity normal
+
   publish:
     needs: test
     runs-on: ubuntu-latest
