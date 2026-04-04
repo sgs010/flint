@@ -3,7 +3,8 @@ name: Build and publish latest version
 on:
   push:
     branches:
-      #- main
+      - main
+      - develop
       - '**'   # run on push to every branch
   workflow_dispatch:
 
@@ -64,19 +65,19 @@ jobs:
           cd out && zip -r ../$FILENAME *
           echo "filename=$FILENAME" >> $GITHUB_OUTPUT
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v5
-        with:
-          name: ${{ steps.zip.outputs.filename }}
-          path: ${{ steps.zip.outputs.filename }}
-
-      # - name: Upload to "latest" release
-      #   uses: softprops/action-gh-release@v2
+      # - name: Upload artifact
+      #   uses: actions/upload-artifact@v5
       #   with:
-      #     tag_name: latest
-      #     name: Latest Build
-      #     files: myapp-${{ steps.get_version.outputs.version }}.zip
-      #     draft: false
-      #     prerelease: false
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     name: ${{ steps.zip.outputs.filename }}
+      #     path: ${{ steps.zip.outputs.filename }}
+
+      - name: Upload to "latest" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest Build
+          files: ${{ steps.zip.outputs.filename }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
