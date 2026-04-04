@@ -61,7 +61,7 @@ jobs:
         id: zip
         run: |
           FILENAME=Flint-${{ steps.get_version.outputs.version }}.zip
-          zip -r $FILENAME out/
+          cd out && zip -r ../$FILENAME *
           echo "filename=$FILENAME" >> $GITHUB_OUTPUT
 
       - name: Upload artifact

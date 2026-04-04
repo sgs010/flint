@@ -1,5 +1,7 @@
 Flint is EF Core linter tool to check for common issues.
 
+Usage: FlintCLI --input=<path_to_assembly>
+
 Supported checks so far:
 
 1. Consider using projection {...} - avoid SELECT \* FROM issue.
