@@ -74,7 +74,7 @@ jobs:
       #     name: ${{ steps.zip.outputs.filename }}
       #     path: ${{ steps.zip.outputs.filename }}
 
-     - name: Delete old assets from latest release
+      - name: Delete old assets from latest release
         run: |
           gh release delete-asset latest Flint-*.zip || true
         env:
