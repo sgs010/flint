@@ -5,11 +5,11 @@ on:
     branches:
       - main
       - develop
-      - '**'   # run on push to every branch
+      #- '**'   # run on push to every branch
   workflow_dispatch:
 
 permissions:
-  contents: write   # restrict token to release updates only
+  contents: write # restrict token to release updates only
 
 jobs:
   test:
