@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Flint.Common;
 
 namespace FlintTests
 {
@@ -28,14 +29,38 @@ namespace FlintTests
 			var diffExpected = expected.Except(actual).ToList();
 			var diffActual = actual.Except(expected).ToList();
 
-			if (diffExpected.Count == 0 && diffActual.Count == 0)
-				return;
-
+			var fail = false;
 			var sb = new StringBuilder();
-			sb.AppendLine("Collections are not same.");
-			PrettyPrintDifferences(sb, "=== Expected:", diffExpected);
-			PrettyPrintDifferences(sb, "=== Actual:", diffActual);
-			Assert.Fail(sb.ToString());
+			sb.AppendLine("Collections are not the same.");
+
+			if (diffExpected.Count == 0 && diffActual.Count == 0)
+			{
+				// both collections contain the same elements, check for duplicates
+
+				var expectedDuplicates = expected.ToCountDictionary();
+				var actualDuplicates = actual.ToCountDictionary();
+				foreach (var x in expected)
+				{
+					var xe = expectedDuplicates[x];
+					var xa = actualDuplicates[x];
+					if (xe != xa)
+					{
+						fail = true;
+						sb.AppendLine($"Expected {xe} got {xa} of \"{x}\"");
+					}
+				}
+			}
+			else
+			{
+				// collections contain different elements
+
+				fail = true;
+				PrettyPrintDifferences(sb, "=== Expected:", diffExpected);
+				PrettyPrintDifferences(sb, "=== Actual:", diffActual);
+			}
+
+			if (fail)
+				Assert.Fail(sb.ToString());
 		}
 
 		public static void AssertContains<T>(this IReadOnlyCollection<T> col, T expected)

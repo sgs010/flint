@@ -1,4 +1,6 @@
-﻿namespace Flint.Analyzers
+﻿using Flint.Vm;
+
+namespace Flint.Analyzers
 {
 	internal class LoopAnalyzer
 	{
@@ -13,6 +15,7 @@
 			// Loop can be recognized by BR to a target with lesser offset (go back).
 			// If a root (call to ToListAsync and so on) is located between target and such BR, report an issue.
 
+			var visitedPoints = new HashSet<CilPoint>();
 			var queries = QueryAnalyzer.Analyze(asm, className, methodName);
 			foreach (var query in queries)
 			{
@@ -29,7 +32,9 @@
 							continue; // root is after loop
 
 						// report issue
-						ctx.AddResult(Code, "avoid making queries in a loop", query.Method, query.CilPoint);
+						if (visitedPoints.Contains(query.CilPoint) == false)
+							ctx.AddResult(Code, "avoid making queries in a loop", query.Method, query.CilPoint);
+						visitedPoints.Add(query.CilPoint);
 					}
 				}
 			}

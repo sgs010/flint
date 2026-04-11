@@ -109,5 +109,10 @@ namespace Flint.Common
 		{
 			return options.Contains(value);
 		}
+
+		public static Dictionary<T, int> ToCountDictionary<T>(this IReadOnlyCollection<T> col)
+		{
+			return col.GroupBy(x => x).ToDictionary(x => x.Key, x => x.Count());
+		}
 	}
 }

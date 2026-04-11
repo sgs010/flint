@@ -1,4 +1,6 @@
-﻿namespace Flint
+﻿using System.Diagnostics;
+
+namespace Flint
 {
 	static class Program
 	{
@@ -23,11 +25,15 @@
 				{
 					Trace = parameters.Trace
 				};
+
+				var st = Stopwatch.StartNew();
 				var result = Api.AnalyzeCLI(parameters.Input, options);
+				st.Stop();
+
 				foreach (var item in result)
-				{
 					Console.WriteLine(item);
-				}
+				Console.WriteLine($"Found {result.Length} issues in {st.ElapsedMilliseconds} ms");
+
 				return 0;
 			}
 			catch (Exception ex)
