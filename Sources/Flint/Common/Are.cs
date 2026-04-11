@@ -78,7 +78,7 @@ namespace Flint.Common
 			return false;
 		}
 
-		public static bool Equal(Ast[] x, Ast[] y)
+		public static bool Equal<T>(T[] x, T[] y, Func<T, T, bool> cmp)
 		{
 			if (x == null && y == null)
 				return true;
@@ -91,11 +91,15 @@ namespace Flint.Common
 
 			for (var i = 0; i < x.Length; ++i)
 			{
-				if (Are.Equal(x[i], y[i]) == false)
+				if (cmp(x[i], y[i]) == false)
 					return false;
 			}
 			return true;
+		}
 
+		public static bool Equal(Ast[] x, Ast[] y)
+		{
+			return Equal(x, y, Are.Equal);
 		}
 	}
 }

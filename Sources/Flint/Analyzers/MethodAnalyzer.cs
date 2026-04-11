@@ -25,6 +25,13 @@ namespace Flint.Analyzers
 				yield return ((MethodReference)call.Operand, pt);
 		}
 
+		public static IEnumerable<(object, CilPoint)> GetTokens(MethodDefinition method)
+		{
+			var visitedMethods = new HashSet<MethodReference>(MethodReferenceEqualityComparer.Instance);
+			foreach (var (ldtoken, pt) in GetInstructions(method, CilMachine.TokenInstructions, visitedMethods))
+				yield return (ldtoken.Operand, pt);
+		}
+
 		public static IEnumerable<MethodDefinition> GetMethods(AssemblyInfo asm, string className = null, string methodName = null)
 		{
 			foreach (var method in asm.MethodInnerCalls.Keys)

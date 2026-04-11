@@ -1,4 +1,5 @@
-﻿namespace Flint.Vm.Cil
+﻿
+namespace Flint.Vm.Cil
 {
 	class Add : BinaryOperator<Add>
 	{

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Samples
 {
@@ -8,6 +9,25 @@ namespace Samples
 		public string FirstName { get; set; }
 		public string LastName { get; set; }
 		public string Email { get; set; }
+	}
+
+	public class UserDataPKKey
+	{
+		[Key] public int UserId { get; set; }
+		public string Data { get; set; }
+	}
+
+	[PrimaryKey(nameof(UserId))]
+	public class UserDataPKPrimaryKey
+	{
+		public int UserId { get; set; }
+		public string Data { get; set; }
+	}
+
+	public class UserDataPKFluent
+	{
+		public int UserId { get; set; }
+		public string Data1 { get; set; }
 	}
 
 	public class Order
@@ -21,6 +41,7 @@ namespace Samples
 	{
 		public int Id { get; set; }
 		public Product Product { get; set; }
+		public decimal Total { get; set; }
 	}
 
 	public class Product
@@ -67,9 +88,42 @@ namespace Samples
 		public bool IsProcessed { get; set; }
 	}
 
+	public class User2
+	{
+		public int Id { get; set; }
+		public ICollection<Order2> Orders { get; set; }
+	}
+
+	public class Order2
+	{
+		public int Id { get; set; }
+		public int UserId { get; set; }
+		public User2 User { get; set; }
+		public DateTime CreatedDate { get; set; }
+		public decimal TotalAmount { get; set; }
+	}
+
+	public class User3
+	{
+		public int Id { get; set; }
+		public string Name { get; set; }
+		public string Email { get; set; }
+	}
+
+	[Index(nameof(Name), nameof(Email))]
+	public class User4
+	{
+		public int Id { get; set; }
+		public string Name { get; set; }
+		public string Email { get; set; }
+	}
+
 	public class DB : DbContext
 	{
 		public DbSet<User> Users => Set<User>();
+		public DbSet<UserDataPKKey> UserDataPKKey => Set<UserDataPKKey>();
+		public DbSet<UserDataPKPrimaryKey> UserDataPKPrimaryKey => Set<UserDataPKPrimaryKey>();
+		public DbSet<UserDataPKFluent> UserDataPKFluent => Set<UserDataPKFluent>();
 		public DbSet<Order> Orders => Set<Order>();
 		public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 		public DbSet<Product> Products => Set<Product>();
@@ -78,5 +132,15 @@ namespace Samples
 		public DbSet<Post> Posts => Set<Post>();
 		public DbSet<Tag> Tags => Set<Tag>();
 		public DbSet<Outbox> Outbox => Set<Outbox>();
+		public DbSet<User2> Users2 => Set<User2>();
+		public DbSet<Order2> Orders2 => Set<Order2>();
+		public DbSet<User3> Users3 => Set<User3>();
+		public DbSet<User4> Users4 => Set<User4>();
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		{
+			modelBuilder.Entity<UserDataPKFluent>().HasKey(x => x.UserId);
+			modelBuilder.Entity<User3>().HasIndex(x => new { x.Email, x.Name });
+		}
 	}
 }

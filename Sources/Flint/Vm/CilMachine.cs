@@ -22,6 +22,7 @@ namespace Flint.Vm
 		public static readonly FrozenSet<Code> BranchInstructions = [Code.Beq, Code.Beq_S, Code.Bge, Code.Bge_S, Code.Bge_Un, Code.Bge_Un_S, Code.Bgt, Code.Bgt_S, Code.Bgt_Un, Code.Bgt_Un_S, Code.Ble, Code.Ble_S, Code.Ble_Un, Code.Ble_Un_S, Code.Blt, Code.Blt_S, Code.Blt_Un, Code.Blt_Un_S, Code.Bne_Un, Code.Bne_Un_S, Code.Br, Code.Br_S, Code.Brfalse, Code.Brfalse_S, Code.Brtrue, Code.Brtrue_S];
 		public static readonly FrozenSet<Code> CallInstructions = [Code.Call, Code.Callvirt];
 		public static readonly FrozenSet<Code> LambdaInstructions = [Code.Ldftn, Code.Ldvirtftn];
+		public static readonly FrozenSet<Code> TokenInstructions = [Code.Ldtoken];
 
 		public static IEnumerable<(Instruction, CilPoint)> GetInstructions(MethodDefinition mtd, FrozenSet<Code> codes)
 		{
@@ -43,6 +44,7 @@ namespace Flint.Vm
 			// 2. merge branch expressions with prev branch expressions
 			// 3. if nothing changed, then ignore alt branches
 
+			var arrayWrites = new HashSet<ArrayWrite>();
 			var expressions = new Dictionary<CilPoint, Ast>();
 			var visitedBranches = new HashSet<int>();
 			var queue = new Queue<RoutineContext>();
@@ -54,6 +56,7 @@ namespace Flint.Vm
 
 				var altBranches = new List<RoutineContext>();
 				Eval(branch, altBranches, machineContext);
+				arrayWrites.AddRange(branch.ArrayWrites);
 
 				// check if this branch gives us any new expressions
 				var isChanged = Merge(expressions, branch.Expressions);
@@ -73,7 +76,17 @@ namespace Flint.Vm
 				}
 			}
 
-			return [.. expressions.Values];
+			var arrayWritesGroupedByArray = arrayWrites
+				.GroupBy(x => x.Array)
+				.ToDictionary(x => x.Key, x => x.ToList());
+
+			var result = new List<Ast>(expressions.Count);
+			foreach (var expr in expressions.Values)
+			{
+				var valExpr = Ast.Rewrite(expr, x => RewriteWithValues(x, arrayWritesGroupedByArray));
+				result.Add(valExpr);
+			}
+			return [.. result];
 		}
 		#endregion
 
@@ -113,6 +126,35 @@ namespace Flint.Vm
 			public override readonly int GetHashCode()
 			{
 				return HashCode.Combine(Array, Index);
+			}
+		}
+
+		internal readonly struct ArrayWrite
+		{
+			public readonly Ast Array;
+			public readonly Ast Index;
+			public readonly Ast Value;
+			public ArrayWrite(Ast array, Ast index, Ast value)
+			{
+				Array = array;
+				Index = index;
+				Value = value;
+			}
+
+			public override readonly bool Equals(object obj)
+			{
+				if (obj is ArrayWrite w)
+				{
+					return Array.Equals(w.Array)
+						&& Index.Equals(w.Index)
+						&& Value.Equals(w.Value);
+				}
+				return false;
+			}
+
+			public override readonly int GetHashCode()
+			{
+				return HashCode.Combine(Array, Index, Value);
 			}
 		}
 
@@ -159,6 +201,7 @@ namespace Flint.Vm
 			public readonly List<Condition> Conditions = [];
 			public readonly HashSet<Ast> Expressions = [];
 			public readonly HashSet<int> VisitedOffsets = [];
+			public readonly HashSet<ArrayWrite> ArrayWrites = [];
 
 			public RoutineContext(MethodDefinition method)
 			{
@@ -208,7 +251,21 @@ namespace Flint.Vm
 				Conditions = [.. src.Conditions];
 				Expressions = [.. src.Expressions];
 				VisitedOffsets = [.. src.VisitedOffsets];
+				ArrayWrites = [.. src.ArrayWrites];
 			}
+		}
+
+		private static (Ast, bool) RewriteWithValues(Ast expr, Dictionary<Ast, List<ArrayWrite>> arrayWritesGroupedByArray)
+		{
+			if (expr is Cil.Array arr)
+			{
+				if (arrayWritesGroupedByArray.TryGetValue(arr, out var values))
+				{
+					var va = new ValArray(arr.CilPoint, arr, values.ToArray(x => new ValArray.Val(x.Index, x.Value)));
+					return (va, true);
+				}
+			}
+			return (expr, false);
 		}
 
 		private static bool Merge(Dictionary<CilPoint, Ast> acc, IEnumerable<Ast> expressions)
@@ -1313,7 +1370,9 @@ namespace Flint.Vm
 			var value = ctx.Stack.Pop();
 			var index = ctx.Stack.Pop();
 			var array = ctx.Stack.Pop();
-			ctx.Arrays.AddOrReplace(new ArrayIndex(array, index), value);
+			var idx = new ArrayIndex(array, index);
+			ctx.ArrayWrites.Add(new ArrayWrite(array, index, value));
+			ctx.Arrays.AddOrReplace(idx, value);
 		}
 
 		private static void Stind(RoutineContext ctx)

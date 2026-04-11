@@ -55,5 +55,10 @@ namespace Flint.Vm.Cil
 			}
 			return NotMerged();
 		}
+
+		protected override Ast RewriteChildren(Func<Ast, (Ast, bool)> fn)
+		{
+			return new Newobj(CilPoint, Type, Ctor, Rewrite(Args, fn));
+		}
 	}
 }

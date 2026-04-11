@@ -1,0 +1,79 @@
+name: Build and publish latest version
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write # restrict token to release updates only
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore ./Tests/FlintTests/FlintTests.csproj
+
+      - name: Build
+        run: dotnet build ./Tests/FlintTests/FlintTests.csproj --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test ./Tests/FlintTests/FlintTests.csproj --configuration Release --no-build --verbosity normal
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Get version from csproj
+        id: get_version
+        run: |
+          VERSION=$(grep -m1 '<Version>' ./Sources/FlintCLI/FlintCLI.csproj | sed -E 's/.*<Version>(.*)<\/Version>.*/\1/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Publish for Windows
+        run: dotnet publish ./Sources/FlintCLI/FlintCLI.csproj -c Release -r win-x64 --self-contained true -o out-windows
+
+      - name: Zip Windows build
+        run: cd out-windows && zip -r ../flint-${{ steps.get_version.outputs.version }}-windows.zip *
+
+      - name: Publish for Linux
+        run: dotnet publish ./Sources/FlintCLI/FlintCLI.csproj -c Release -r linux-x64 --self-contained true -o out-linux
+
+      - name: Zip Linux build
+        run: cd out-linux && zip -r ../flint-${{ steps.get_version.outputs.version }}-linux.zip *
+
+      - name: Delete old assets from latest release
+        run: gh release delete-asset latest Flint-*.zip || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload new assets to latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest Build
+          files: |
+            flint-${{ steps.get_version.outputs.version }}-windows.zip
+            flint-${{ steps.get_version.outputs.version }}-linux.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

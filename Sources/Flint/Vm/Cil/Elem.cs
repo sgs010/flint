@@ -49,5 +49,10 @@ namespace Flint.Vm.Cil
 			}
 			return NotMerged();
 		}
+
+		protected override Ast RewriteChildren(Func<Ast, (Ast, bool)> fn)
+		{
+			return new Elem(CilPoint, Rewrite(Array, fn), Rewrite(Index, fn));
+		}
 	}
 }
