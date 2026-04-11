@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-      - develop
-      #- '**'   # run on push to every branch
   workflow_dispatch:
 
 permissions:
